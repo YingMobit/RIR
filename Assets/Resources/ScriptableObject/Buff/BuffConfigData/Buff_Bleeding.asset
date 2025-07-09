@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9967b79813405c499ff2b824e834c2b, type: 3}
+  m_Name: Buff_Bleeding
+  m_EditorClassIdentifier: 
+  ID: 1
+  Name: "\u6D41\u8840"
+  Description: 
+  Icon: {fileID: 0}
+  Priority: 1
+  Tags: 
+  MaxStack: 100
+  isForever: 0
+  Duration: 5
+  BuffTriggerType: 0
+  TickTime: 1
+  UseDefualtStackStrategy: 1
+  BuffStackUpStrategy: 4
+  BuffStackDownStrategy: 2
+  DurationExtendPerStack: 0
+  BuffEffect: {fileID: 11400000, guid: b3f46828be9e43b409525bb8f73406a7, type: 2}

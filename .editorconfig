@@ -1,0 +1,55 @@
+root = true
+
+[*.cs]
+# 缩进和空格
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+# 换行符
+end_of_line = crlf
+insert_final_newline = false
+
+# 大括号样式 - K&R 风格（大括号在同一行）
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+
+# 或者选择 Allman 风格（大括号在新行）
+# csharp_new_line_before_open_brace = all
+
+# 空格设置
+csharp_space_after_keywords_in_control_flow_statements = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_after_comma = false
+csharp_space_after_dot = false
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_before_open_square_brackets = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+
+# 缩进设置
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = flush_left
+
+# 换行设置
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+# 保持空行的缩进 - 完全禁用清理
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+# 保持空行缩进的关键设置
+csharp_preserve_single_line_blocks = true
+dotnet_style_allow_multiple_blank_lines_experimental = true
+dotnet_style_allow_statement_immediately_after_block_experimental = true
+
+# 更多保护设置
+csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = true
+csharp_style_allow_embedded_statements_on_same_line_experimental = true
