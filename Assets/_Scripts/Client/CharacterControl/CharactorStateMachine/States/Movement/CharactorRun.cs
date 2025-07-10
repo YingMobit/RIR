@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [CreateAssetMenu(fileName = "CharactorRun",menuName = CharactorFSMStateDataConfig.StateDataMenuPathRoot + "CharactorRun",order = 0)]
 public class CharactorRun : CharactorStateBase {
@@ -10,40 +11,40 @@ public class CharactorRun : CharactorStateBase {
     [SerializeField] int RunAnimationLayer;
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
+    [SerializeField] string AnimationParam_Run;
     [Header("Logic Config")]
     [SerializeField] float RunSpeed;
 
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
-    float Direction_x;
-    float Direction_z;
+    InputHandleProvider inputHandler;
     #endregion
 
-    public void Init(Animator _animator,Rigidbody _rigidbody) {
+    public void Init(Animator _animator,Rigidbody _rigidbody,InputHandleProvider _inputHandler) {
         animator = _animator;
         rigidbody = _rigidbody;
+        inputHandler = _inputHandler;
     }
 
     public override void OnEnter() {
-        Direction_x = Direction_z = 0;
-        animator.Play(RunStateName,RunAnimationLayer);
+        animator.SetBool(AnimationParam_Run,true);
     }
 
     public override void OnExit() {
-
+        animator.SetBool(AnimationParam_Run,false);
     }
 
     public override void OnUpdate() {
-        Direction_x = Input.GetAxis("Horizontal");
-        Direction_z = Input.GetAxis("Vertical");
-        var dir = new Vector3(Direction_x,0,Direction_z);
-        Direction_x = dir.normalized.x;
-        Direction_z = dir.normalized.z;
+        var inputDir = inputHandler.MoveDirInput;
+        var aimDir = CursorAimer.Instance.AimDirection;
+        var moveDir = new Vector2();
+        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        moveDir = rotation * inputDir;
 
-        animator.SetFloat(AnimationParam_Dir_x,Direction_x);
-        animator.SetFloat(AnimationParam_Dir_z,Direction_z);
+        animator.SetFloat(AnimationParam_Dir_x,inputDir.x);
+        animator.SetFloat(AnimationParam_Dir_z,inputDir.y);
 
-        var velocity = new Vector3(Direction_x + RunSpeed,rigidbody.linearVelocity.y,Direction_z * RunSpeed);
+        var velocity = new Vector3(moveDir.x * RunSpeed,rigidbody.linearVelocity.y,moveDir.y * RunSpeed);
         rigidbody.linearVelocity = velocity;
     }
 

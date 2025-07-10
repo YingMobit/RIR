@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [CreateAssetMenu(fileName = "CharactorWalk",menuName = CharactorFSMStateDataConfig.StateDataMenuPathRoot + "CharactorWalk",order = 0)]
 public class CharactorWalk : CharactorStateBase {
@@ -9,40 +10,38 @@ public class CharactorWalk : CharactorStateBase {
     [SerializeField] int WalkAnimationLayer;
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
+    [SerializeField] string AnimationParam_Walk;
     [Header("Logic Config")]
     [SerializeField] float WalkSpeed;
 
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
-    float Direction_x;
-    float Direction_z;
+    InputHandleProvider inputHandler;
     #endregion
 
-    public void Init(Animator _animator,Rigidbody _rigidbody) {
+    public void Init(Animator _animator,Rigidbody _rigidbody,InputHandleProvider _inputHandler) {
         animator = _animator;
         rigidbody = _rigidbody;
+        inputHandler = _inputHandler;
     }
 
     public override void OnEnter() {
-        Direction_x = Direction_z = 0;
-        animator.Play(WalkStateName,WalkAnimationLayer);
+        animator.SetBool(AnimationParam_Walk,true);
     }
 
 
     public override void OnUpdate() {
-        Direction_x = Input.GetAxis("Horizontal");
-        Direction_z = Input.GetAxis("Vertical");
-        var dir = new Vector3(Direction_x,0,Direction_z);
-        Direction_x = dir.normalized.x;
-        Direction_z = dir.normalized.z;
+        var inputDir = inputHandler.MoveDirInput;
+        var aimDir = CursorAimer.Instance.AimDirection;
+        var moveDir = new Vector2();
+        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        moveDir = rotation * inputDir;
 
-        animator.SetFloat(AnimationParam_Dir_x,Direction_x);
-        animator.SetFloat(AnimationParam_Dir_z,Direction_z);
+        animator.SetFloat(AnimationParam_Dir_x,inputDir.x);
+        animator.SetFloat(AnimationParam_Dir_z,inputDir.y);
 
-        Debug.Log($"origin velocity: {rigidbody.linearVelocity}");
-        var velocity = new Vector3(Direction_x + WalkSpeed,rigidbody.linearVelocity.y,Direction_z * WalkSpeed);
+        var velocity = new Vector3(moveDir.x * WalkSpeed,rigidbody.linearVelocity.y,moveDir.y * WalkSpeed);
         rigidbody.linearVelocity = velocity;
-        Debug.Log($"velocity: {velocity}");
     }
 
     public override void OnFixedUpdate() {
@@ -50,7 +49,7 @@ public class CharactorWalk : CharactorStateBase {
     }
 
     public override void OnExit() {
-
+        animator.SetBool(AnimationParam_Walk,false);
     }
 
     public override CharactorStateBase Clone() {

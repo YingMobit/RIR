@@ -6,59 +6,110 @@
             "id": "02c929cd-1e52-4534-9f2a-8fa94f10a256",
             "actions": [
                 {
-                    "name": "Walk",
+                    "name": "Movement_InputDir",
+                    "type": "Value",
+                    "id": "bea7525c-8d12-4d8b-ac68-39e14101b0c9",
+                    "expectedControlType": "Vector2",
+                    "processors": "Vector2SmoothEffector(SmoothRate=5,Gravity=100)",
+                    "interactions": "Hold(duration=0.01)",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Movement_SwiatchW&R",
                     "type": "Button",
-                    "id": "2089ecff-efe0-40a0-8f43-f79a77097aab",
+                    "id": "4b6bd62f-a4c9-4c61-86ea-d0e71b221476",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Jump",
+                    "type": "Button",
+                    "id": "af32d3b8-be82-4630-8f58-482806387ff0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press",
                     "initialStateCheck": false
                 }
             ],
             "bindings": [
                 {
-                    "name": "Two Modifiers",
-                    "id": "73250641-3111-4ef0-a453-e3899bdb86e8",
-                    "path": "TwoModifiers",
+                    "name": "InputDir",
+                    "id": "dba9c826-3b89-4b11-a8e3-62aa6370e5ee",
+                    "path": "2DVector(mode=1)",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Walk",
+                    "action": "Movement_InputDir",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "modifier1",
-                    "id": "c0039370-5849-4b2a-ad2c-d7adaa763a4a",
-                    "path": "",
+                    "name": "up",
+                    "id": "f390b971-6f55-4c08-95ed-d0d609954a26",
+                    "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Walk",
+                    "action": "Movement_InputDir",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "modifier2",
-                    "id": "9af8f1d9-2cc6-4f28-9a37-06bc7ec0c2b7",
-                    "path": "",
+                    "name": "down",
+                    "id": "86503998-be96-4994-89b8-07b9491e6447",
+                    "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Walk",
+                    "action": "Movement_InputDir",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "binding",
-                    "id": "db186b31-872b-41ec-a566-1be9148ffc25",
-                    "path": "",
+                    "name": "left",
+                    "id": "048f64a7-a68f-4c9d-a7e3-f3e918d482ad",
+                    "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Walk",
+                    "action": "Movement_InputDir",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "fbf84e40-c570-4506-8b00-63533b85f16c",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Movement_InputDir",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "5e8f44a7-fe70-4d9b-9f6d-af9dca308a4e",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a48d1123-a58a-4d33-8771-166f9ca3ddff",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Movement_SwiatchW&R",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
