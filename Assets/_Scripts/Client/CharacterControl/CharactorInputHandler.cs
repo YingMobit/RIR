@@ -49,7 +49,7 @@ public class CharactorInputHandler : MonoBehaviour, InputHandleProvider {
     }
 
     void OnJumpInput(CallbackContext callbackContext) {
-        var jumped = callbackContext.ReadValue<bool>();
+        var jumped = callbackContext.ReadValue<float>() > 0;
         if(jumped)
             JumpInputEvent?.Invoke();
     }
@@ -65,7 +65,7 @@ public class CharactorInputHandler : MonoBehaviour, InputHandleProvider {
         m_PlayerSwitchMovementMethodAction?.Disable();
     }
 
-    public bool MoveKeyPressing => MoveDirInput == Vector2.zero;
+    public bool MoveKeyPressing => MoveDirInput != Vector2.zero;
     public Vector2 MoveDirInput => m_PlayerMovementAction.ReadValue<Vector2>();
     public bool JumpPressed => m_PlayerJumpAction.IsPressed();
 }

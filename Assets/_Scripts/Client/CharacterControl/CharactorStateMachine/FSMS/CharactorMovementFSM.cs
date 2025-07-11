@@ -13,7 +13,7 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
     [SerializeField] private CharactorMoveState initialStateType;
     [SerializeField] private SerializableDictionary<CharactorMoveState,CharactorStateBase> allStates = new();
     [Tooltip("控制移动方式是走路还是奔跑")]
-    [SerializeField] private bool m_MovementIsWalk;
+    [SerializeField] public bool m_MovementIsWalk { get; private set; }
 
     [Header("Components Needed")]
     Animator animator;
@@ -29,6 +29,9 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
     void Awake() {
         ComponentInit();
         RegistInputEvent();
+    }
+
+    void Start() {
         StatesInit();
         ReturnToDefualt();
     }
@@ -51,6 +54,7 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
             var state = pair.Value.Clone();
             allStates[pair.Key] = state; // 现在可以安全地修改字典
 
+            state.OnInit(this);
             switch(pair.Key) {
                 case CharactorMoveState.Walk:
                     ((CharactorWalk)state).Init(animator,rigidbody,inputHandler);
@@ -59,9 +63,12 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
                     ((CharactorRun)state).Init(animator,rigidbody,inputHandler);
                     break;
                 case CharactorMoveState.JumpUp:
+                    ((CharactorJumpUp)state).Init(animator,rigidbody);
+                    break;
+                case CharactorMoveState.Fall:
+                    ((CharactorFall)state).Init(animator);
                     break;
             }
-            state.OnInit(this);
         }
     }
 
@@ -130,11 +137,6 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
             }
         }
         SwitchState(defualtState);
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start() {
-
     }
 
     // Update is called once per frame

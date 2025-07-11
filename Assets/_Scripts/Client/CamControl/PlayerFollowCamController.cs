@@ -22,8 +22,7 @@ public class PlayerFollowCamController : MonoBehaviour {
             pov.m_VerticalAxis.m_InputAxisName = "";
         }
     }
-
-    void Update() {
+    void LateUpdate() {
         TurnCam();
     }
 

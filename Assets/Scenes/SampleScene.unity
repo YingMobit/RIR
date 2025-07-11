@@ -1559,7 +1559,7 @@ GameObject:
   - component: {fileID: 1875915302}
   - component: {fileID: 1875915301}
   - component: {fileID: 1875915300}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3047,6 +3047,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7072444061986505412}
+  - component: {fileID: 7072444061986505419}
   - component: {fileID: 7072444061978733926}
   - component: {fileID: 7072444061986505415}
   - component: {fileID: 7072444061986505413}
@@ -4193,6 +4194,21 @@ Transform:
   - {fileID: 7072444061986505422}
   m_Father: {fileID: 7072444061986505372}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7072444061986505419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7072444061986152164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52d5d64f7acb29342905ced98ffa59ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  charactorActionFSM: {fileID: 0}
+  charactorMovementFSM: {fileID: 0}
+  PlayerAbilityConfigData: {fileID: 11400000, guid: feacb5d477a35ee4a966ec8e2db48519, type: 2}
 --- !u!4 &7072444061986505420
 Transform:
   m_ObjectHideFlags: 0

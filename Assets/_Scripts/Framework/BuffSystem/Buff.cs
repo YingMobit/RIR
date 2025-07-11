@@ -29,7 +29,7 @@ public abstract class Buff {
     /// 对事件触发型Buff适用
     /// </summary>
     /// <param name="eventData"></param>
-    protected abstract void TriggerBuff(IEvent eventData);
+    protected abstract void TriggerBuff(IEventData eventData);
     /// <summary>
     /// 当Buff层数降低时调用
     /// </summary>

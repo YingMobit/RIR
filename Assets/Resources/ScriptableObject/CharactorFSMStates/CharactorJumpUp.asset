@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66376a7dfb51f6d428bc8d2b06aae935, type: 3}
   m_Name: CharactorJumpUp
   m_EditorClassIdentifier: 
+  AnimationParam_JumpUp: ShouldJumpUp

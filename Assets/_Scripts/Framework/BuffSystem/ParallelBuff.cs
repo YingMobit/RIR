@@ -35,7 +35,7 @@ public class ParallelBuff : Buff {
 
     }
 
-    protected override void TriggerBuff(IEvent eventData) {
+    protected override void TriggerBuff(IEventData eventData) {
 
     }
 }

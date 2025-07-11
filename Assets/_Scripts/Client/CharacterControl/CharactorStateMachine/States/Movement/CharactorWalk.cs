@@ -11,18 +11,18 @@ public class CharactorWalk : CharactorStateBase {
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
     [SerializeField] string AnimationParam_Walk;
-    [Header("Logic Config")]
-    [SerializeField] float WalkSpeed;
 
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
     InputHandleProvider inputHandler;
+    AbilityValues<float> WalkSpeed;
     #endregion
 
     public void Init(Animator _animator,Rigidbody _rigidbody,InputHandleProvider _inputHandler) {
         animator = _animator;
         rigidbody = _rigidbody;
         inputHandler = _inputHandler;
+        WalkSpeed = stateMachine.Entity.GetComponent<PlayerController>().playerRuntimeAbilityData.WalkSpeed;
     }
 
     public override void OnEnter() {
@@ -40,7 +40,7 @@ public class CharactorWalk : CharactorStateBase {
         animator.SetFloat(AnimationParam_Dir_x,inputDir.x);
         animator.SetFloat(AnimationParam_Dir_z,inputDir.y);
 
-        var velocity = new Vector3(moveDir.x * WalkSpeed,rigidbody.linearVelocity.y,moveDir.y * WalkSpeed);
+        var velocity = new Vector3(moveDir.x * WalkSpeed.CurrentValue,rigidbody.linearVelocity.y,moveDir.y * WalkSpeed.CurrentValue);
         rigidbody.linearVelocity = velocity;
     }
 

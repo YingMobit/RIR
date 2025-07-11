@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IBuffEvent : IEvent { }
+public interface IBuffEvent : IEventData { }
 public interface IBuffOnAttackEvent : IBuffEvent { }
 public interface IBuffOnBeAttackedEvent : IBuffEvent { }
 public interface IBuffOnDeathEvent : IBuffEvent {

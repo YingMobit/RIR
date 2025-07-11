@@ -9,7 +9,7 @@ public abstract class BuffEffect : ScriptableObject {
     /// </summary>
     /// <param name="runTimeData">运行时数据</param>
     /// <param name="eventData">事件型buff所需的事件信息</param>
-    public abstract void Effect(BuffRunTimeData runTimeData,IEvent eventData = null);
+    public abstract void Effect(BuffRunTimeData runTimeData,IEventData eventData = null);
 
     public abstract BuffEffect Clone();
 }
