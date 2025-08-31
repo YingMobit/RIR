@@ -22,7 +22,7 @@ public class CharactorWalk : CharactorStateBase {
         animator = _animator;
         rigidbody = _rigidbody;
         inputHandler = _inputHandler;
-        WalkSpeed = stateMachine.Entity.GetComponent<PlayerController>().playerRuntimeAbilityData.WalkSpeed;
+        WalkSpeed = stateMachine.GameObject.GetComponent<PlayerController>().playerRuntimeAbilityData.WalkSpeed;
     }
 
     public override void OnEnter() {

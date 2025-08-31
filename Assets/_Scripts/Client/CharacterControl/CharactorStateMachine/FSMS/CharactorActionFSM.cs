@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using Utility;
 
 public class CharactorActionFSM : MonoBehaviour, IStateMachine {
-    public GameObject Entity => gameObject;
+    public GameObject GameObject => gameObject;
+    [SerializeField] private CharactorActionState currentStateType;
     [SerializeField] private CharactorStateBase currentState;
     [Header("States Config")]
     [SerializeField] private CharactorActionState initialStateType;
@@ -12,6 +14,8 @@ public class CharactorActionFSM : MonoBehaviour, IStateMachine {
 
     #region Runtime Data
     private CharactorStateBase defualtState;
+    private Animator animator;
+    private InputHandleProvider inputHandleProvider;
     #endregion
 
     public void SwitchState(int stateFlag) {
@@ -23,13 +27,17 @@ public class CharactorActionFSM : MonoBehaviour, IStateMachine {
         }
     }
 
-
     private void SwitchState(CharactorStateBase newState) {
+        if(currentState == null) {
+            currentState = newState;
+            currentState.OnEnter();
+        }
+        if(!currentState.Interruptable || currentState.Priority > newState.Priority)
+            return;
         if(currentState != null) {
             currentState.OnExit();
         }
         currentState = newState;
-        currentState.OnInit(this);
         currentState.OnEnter();
     }
 
@@ -46,30 +54,74 @@ public class CharactorActionFSM : MonoBehaviour, IStateMachine {
     }
 
     void Awake() {
-        // Init();
-    }
-
-    void Init() {
-        Type stateType;
-        foreach(var state in allStates.Keys) {
-            stateType = allStates[state].GetType();
-            allStates[state] = ScriptableObject.CreateInstance(stateType) as CharactorStateBase;
-        }
+        InitComponent();
+        InputEventRegist();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
+        InitState();
+        ReturnToDefualt();
+    }
+
+    void InitComponent() {
+        animator = GetComponent<Animator>();
+        inputHandleProvider = GetComponent<InputHandleProvider>();
+    }
+
+    void InitState() {
+        var newDic = new SerializableDictionary<CharactorActionState,CharactorStateBase>();
+        CharactorStateBase state;
+        foreach(var pair in allStates) {
+            state = pair.Value.Clone();
+            state.OnInit(this);
+            switch(pair.Key) {
+                case CharactorActionState.Attack:
+                    ((CharactorAttack)state).Init(GetComponent<PlayerController>().Weapon);
+                    break;
+                case CharactorActionState.Reload:
+                    ((CharactorReload)state).Init();
+                    break;
+            }
+            newDic.Add(pair.Key,state);
+        }
+        allStates = newDic;
+    }
+
+    void InputEventRegist() {
+        inputHandleProvider.AttackInputEvent += HandleAttackInput;
+        inputHandleProvider.ReloadInputEvent += HandleReloadInput;
+    }
+
+    #region Input Event Handler
+    void HandleAttackInput() {
+        if(currentStateType == CharactorActionState.Attack)
+            return;
+        SwitchState((int)CharactorActionState.Attack);
 
     }
+
+    void HandleReloadInput() {
+        if(currentStateType == CharactorActionState.Reload)
+            return;
+        SwitchState((int)CharactorActionState.Reload);
+    }
+
+    #endregion
+
 
     // Update is called once per frame
     void Update() {
-
+        currentState.OnUpdate();
     }
 
+    void FixedUpdate() {
+        currentState.OnFixedUpdate();
+    }
 }
 
+[Flags]
 public enum CharactorActionState {
-    Attack,
-    Reload
+    Attack = 1,
+    Reload = 1 << 1
 }

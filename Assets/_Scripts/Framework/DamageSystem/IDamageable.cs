@@ -1,20 +1,21 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 public interface IDamageable {
     public IDamageProcessor DamageProcessors { get; set; }
     public void TakeDamage(DamageInfo damageInfo);
 }
 
+[Serializable]
 public struct DamageInfo {
     public GameObject From;
-    public GameObject To;
     public float DamageValue;
     public float OriginDamgeValue;
     public float CriticalHitRate;
     public float CriticalDamageMultiper;
-    public DamageTags[] DamageTags;
-    public DamageInfo(GameObject from,GameObject to,float originDamageValue,float criticalHitRate = 0,float criticalDamageMultiper = 1,DamageTags[] damageTags = null) {
+    public int DamageTags;
+    public DamageInfo(GameObject from,float originDamageValue,int damageTags,float criticalHitRate = 0,float criticalDamageMultiper = 1) {
         From = from;
-        To = to;
         DamageValue = originDamageValue;
         OriginDamgeValue = originDamageValue;
         CriticalHitRate = criticalHitRate;
@@ -24,12 +25,14 @@ public struct DamageInfo {
 
     public void DebugDamageInfo() {
         float damageReduction = ((OriginDamgeValue - DamageValue) / OriginDamgeValue) * 100;
-        string damageTagsText = (DamageTags != null && DamageTags.Length > 0) ?
-            string.Join(", ",DamageTags) : "None";
+
+        var damageTagsList = DamageTags.GetDamageTags();
+        string damageTagsText = (damageTagsList != null && damageTagsList.Count > 0) ?
+            string.Join(", ",damageTagsList) : "None";
+
 
         Debug.Log($"=== Damage Info Debug ===\n" +
-                  $"From: {(From != null ? From.name : "Unknown")}\n" +
-                  $"To: {(To != null ? To.name : "Unknown")}\n" +
+                  $"From: {From?.name ?? "Unknown"}\n" +
                   $"Origin Damage: {OriginDamgeValue}\n" +
                   $"Final Damage: {DamageValue}\n" +
                   $"Critical Hit Rate: {CriticalHitRate * 100:F1}%\n" +
@@ -38,8 +41,4 @@ public struct DamageInfo {
                   $"Damage Reduction: {damageReduction:F1}%\n" +
                   $"=========================");
     }
-}
-
-public enum DamageTags {
-
 }

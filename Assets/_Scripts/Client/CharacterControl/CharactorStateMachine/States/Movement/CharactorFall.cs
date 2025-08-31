@@ -15,7 +15,7 @@ public class CharactorFall : CharactorStateBase {
 
     public void Init(Animator _ani) {
         animator = _ani;
-        inputHandler = stateMachine.Entity.GetComponent<InputHandleProvider>();
+        inputHandler = stateMachine.GameObject.GetComponent<InputHandleProvider>();
     }
 
     public override void OnEnter() {
@@ -30,7 +30,7 @@ public class CharactorFall : CharactorStateBase {
     }
 
     public override void OnUpdate() {
-        Ray ray = new Ray(stateMachine.Entity.transform.position,Vector3.down);
+        Ray ray = new Ray(stateMachine.GameObject.transform.position,Vector3.down);
         if(Physics.Raycast(ray,1,GroundLayerMask)) {
             if(!inputHandler.MoveKeyPressing)
                 stateMachine.SwitchState((int)CharactorMoveState.Idle);

@@ -22,4 +22,7 @@ public interface IState {
     void OnFixedUpdate();
 
     IStateMachine stateMachine { get; set; }
+
+    public bool Interruptable { get; set; }
+    public int Priority { get; set; }
 }

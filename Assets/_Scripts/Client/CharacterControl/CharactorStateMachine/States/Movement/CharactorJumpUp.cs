@@ -20,9 +20,9 @@ public class CharactorJumpUp : CharactorStateBase {
     public void Init(Animator _ani,Rigidbody _rig) {
         animator = _ani;
         rigidbody = _rig;
-        jumpHeight = stateMachine.Entity.GetComponent<PlayerController>().playerRuntimeAbilityData.JumpHeight;
-        jumpHorizontalImpulse = stateMachine.Entity.GetComponent<PlayerController>().playerRuntimeAbilityData.JumpVerticalImpulse;
-        inputHandler = stateMachine.Entity.GetComponent<InputHandleProvider>();
+        jumpHeight = stateMachine.GameObject.GetComponent<PlayerController>().playerRuntimeAbilityData.JumpHeight;
+        jumpHorizontalImpulse = stateMachine.GameObject.GetComponent<PlayerController>().playerRuntimeAbilityData.JumpVerticalImpulse;
+        inputHandler = stateMachine.GameObject.GetComponent<InputHandleProvider>();
     }
 
     public override void OnEnter() {
@@ -36,7 +36,7 @@ public class CharactorJumpUp : CharactorStateBase {
         Vector3 horizontalImpulse = jumpHorizontalImpulse.CurrentValue * new Vector3(moveDir.x,0,moveDir.y).normalized;
         rigidbody.AddForce(verticalImpulse + horizontalImpulse,ForceMode.VelocityChange);
         animator.SetBool(AnimationParam_JumpUp,true);
-        posYLastFrame = stateMachine.Entity.transform.position.y;
+        posYLastFrame = stateMachine.GameObject.transform.position.y;
     }
 
     public override void OnExit() {
@@ -48,9 +48,9 @@ public class CharactorJumpUp : CharactorStateBase {
     }
 
     public override void OnUpdate() {
-        if(stateMachine.Entity.transform.position.y - posYLastFrame < 0) {
+        if(stateMachine.GameObject.transform.position.y - posYLastFrame < 0) {
             stateMachine.SwitchState((int)CharactorMoveState.Fall);
         }
-        posYLastFrame = stateMachine.Entity.transform.position.y;
+        posYLastFrame = stateMachine.GameObject.transform.position.y;
     }
 }

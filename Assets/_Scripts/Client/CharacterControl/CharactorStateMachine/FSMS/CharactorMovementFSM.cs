@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using Utility;
 
 public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
-    public GameObject Entity => gameObject;
+    public GameObject GameObject => gameObject;
     [SerializeField] private CharactorMoveState currentStateType;
     [SerializeField] private CharactorStateBase currentState;
 
@@ -42,6 +42,12 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
         inputHandler = GetComponent<InputHandleProvider>();
     }
 
+    void RegistInputEvent() {
+        inputHandler.MoveDirInputEvent += HandleMoveDirInput;
+        inputHandler.JumpInputEvent += HandleJumpInput;
+        inputHandler.MovementMethodSwitchEvent += HandleMovementMethodSwitchInput;
+    }
+
     void StatesInit() {
         // 先收集所有键值对，避免在遍历时修改字典
         var stateEntries = new List<KeyValuePair<CharactorMoveState,CharactorStateBase>>();
@@ -70,12 +76,6 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
                     break;
             }
         }
-    }
-
-    void RegistInputEvent() {
-        inputHandler.MoveDirInputEvent += HandleMoveDirInput;
-        inputHandler.JumpInputEvent += HandleJumpInput;
-        inputHandler.MovementMethodSwitchEvent += HandleMovementMethodSwitchInput;
     }
 
     #region Input Event Handle
@@ -120,6 +120,12 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
     }
 
     private void SwitchState(CharactorStateBase newState) {
+        if(currentState == null) {
+            currentState = newState;
+            currentState.OnEnter();
+        }
+        if(!currentState.Interruptable || currentState.Priority > newState.Priority)
+            return;
         if(currentState != null) {
             currentState.OnExit();
         }
@@ -154,10 +160,11 @@ public class CharactorMovementFSM : MonoBehaviour, IStateMachine {
     }
 }
 
+[Flags]
 public enum CharactorMoveState {
-    Idle,
-    Walk,
-    Run,
-    JumpUp,
-    Fall
+    Idle = 1,
+    Walk = 1 << 1,
+    Run = 1 << 2,
+    JumpUp = 1 << 3,
+    Fall = 1 << 4
 }

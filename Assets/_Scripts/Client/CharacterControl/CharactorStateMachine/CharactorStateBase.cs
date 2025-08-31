@@ -7,6 +7,8 @@ public abstract class CharactorStateBase : ScriptableObject, IState {
     public abstract void OnUpdate();
     public abstract void OnFixedUpdate();
     public abstract IStateMachine stateMachine { get; set; }
+    public bool Interruptable { get; set; } = true;
+    public int Priority { get; set; } = 1;
     public virtual void OnInit(IStateMachine stateMachine) {
         this.stateMachine = stateMachine;
     }

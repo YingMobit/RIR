@@ -7,5 +7,5 @@ public interface IStateMachine {
     /// <param name="stateFlag">枚举对应的整数值</param>
     public void SwitchState(int stateFlag);
     public void ReturnToDefualt();
-    public abstract GameObject Entity { get; }
+    public abstract GameObject GameObject { get; }
 }

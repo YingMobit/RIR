@@ -11,6 +11,8 @@ namespace Utility {
                     _instance = FindAnyObjectByType<T>();
                     if(_instance == null || _instance.IsUnityNull()) {
                         _instance = CreateInstance?.Invoke();
+                        if(!_instance.awaked)
+                            _instance.Awake();
                     }
                 }
                 return _instance;
@@ -31,7 +33,10 @@ namespace Utility {
         #endregion
 
         #region ÉúÃüÖÜÆÚ
+        protected bool awaked = false;
         protected virtual void Awake() {
+            if(awaked)
+                return;
             if(_instance == null || _instance.IsUnityNull()) {
                 _instance = this as T;
             } else if(_instance != this) {
@@ -42,6 +47,7 @@ namespace Utility {
             if(_isDonDestroyOnLoad) {
                 DontDestroyOnLoad(gameObject);
             }
+            awaked = true;
         }
         #endregion
     }

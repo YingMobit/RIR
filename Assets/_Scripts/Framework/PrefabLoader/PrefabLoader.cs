@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utility;
-public class PrefabLoader : Singleton<PrefabLoader>
-{
+public class PrefabLoader : Singleton<PrefabLoader> {
     private static string _rootPath = "Prefabs/";
     protected override bool _isDonDestroyOnLoad => true;
-    private Dictionary<Type, GameObject> Prefabs = new();
+    private Dictionary<Type,GameObject> Prefabs = new();
 
 
-    public IPrefab<PrefabType> LoadPrefab<PrefabType>() where PrefabType : IPrefab<PrefabType> {
+    public GameObject LoadPrefab<PrefabType>() where PrefabType : IPrefab<PrefabType> {
         Type _type = typeof(PrefabType);
-        if(Prefabs.ContainsKey(_type)){
-            IPrefab<PrefabType> template = Prefabs[_type].GetComponent<IPrefab<PrefabType>>();
+        if(Prefabs.ContainsKey(_type)) {
+            var template = Prefabs[_type];
             if(template == null) {
-                Debug.LogError($"Prefab Type not match,expected type: {_type.Name}, actual type: {template.Type.Name}");
+                Debug.LogError($"Prefab Type not match,expected type: {_type.Name}");
                 return null;
             }
             return template;
@@ -33,9 +32,9 @@ public class PrefabLoader : Singleton<PrefabLoader>
     private void Initialize() {
         List<GameObject> gos = Resources.LoadAll<GameObject>(_rootPath).ToList<GameObject>();
         IPrefab prefab;
-        foreach (GameObject go in gos) { 
+        foreach(GameObject go in gos) {
             prefab = go.GetComponent<IPrefab>();
-            if(prefab != null){
+            if(prefab != null) {
                 Prefabs.Add(prefab.Type,go);
             } else {
                 Debug.LogWarning($"Thers's no class attached to the prefab: {go.name} implemented inteface 'IPrefab'");

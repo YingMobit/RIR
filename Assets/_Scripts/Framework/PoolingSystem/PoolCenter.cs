@@ -1,22 +1,22 @@
-using Utility;
-using UnityEngine;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Pool;
+using Utility;
 
-public class PoolCenter : Singleton<PoolCenter>
-{
-    Dictionary<Type, ObjectPool<IPoolable>> PoolMap = new();
-    Dictionary<Type, GameObject> PoolHolderMap = new();
+public class PoolCenter : Singleton<PoolCenter> {
+    private const string DefualtSubTypeName = "DefualtSubTypeName";
+    Dictionary<(Type, string),ObjectPool<IPoolable>> PoolMap = new();
+    Dictionary<(Type, string),GameObject> PoolHolderMap = new();
 
-    public bool RegistPool<PoolableObjectType>(IPoolableObjectFactory<PoolableObjectType> _factory) where PoolableObjectType : IPoolable {
+    public bool RegistPool<PoolableObjectType>(IPoolableObjectFactory<PoolableObjectType> _factory,string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
         Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey(_type)){
+        if(PoolMap.ContainsKey((_type, subType))) {
             Debug.LogError($"Pool of {_type.Name} has been registed");
             return false;
         } else {
-            PoolMap.Add(_type,new ObjectPool<IPoolable>(
-                ()=>{ var go = _factory.CreateInstance(); go.Entity?.transform.SetParent(PoolHolderMap[_type].transform); return go; } ,
+            PoolMap.Add((_type, subType),new ObjectPool<IPoolable>(
+                () => { var go = _factory.CreateInstance(); go.Entity?.transform.SetParent(PoolHolderMap[(_type, subType)].transform); return go; },
                 _factory.EnableInstance,
                 _factory.DisableInstance,
                 _factory.DestroyInstance,
@@ -25,28 +25,28 @@ public class PoolCenter : Singleton<PoolCenter>
                 _factory.MaxCount
                 ));
 
-            GameObject poolHolder = new GameObject(_type.Name+"Pool");
+            GameObject poolHolder = new GameObject(_type.Name + "Pool");
             poolHolder.transform.position = Vector3.zero;
             poolHolder.transform.SetParent(transform);
-            PoolHolderMap.Add(_type,poolHolder);
+            PoolHolderMap.Add((_type, subType),poolHolder);
             return true;
         }
     }
 
-    public IPoolable GetInstance<PoolableObjectType>() where PoolableObjectType : IPoolable{
+    public IPoolable GetInstance<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
         Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey(_type)){
-            return PoolMap[_type].Get();
+        if(PoolMap.ContainsKey((_type, DefualtSubTypeName))) {
+            return PoolMap[(_type, DefualtSubTypeName)].Get();
         } else {
             Debug.LogError($"Pool of {_type.Name} has not been Registed");
             return null;
         }
     }
 
-    public bool ReleaseInstance(IPoolable obj) {
+    public bool ReleaseInstance(IPoolable obj,string subType = DefualtSubTypeName) {
         Type _type = obj.Type;
-        if(PoolMap.ContainsKey(_type)) {
-            PoolMap[_type].Release(obj);
+        if(PoolMap.ContainsKey((_type, subType))) {
+            PoolMap[(_type, subType)].Release(obj);
             return true;
         } else {
             Debug.LogError($"Pool of {_type.Name} has not been Registed");
@@ -54,13 +54,13 @@ public class PoolCenter : Singleton<PoolCenter>
         }
     }
 
-    public bool DisposePool<PoolableObjectType>() where PoolableObjectType: IPoolable {
+    public bool DisposePool<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
         Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey(_type)){
-            PoolMap[_type].Dispose();
-            PoolMap.Remove(_type);
-            Destroy(PoolHolderMap[_type]);
-            PoolHolderMap.Remove(_type);
+        if(PoolMap.ContainsKey((_type, subType))) {
+            PoolMap[(_type, subType)].Dispose();
+            PoolMap.Remove((_type, subType));
+            Destroy(PoolHolderMap[(_type, subType)]);
+            PoolHolderMap.Remove((_type, subType));
             return true;
         } else {
             Debug.LogError($"Pool of {_type.Name} has not been Registed");
@@ -68,10 +68,10 @@ public class PoolCenter : Singleton<PoolCenter>
         }
     }
 
-    public bool ClearPool<PoolableObjectType>() where PoolableObjectType: IPoolable{
+    public bool ClearPool<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
         Type _type = typeof(PoolableObjectType);
-        if (PoolMap.ContainsKey(_type)) {
-            PoolMap[_type].Clear();
+        if(PoolMap.ContainsKey((_type, subType))) {
+            PoolMap[(_type, subType)].Clear();
             return true;
         } else {
             Debug.LogError($"Pool of {_type.Name} has not been Registed");

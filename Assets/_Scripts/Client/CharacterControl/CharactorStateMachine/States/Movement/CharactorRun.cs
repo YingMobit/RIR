@@ -23,7 +23,7 @@ public class CharactorRun : CharactorStateBase {
         animator = _animator;
         rigidbody = _rigidbody;
         inputHandler = _inputHandler;
-        RunSpeed = stateMachine.Entity.GetComponent<PlayerController>().playerRuntimeAbilityData.RunSpeed;
+        RunSpeed = stateMachine.GameObject.GetComponent<PlayerController>().playerRuntimeAbilityData.RunSpeed;
     }
 
     public override void OnEnter() {

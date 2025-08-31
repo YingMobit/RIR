@@ -9,6 +9,10 @@ public class CharactorReload : CharactorStateBase {
         return Instantiate(this);
     }
 
+    public void Init() {
+
+    }
+
     public override void OnEnter() {
         throw new NotImplementedException();
     }
