@@ -11,6 +11,7 @@ public class CharactorWalk : CharactorStateBase {
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
     [SerializeField] string AnimationParam_Walk;
+    [SerializeField] string AnimationParam_Forward;
 
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
@@ -39,6 +40,7 @@ public class CharactorWalk : CharactorStateBase {
 
         animator.SetFloat(AnimationParam_Dir_x,inputDir.x);
         animator.SetFloat(AnimationParam_Dir_z,inputDir.y);
+        animator.SetFloat(AnimationParam_Forward,inputDir.y > 0 ? 1 : -1);
 
         var velocity = new Vector3(moveDir.x * WalkSpeed.CurrentValue,rigidbody.linearVelocity.y,moveDir.y * WalkSpeed.CurrentValue);
         rigidbody.linearVelocity = velocity;

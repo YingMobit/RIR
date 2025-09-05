@@ -17,4 +17,4 @@ MonoBehaviour:
   AnimationParam_Dir_x: Direction_x
   AnimationParam_Dir_z: Direction_z
   AnimationParam_Run: ShouldRun
-  RunSpeed: 5
+  AnimationParam_Forward: Forwarding

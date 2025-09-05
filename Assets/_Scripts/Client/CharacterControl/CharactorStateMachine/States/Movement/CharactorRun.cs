@@ -12,6 +12,7 @@ public class CharactorRun : CharactorStateBase {
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
     [SerializeField] string AnimationParam_Run;
+    [SerializeField] string AnimationParam_Forward;
 
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
@@ -43,6 +44,7 @@ public class CharactorRun : CharactorStateBase {
 
         animator.SetFloat(AnimationParam_Dir_x,inputDir.x);
         animator.SetFloat(AnimationParam_Dir_z,inputDir.y);
+        animator.SetFloat(AnimationParam_Forward,inputDir.y > 0 ? 1 : -1);
 
         var velocity = new Vector3(moveDir.x * RunSpeed.CurrentValue,rigidbody.linearVelocity.y,moveDir.y * RunSpeed.CurrentValue);
         rigidbody.linearVelocity = velocity;

@@ -46,14 +46,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 871950755
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 589810266
+  InScenePlacedSourceGlobalObjectIdHash: 871950755
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -296,20 +296,81 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 1978421147
       objectReference: {fileID: 0}
+    - target: {fileID: 98734060582493779, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 358786007854136512, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.4488473
+      objectReference: {fileID: 0}
+    - target: {fileID: 358786007854136512, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.5234402
+      objectReference: {fileID: 0}
+    - target: {fileID: 358786007854136512, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.54638463
+      objectReference: {fileID: 0}
+    - target: {fileID: 358786007854136512, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.47540554
+      objectReference: {fileID: 0}
+    - target: {fileID: 594858945978480881, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -88.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 594858945978480881, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -89.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2455633300535003386, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532048703143569788, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3705533144524198128, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3763723219292039979, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6137499261492757914, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6193904926744127431, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 53f8f82c31a3ab14f89866985166ad11, type: 2}
+      objectReference: {fileID: 9100000, guid: 6defa2fea7e9a934a8d2cafa30dc567a, type: 2}
     - target: {fileID: 6193904926744127431, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tTransform 'Chest'\n\tFrom animation clip 'HeadDown'\n\tFrom
-        animation clip 'HeadUp'"
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6328771513763944777, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_Name
       value: PlayerBody
+      objectReference: {fileID: 0}
+    - target: {fileID: 6390234888840152304, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6718331598824412887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.057529796
+      objectReference: {fileID: 0}
+    - target: {fileID: 6718331598824412887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.112075545
+      objectReference: {fileID: 0}
+    - target: {fileID: 7219392058767332718, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7328499821666512348, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_Avatar
@@ -318,6 +379,22 @@ PrefabInstance:
     - target: {fileID: 7328499821666512348, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_WarningMessage
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404828405185851887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5463846
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404828405185851887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.4754055
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404828405185851887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.44884726
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404828405185851887, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.5234401
       objectReference: {fileID: 0}
     - target: {fileID: 7904730034796614801, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
       propertyPath: m_LocalPosition.x

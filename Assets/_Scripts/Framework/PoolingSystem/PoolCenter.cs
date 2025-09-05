@@ -5,82 +5,85 @@ using UnityEngine.Pool;
 using Utility;
 
 public class PoolCenter : Singleton<PoolCenter> {
-    private const string DefualtSubTypeName = "DefualtSubTypeName";
-    Dictionary<(Type, string),ObjectPool<IPoolable>> PoolMap = new();
-    Dictionary<(Type, string),GameObject> PoolHolderMap = new();
-
-    public bool RegistPool<PoolableObjectType>(IPoolableObjectFactory<PoolableObjectType> _factory,string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
-        Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey((_type, subType))) {
-            Debug.LogError($"Pool of {_type.Name} has been registed");
-            return false;
-        } else {
-            PoolMap.Add((_type, subType),new ObjectPool<IPoolable>(
-                () => { var go = _factory.CreateInstance(); go.Entity?.transform.SetParent(PoolHolderMap[(_type, subType)].transform); return go; },
-                _factory.EnableInstance,
-                _factory.DisableInstance,
-                _factory.DestroyInstance,
-                _factory.CollectionCheck,
-                _factory.DefualtCapacity,
-                _factory.MaxCount
-                ));
-
-            GameObject poolHolder = new GameObject(_type.Name + "Pool");
-            poolHolder.transform.position = Vector3.zero;
-            poolHolder.transform.SetParent(transform);
-            PoolHolderMap.Add((_type, subType),poolHolder);
-            return true;
-        }
+    struct PoolInfo {
+        public GameObject PoolRoot;
+        public ObjectPool<GameObject> Pool;
     }
 
-    public IPoolable GetInstance<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
-        Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey((_type, DefualtSubTypeName))) {
-            return PoolMap[(_type, DefualtSubTypeName)].Get();
-        } else {
-            Debug.LogError($"Pool of {_type.Name} has not been Registed");
-            return null;
-        }
-    }
-
-    public bool ReleaseInstance(IPoolable obj,string subType = DefualtSubTypeName) {
-        Type _type = obj.Type;
-        if(PoolMap.ContainsKey((_type, subType))) {
-            PoolMap[(_type, subType)].Release(obj);
-            return true;
-        } else {
-            Debug.LogError($"Pool of {_type.Name} has not been Registed");
-            return false;
-        }
-    }
-
-    public bool DisposePool<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
-        Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey((_type, subType))) {
-            PoolMap[(_type, subType)].Dispose();
-            PoolMap.Remove((_type, subType));
-            Destroy(PoolHolderMap[(_type, subType)]);
-            PoolHolderMap.Remove((_type, subType));
-            return true;
-        } else {
-            Debug.LogError($"Pool of {_type.Name} has not been Registed");
-            return false;
-        }
-    }
-
-    public bool ClearPool<PoolableObjectType>(string subType = DefualtSubTypeName) where PoolableObjectType : IPoolable {
-        Type _type = typeof(PoolableObjectType);
-        if(PoolMap.ContainsKey((_type, subType))) {
-            PoolMap[(_type, subType)].Clear();
-            return true;
-        } else {
-            Debug.LogError($"Pool of {_type.Name} has not been Registed");
-            return false;
-        }
-    }
+    Dictionary<GameObject,PoolInfo> Prefab_PoolMap = new();
+    Dictionary<GameObject,GameObject> ActiveInstance_PrefabMap = new();
 
     protected override void Awake() {
         base.Awake();
         transform.position = Vector3.zero;
+    }
+
+    public void RegistPool(GameObject prefab,IPoolableObjectFactory objectFactory = null) {
+        if(Prefab_PoolMap.ContainsKey(prefab)) {
+            Debug.LogAssertion($"This prefab: {prefab} already has a Pool");
+            return;
+        }
+
+        var poolRoot = new GameObject($"{prefab.name}_Pool");
+        objectFactory ??= new DefaultPoolableObjectFactory(prefab);
+        ObjectPool<GameObject> pool = new ObjectPool<GameObject>(
+            ()=> { var go = objectFactory.CreateInstance(); if(go.transform.parent == null) { go.transform.SetParent(poolRoot.transform); } return go; } ,
+            objectFactory.EnableInstance,
+            objectFactory.DisableInstance,
+            objectFactory.DestroyInstance,
+            objectFactory.CollectionCheck,
+            objectFactory.DefualtCapacity,
+            objectFactory.MaxCount
+        );
+        poolRoot.transform.SetParent(transform);
+        Prefab_PoolMap.Add(prefab,new PoolInfo {PoolRoot = poolRoot,Pool = pool });
+    }
+
+    public GameObject GetInstance(GameObject prefab) {
+        if(!Prefab_PoolMap.ContainsKey(prefab)) {
+            RegistPool(prefab);
+            Debug.LogAssertion($"This prefab: {prefab} hasn't registed pool,use defualt instead");
+        }
+        var instance = Prefab_PoolMap[prefab].Pool.Get();
+        ActiveInstance_PrefabMap.Add(instance,prefab);
+        return instance;
+    }
+
+    public void ReleaseInstance(GameObject activeInstance) {
+        if(!ActiveInstance_PrefabMap.ContainsKey(activeInstance)) { 
+            Debug.LogError($"This instance: {activeInstance} doesn't born form pool");
+            return;
+        }
+
+        GameObject prefab = ActiveInstance_PrefabMap[activeInstance];
+        Prefab_PoolMap[prefab].Pool.Release(activeInstance);
+        ActiveInstance_PrefabMap.Remove(activeInstance);
+    }
+}
+
+public class DefaultPoolableObjectFactory : IPoolableObjectFactory {
+    public GameObject Prefab;
+    public bool CollectionCheck => true;
+    public int DefualtCapacity => 10;
+    public int MaxCount => 20;
+
+    public GameObject CreateInstance() {
+        return GameObject.Instantiate(Prefab);
+    }
+
+    public void DestroyInstance(GameObject obj) {
+         GameObject.Destroy(obj);
+    }
+
+    public void DisableInstance(GameObject obj) {
+        obj.SetActive(false);
+    }
+
+    public void EnableInstance(GameObject obj) {
+        obj.SetActive(true);
+    }
+
+    public DefaultPoolableObjectFactory(GameObject prefab) {
+        Prefab = prefab;
     }
 }

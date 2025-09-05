@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c6a23dde3f0782146bf59d1d77ceb41f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305932
+  packageName: Brawler Animations - Free
+  packageVersion: 1.0.1
+  assetPath: Assets/Brawler Animations Sample/Models/Armature/Materials/M_Armature_Body.mat
+  uploadId: 744451
