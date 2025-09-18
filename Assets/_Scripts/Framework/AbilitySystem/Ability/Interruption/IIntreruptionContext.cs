@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AbilitySystem {
-    internal interface IIntreruptionContext {
+    public interface IIntreruptionContext {
         
     }
 }

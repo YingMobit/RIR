@@ -26,8 +26,7 @@ public class BlackBoard : IPoolable {
         repository = null;
     }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void RegisterPool() {
-        // 这里仍然会 new 一个样本对象用于取类型ID；更好的做法是让 PoolCenter 提供 RegisterPool<T>(int typeId, factory)
+    private static void RegistePool() {
         PoolCenter.Instance.RegistPool(PoolableObjectTypeCollection.BlackBoard,new BlackBoradFactory());
     }
     #endregion 

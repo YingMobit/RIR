@@ -6,9 +6,15 @@ namespace AbilitySystem {
     /// <summary>
     /// 一个Ability的配置文件，仅作为AbilityEffect及其触发器的容器
     /// </summary>
-    internal class Ability {
-        [field: SerializeField] public HeadInfo HeadInfo { get; }
-        [field: SerializeField] public AbilityTriggerUnit TriggerUnit { get; }
-        [field: SerializeField] public List<AbilityEffect> Effects{ get; }
+    public class Ability {
+        [field: SerializeField] public HeadInfo AbilityHeadInfo { get; private set; }
+        [field: SerializeField] public AbilityTriggerUnit TriggerUnit { get; private set; }
+        [field: SerializeField] public List<AbilityEffect> Effects{ get; private set; }
+
+        public void OnBuild(HeadInfo headInfo,AbilityTriggerUnit abilityTriggerUnit,List<AbilityEffect> effects) {
+            AbilityHeadInfo = headInfo;
+            TriggerUnit = abilityTriggerUnit;
+            Effects = effects;
+        }
     }
 }
