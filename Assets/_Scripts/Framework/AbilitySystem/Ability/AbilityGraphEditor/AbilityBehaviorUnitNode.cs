@@ -1,4 +1,5 @@
 ﻿using Sirenix.OdinInspector;
+using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
@@ -6,9 +7,12 @@ namespace AbilitySystem.Editor.AbilityEditor {
     [CreateNodeMenu("Ability/Behavior/Base (abstract)")]
     [NodeTint("#5c7080")]
     public abstract class AbilityBehaviorUnitNode : Node {
-        [Header("Behavior Unit")]
-        public HeadInfo HeadInfo;
+        public abstract HeadInfo HeadInfo { get; }
         [field: SerializeField, ReadOnly] public int Order { get; private set; }
+        [field: SerializeField,ReadOnly] public int RuntimeToken { get; set; }
+
+        [SerializeField] protected List<UnitNodeRefrenceRecord> unitNodeRefrences = new();
+        protected abstract AbilityBehaviorUnit AbilityBehaviorUnit { get; }
         public void SetOrder(AbilityBehaviorUnitNode node,int order) {
             Order = order;
         }
@@ -17,11 +21,16 @@ namespace AbilitySystem.Editor.AbilityEditor {
             base.OnCreateConnection(from,to);
             if(from.node == this) {
                 int index = 0;
+                int nextToken = RuntimeToken+1;
                 foreach(var port in from.GetConnections()) {
                     (port.node as AbilityBehaviorUnitNode).SetOrder(this,index++);
+                    if(RuntimeToken != -1) {
+                        nextToken = (port.node as AbilityBehaviorUnitNode).SetRuntimeToken(nextToken);
+                    }
                 }
-            } else if(from.node.GetType() == typeof(AbilityEffectNode)) {
-                Order = 0;
+            } else {
+                if(from.node.GetType() == typeof(AbilityEffectNode))
+                    Order = 0;
             }
         }
 
@@ -34,9 +43,37 @@ namespace AbilitySystem.Editor.AbilityEditor {
                 }
             } else {
                 Order = -1;
+                RuntimeToken = -1;
+            }
+        }
+
+        [PropertySpace(10)]
+        [Button("RefreshUnitRefrenceList")]
+        protected void RefreshUnitRefrenceList() {
+            if(AbilityBehaviorUnit != null) {
+                unitNodeRefrences.Clear();
+                var fields = AbilityBehaviorUnit.GetType().GetFields();
+                foreach(var field in fields) {
+                    if(field.FieldType == typeof(UnitNodeRefrence)) {
+                        unitNodeRefrences.Add(new(field.Name,new(-1)));
+                    }
+                }
+            } else {
+                unitNodeRefrences.Clear();
+            }
+        }
+
+        protected void InjectUnitNodeRefrence(AbilityBehaviorUnit abilityBehaviorUnit) {
+            var fields = abilityBehaviorUnit.GetType().GetFields();
+            foreach(var field in fields) {
+                if(field.FieldType == typeof(UnitNodeRefrence)) {
+                    field.SetValue(abilityBehaviorUnit,unitNodeRefrences.Find(x=>x.FieldName == field.Name).RunTimeToken);
+                }
             }
         }
 
         public abstract AbilityBehaviorUnit Build();
+
+        public abstract int SetRuntimeToken(int token);
     }
 }

@@ -6,7 +6,8 @@ namespace AbilitySystem {
     /// 技能行为逻辑编写的最小单位
     /// </summary>
     public abstract class AbilityBehaviorUnit : ScriptableObject {
-        public HeadInfo HeadInfo { get; set; }
+        [field: SerializeField] public HeadInfo HeadInfo { get; set; }
+        public int RuntimeToken { get; private set; }
         public bool unitExcutionFinished { get; private set; } = false;
         public bool unitExitFinished { get; private set; } = false;
         public abstract void OnTriggered(AbilityRuntimeContext abilityRuntimeContext);
@@ -14,13 +15,14 @@ namespace AbilitySystem {
         public abstract TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished);
         public abstract TaskStatus OnInterrupt(IIntreruptionContext intreruptionContext);
 
-        public List<AbilityBehaviorUnit> Childs=new();
+        [HideInInspector] public List<AbilityBehaviorUnit> Childs=new();
         public AbilityBehaviorUnit Child => Childs!= null && Childs.Count > 0 ? Childs[0] : null;
 
         public abstract AbilityBehaviorUnit Clone();
         
-        public void OnBuild(List<AbilityBehaviorUnit> childs) { 
+        public void OnBuild(List<AbilityBehaviorUnit> childs,int runtimeToken) { 
             Childs = childs;
+            RuntimeToken = runtimeToken;
         }
     }
 }

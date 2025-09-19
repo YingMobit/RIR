@@ -8,9 +8,10 @@ namespace AbilitySystem {
     /// </summary>
     public class AbilityRuntimeContext : IPoolable {
         public int AbilityID { get; private set; }
-        public Ability Ability => AbilityComponentContext.Abilitys[AbilityID];
+        public Ability Ability => AbilityComponentContext.Abilities[AbilityID];
         public AbilityComponentContext AbilityComponentContext { get; private set; }
-        public Dictionary<int,BlackBoard> LocalBlackBoards { get; private set; }
+        
+        private Dictionary<int,BlackBoard> LocalBlackBoards;
         public short currentEffectIndex { get; private set; } = -1;
 
         public bool MoveNext() {
@@ -23,7 +24,7 @@ namespace AbilitySystem {
         }
 
         public bool BindAbility(int abilityID) {
-            if(AbilityComponentContext.Abilitys.ContainsKey(abilityID)) {
+            if(AbilityComponentContext.Abilities.ContainsKey(abilityID)) {
                 AbilityID = abilityID;
                 return true;
             } 
@@ -32,6 +33,10 @@ namespace AbilitySystem {
 
         public void BindComponentContext(AbilityComponentContext abilityComponentContext) {
             AbilityComponentContext = abilityComponentContext;
+        }
+
+        public void GetBlackBoard() { 
+            
         }
 
         #region IPoolable

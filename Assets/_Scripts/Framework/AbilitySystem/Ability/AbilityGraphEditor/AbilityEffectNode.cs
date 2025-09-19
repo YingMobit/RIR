@@ -11,6 +11,7 @@ namespace AbilitySystem.Editor.AbilityEditor {
         public HeadInfo EffectHeadInfo;
         [Tooltip("在 Ability.Effects 中的排序（编译/导出时使用）")]
         [field: SerializeField,ReadOnly] public int Order { get; private set; }
+        public int maxRuntmeToken { get; private set; }
 
         // 父：Ability（单连覆盖）
         [Input(backingValue: ShowBackingValue.Never,
@@ -24,6 +25,13 @@ namespace AbilitySystem.Editor.AbilityEditor {
             typeConstraint = TypeConstraint.Inherited)] 
         public AbilityBehaviorUnitNode Behaviors;
 
+        public override void OnCreateConnection(NodePort from,NodePort to) {
+            base.OnCreateConnection(from,to);
+            if(from.node == this) {
+                (to.node as AbilityBehaviorUnitNode).SetRuntimeToken(0);
+            }
+        }
+        
         public override void OnRemoveConnection(NodePort port) {
             base.OnRemoveConnection(port);
             if(port.direction == NodePort.IO.Input)
@@ -34,6 +42,10 @@ namespace AbilitySystem.Editor.AbilityEditor {
             if(node == null)
                 return;
             Order = order;
+        }
+
+        public void SetMaxRunTimeToken(int token) {
+            maxRuntmeToken = token;
         }
 
         public AbilityEffect Build() { 

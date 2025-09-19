@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Sirenix.OdinInspector;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
@@ -17,6 +18,8 @@ namespace AbilitySystem.Editor.AbilityEditor {
         public AbilityBehaviorUnitNode actionNode;
 
         [field: SerializeField] public AbilityDecorateUnit AbilityDecoratorUnit { get; private set; }
+        public override HeadInfo HeadInfo => AbilityDecoratorUnit? AbilityDecoratorUnit.HeadInfo : default;
+        protected override AbilityBehaviorUnit AbilityBehaviorUnit => AbilityDecoratorUnit;
 
         // Use this for initialization
         protected override void Init() {
@@ -35,8 +38,19 @@ namespace AbilitySystem.Editor.AbilityEditor {
             foreach(var conn in outPort.GetConnections()) { 
                 childs.Add((conn.node as AbilityBehaviorUnitNode).Build());
             }
-            unit.OnBuild(childs);
+            InjectUnitNodeRefrence(unit);
+            unit.OnBuild(childs,RuntimeToken);
             return unit;
+        }
+
+        public override int SetRuntimeToken(int token) {
+            RuntimeToken = token;
+            int nextToken = token + 1;
+            NodePort outPort = GetOutputPort(nameof(actionNode));
+            foreach(var conn in outPort.GetConnections()) {
+                nextToken = (conn.node as AbilityBehaviorUnitNode).SetRuntimeToken(nextToken);
+            }
+            return nextToken;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Sirenix.OdinInspector;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
@@ -16,7 +17,9 @@ namespace AbilitySystem.Editor.AbilityEditor {
             typeConstraint = TypeConstraint.Strict)]
         public AbilityBehaviorUnitNode childrenNodes;
 
-        [field: SerializeField] public AbilityCompositeUnit abilityCompositeUnit;
+        [field: SerializeField] public AbilityCompositeUnit AbilityCompositeUnit { get; private set; }
+        public override HeadInfo HeadInfo => AbilityCompositeUnit ? AbilityCompositeUnit.HeadInfo : default;
+        protected override AbilityBehaviorUnit AbilityBehaviorUnit => AbilityCompositeUnit;
 
         // Use this for initialization
         protected override void Init() {
@@ -29,15 +32,25 @@ namespace AbilitySystem.Editor.AbilityEditor {
         }
 
         public override AbilityBehaviorUnit Build() {
-            //TODO：这里的构建有问题，并且Composite节点没有排序
-            AbilityBehaviorUnit unit = abilityCompositeUnit.Clone();
+            AbilityBehaviorUnit unit = AbilityCompositeUnit.Clone();
             List<AbilityBehaviorUnit> childs = new List<AbilityBehaviorUnit>();
             NodePort outPort = GetOutputPort(nameof(childrenNodes));
             foreach(var conn in outPort.GetConnections()) { 
                 childs.Add((conn.node as AbilityBehaviorUnitNode).Build());
             }
-            unit.OnBuild(childs);
+            InjectUnitNodeRefrence(unit);
+            unit.OnBuild(childs,RuntimeToken);
             return unit;
+        }
+
+        public override int SetRuntimeToken(int token) {
+            RuntimeToken = token;
+            int nextToken = token + 1;
+            NodePort outPort = GetOutputPort(nameof(childrenNodes));
+            foreach(var conn in outPort.GetConnections()) {
+                nextToken = (conn.node as AbilityBehaviorUnitNode).SetRuntimeToken(nextToken);
+            }
+            return nextToken;
         }
     }
 }

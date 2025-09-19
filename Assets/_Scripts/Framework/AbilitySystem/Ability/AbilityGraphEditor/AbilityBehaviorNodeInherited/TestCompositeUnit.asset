@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c872cd1b5ffa1a04ab5ad8afb582be0e, type: 3}
   m_Name: TestCompositeUnit
   m_EditorClassIdentifier: 
+  <HeadInfo>k__BackingField:
+    ID: 2001
+    Name: TestComposite
+    Description: 
+    Icon: {fileID: 0}
   Childs: []
