@@ -55,6 +55,14 @@ namespace AbilitySystem.Editor.AbilityEditor {
             }
         }
 
+        public AbilityEffectNode GetEffect(int order) {
+            int index = 0;
+            foreach(var effect in GetEffects()){ 
+                if(index++ == order) return effect;
+            }
+            return null;
+        }
+
         public Ability Build() { 
             var ability = new Ability();
             AbilityTriggerUnit triggerUnit=null;

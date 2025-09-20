@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7915503540722589269
+--- !u!114 &-7905692598869226581
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13,18 +13,59 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 280, y: 280}
+  position: {x: 232, y: -8}
   ports:
     keys:
     - behaviorUnitNode
     values:
     - _fieldName: behaviorUnitNode
-      _node: {fileID: -7915503540722589269}
+      _node: {fileID: -7905692598869226581}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: childrenNodes
-        node: {fileID: -2968330000534914805}
+        node: {fileID: 5554844275135922303}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 1
+      _dynamic: 0
+  <Order>k__BackingField: 0
+  <RuntimeToken>k__BackingField: 5
+  unitNodeRefrences:
+  - FieldName: Target
+    RunTimeToken:
+      RunTimeToken: -1
+  - FieldName: aaa
+    RunTimeToken:
+      RunTimeToken: -1
+  behaviorUnitNode: {fileID: 0}
+  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
+--- !u!114 &-7863797731955967841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
+  m_Name: Ability Action Unit
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 264, y: -440}
+  ports:
+    keys:
+    - behaviorUnitNode
+    values:
+    - _fieldName: behaviorUnitNode
+      _node: {fileID: -7863797731955967841}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: childrenNodes
+        node: {fileID: -6148324191030657719}
         reroutePoints: []
       _direction: 0
       _connectionType: 1
@@ -32,45 +73,16 @@ MonoBehaviour:
       _dynamic: 0
   <Order>k__BackingField: 1
   <RuntimeToken>k__BackingField: 2
-  unitNodeRefrences: []
+  unitNodeRefrences:
+  - FieldName: Target
+    RunTimeToken:
+      RunTimeToken: -1
+  - FieldName: aaa
+    RunTimeToken:
+      RunTimeToken: -1
   behaviorUnitNode: {fileID: 0}
-  <AbilityActionUnit>k__BackingField: {fileID: 0}
---- !u!114 &-3212092646006205163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
-  m_Name: Ability Action Unit
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 280, y: 88}
-  ports:
-    keys:
-    - behaviorUnitNode
-    values:
-    - _fieldName: behaviorUnitNode
-      _node: {fileID: -3212092646006205163}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: childrenNodes
-        node: {fileID: -2968330000534914805}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  <Order>k__BackingField: 0
-  <RuntimeToken>k__BackingField: 1
-  unitNodeRefrences: []
-  behaviorUnitNode: {fileID: 0}
-  <AbilityActionUnit>k__BackingField: {fileID: 0}
---- !u!114 &-2968330000534914805
+  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
+--- !u!114 &-6148324191030657719
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -83,34 +95,37 @@ MonoBehaviour:
   m_Name: Ability Composite Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 8, y: 168}
+  position: {x: -8, y: -344}
   ports:
     keys:
     - abilityBehaviorUnitNode
     - childrenNodes
     values:
     - _fieldName: abilityBehaviorUnitNode
-      _node: {fileID: -2968330000534914805}
+      _node: {fileID: -6148324191030657719}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: Behaviors
-        node: {fileID: 1712369864608459883}
+        node: {fileID: 6566311197276814849}
         reroutePoints: []
       _direction: 0
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
     - _fieldName: childrenNodes
-      _node: {fileID: -2968330000534914805}
+      _node: {fileID: -6148324191030657719}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: behaviorUnitNode
-        node: {fileID: -3212092646006205163}
+        node: {fileID: 4589870103288574444}
         reroutePoints: []
       - fieldName: behaviorUnitNode
-        node: {fileID: -7915503540722589269}
+        node: {fileID: -7863797731955967841}
+        reroutePoints: []
+      - fieldName: behaviorUnitNode
+        node: {fileID: 984254879724554449}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -121,8 +136,8 @@ MonoBehaviour:
   unitNodeRefrences: []
   abilityBehaviorUnitNode: {fileID: 0}
   childrenNodes: {fileID: 0}
-  <AbilityCompositeUnit>k__BackingField: {fileID: 0}
---- !u!114 &-2281106557039667243
+  <AbilityCompositeUnit>k__BackingField: {fileID: 11400000, guid: c59fbc28a60586941a0a3142800c1581, type: 2}
+--- !u!114 &-1675303231543081318
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,46 +146,48 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4d2fda8a078a84a84182f11b19739a, type: 3}
-  m_Name: Ability Decorate Unit
+  m_Script: {fileID: 11500000, guid: 47e81e9173269f34d95839e3f60a84c1, type: 3}
+  m_Name: Ability Effect
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 280, y: -376}
+  position: {x: -268.00754, y: 63.263817}
   ports:
     keys:
-    - compositeNode
-    - actionNode
+    - Ability
+    - Behaviors
     values:
-    - _fieldName: compositeNode
-      _node: {fileID: -2281106557039667243}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _fieldName: Ability
+      _node: {fileID: -1675303231543081318}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityNode, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
-      - fieldName: childrenNodes
-        node: {fileID: 4839870284800143785}
+      - fieldName: EffectsPorts
+        node: {fileID: 2425494127417331491}
         reroutePoints: []
       _direction: 0
       _connectionType: 1
-      _typeConstraint: 1
+      _typeConstraint: 2
       _dynamic: 0
-    - _fieldName: actionNode
-      _node: {fileID: -2281106557039667243}
+    - _fieldName: Behaviors
+      _node: {fileID: -1675303231543081318}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
-      - fieldName: behaviorUnitNode
-        node: {fileID: 546340743691702594}
+      - fieldName: abilityBehaviorUnitNode
+        node: {fileID: 5554844275135922303}
         reroutePoints: []
       _direction: 1
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
-  <Order>k__BackingField: 0
-  <RuntimeToken>k__BackingField: 1
-  unitNodeRefrences: []
-  compositeNode: {fileID: 0}
-  actionNode: {fileID: 0}
-  <AbilityDecoratorUnit>k__BackingField: {fileID: 11400000, guid: b3ee930b899bb6a4281214b8ea668588, type: 2}
+  EffectHeadInfo:
+    ID: 0
+    Name: 
+    Description: 
+    Icon: {fileID: 0}
+  <Order>k__BackingField: 1
+  Ability: {fileID: 0}
+  Behaviors: {fileID: 0}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -185,17 +202,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodes:
   - {fileID: 2425494127417331491}
-  - {fileID: 515249269067231845}
-  - {fileID: 4839870284800143785}
-  - {fileID: 475119215387202134}
-  - {fileID: -2281106557039667243}
-  - {fileID: 546340743691702594}
   - {fileID: 5182241627519913452}
-  - {fileID: 1712369864608459883}
-  - {fileID: -2968330000534914805}
-  - {fileID: -3212092646006205163}
-  - {fileID: -7915503540722589269}
---- !u!114 &475119215387202134
+  - {fileID: 6566311197276814849}
+  - {fileID: -6148324191030657719}
+  - {fileID: 4589870103288574444}
+  - {fileID: -1675303231543081318}
+  - {fileID: 5554844275135922303}
+  - {fileID: -7905692598869226581}
+  - {fileID: 7494371429803429389}
+  - {fileID: 8279445585780198371}
+  - {fileID: -7863797731955967841}
+  - {fileID: 984254879724554449}
+--- !u!114 &984254879724554449
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -208,177 +226,34 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 280, y: -168}
+  position: {x: 264, y: -232}
   ports:
     keys:
     - behaviorUnitNode
     values:
     - _fieldName: behaviorUnitNode
-      _node: {fileID: 475119215387202134}
+      _node: {fileID: 984254879724554449}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: childrenNodes
-        node: {fileID: 4839870284800143785}
+        node: {fileID: -6148324191030657719}
         reroutePoints: []
       _direction: 0
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
-  <Order>k__BackingField: 1
+  <Order>k__BackingField: 2
   <RuntimeToken>k__BackingField: 3
   unitNodeRefrences:
   - FieldName: Target
     RunTimeToken:
-      RunTimeToken: 0
+      RunTimeToken: -1
   - FieldName: aaa
     RunTimeToken:
-      RunTimeToken: 0
-  behaviorUnitNode: {fileID: 475119215387202134}
-  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
---- !u!114 &515249269067231845
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47e81e9173269f34d95839e3f60a84c1, type: 3}
-  m_Name: Ability Effect
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -248, y: -280}
-  ports:
-    keys:
-    - Ability
-    - Behaviors
-    values:
-    - _fieldName: Ability
-      _node: {fileID: 515249269067231845}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityNode, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: EffectsPorts
-        node: {fileID: 2425494127417331491}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 2
-      _dynamic: 0
-    - _fieldName: Behaviors
-      _node: {fileID: 515249269067231845}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: abilityBehaviorUnitNode
-        node: {fileID: 4839870284800143785}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  EffectHeadInfo:
-    ID: 1
-    Name: TestEffect
-    Description: 
-    Icon: {fileID: 0}
-  <Order>k__BackingField: 0
-  Ability: {fileID: 0}
-  Behaviors: {fileID: 0}
---- !u!114 &546340743691702594
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
-  m_Name: Ability Action Unit
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 504, y: -376}
-  ports:
-    keys:
-    - behaviorUnitNode
-    values:
-    - _fieldName: behaviorUnitNode
-      _node: {fileID: 546340743691702594}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: actionNode
-        node: {fileID: -2281106557039667243}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  <Order>k__BackingField: 0
-  <RuntimeToken>k__BackingField: 2
-  unitNodeRefrences:
-  - FieldName: Target
-    RunTimeToken:
-      RunTimeToken: 3
-  - FieldName: aaa
-    RunTimeToken:
-      RunTimeToken: 3
+      RunTimeToken: -1
   behaviorUnitNode: {fileID: 0}
   <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
---- !u!114 &1712369864608459883
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47e81e9173269f34d95839e3f60a84c1, type: 3}
-  m_Name: Ability Effect
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -248, y: 200}
-  ports:
-    keys:
-    - Ability
-    - Behaviors
-    values:
-    - _fieldName: Ability
-      _node: {fileID: 1712369864608459883}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityNode, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: EffectsPorts
-        node: {fileID: 2425494127417331491}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 2
-      _dynamic: 0
-    - _fieldName: Behaviors
-      _node: {fileID: 1712369864608459883}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: abilityBehaviorUnitNode
-        node: {fileID: -2968330000534914805}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  EffectHeadInfo:
-    ID: 0
-    Name: 
-    Description: 
-    Icon: {fileID: 0}
-  <Order>k__BackingField: 1
-  Ability: {fileID: 0}
-  Behaviors: {fileID: 0}
 --- !u!114 &2425494127417331491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,10 +279,10 @@ MonoBehaviour:
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: Ability
-        node: {fileID: 515249269067231845}
+        node: {fileID: 6566311197276814849}
         reroutePoints: []
       - fieldName: Ability
-        node: {fileID: 1712369864608459883}
+        node: {fileID: -1675303231543081318}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -432,7 +307,7 @@ MonoBehaviour:
     Icon: {fileID: 0}
   EffectsPorts: {fileID: 0}
   TriggerPort: {fileID: 0}
---- !u!114 &4839870284800143785
+--- !u!114 &4589870103288574444
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -441,49 +316,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48e480133ef12de45b057b05200bfe18, type: 3}
-  m_Name: Ability Composite Unit
+  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
+  m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 8, y: -312}
+  position: {x: 280, y: -632}
   ports:
     keys:
-    - abilityBehaviorUnitNode
-    - childrenNodes
+    - behaviorUnitNode
     values:
-    - _fieldName: abilityBehaviorUnitNode
-      _node: {fileID: 4839870284800143785}
+    - _fieldName: behaviorUnitNode
+      _node: {fileID: 4589870103288574444}
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
-      - fieldName: Behaviors
-        node: {fileID: 515249269067231845}
+      - fieldName: childrenNodes
+        node: {fileID: -6148324191030657719}
         reroutePoints: []
       _direction: 0
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
-    - _fieldName: childrenNodes
-      _node: {fileID: 4839870284800143785}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: compositeNode
-        node: {fileID: -2281106557039667243}
-        reroutePoints: []
-      - fieldName: behaviorUnitNode
-        node: {fileID: 475119215387202134}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 2
-      _dynamic: 0
   <Order>k__BackingField: 0
-  <RuntimeToken>k__BackingField: 0
-  unitNodeRefrences: []
-  abilityBehaviorUnitNode: {fileID: 0}
-  childrenNodes: {fileID: 0}
-  <AbilityCompositeUnit>k__BackingField: {fileID: 11400000, guid: c59fbc28a60586941a0a3142800c1581, type: 2}
+  <RuntimeToken>k__BackingField: 1
+  unitNodeRefrences:
+  - FieldName: Target
+    RunTimeToken:
+      RunTimeToken: 4
+  - FieldName: aaa
+    RunTimeToken:
+      RunTimeToken: 2
+  behaviorUnitNode: {fileID: 0}
+  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
 --- !u!114 &5182241627519913452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -497,7 +361,7 @@ MonoBehaviour:
   m_Name: Ability Trigger Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -552, y: 88}
+  position: {x: -552, y: 24}
   ports:
     keys:
     - AbilityPort
@@ -516,3 +380,191 @@ MonoBehaviour:
       _dynamic: 0
   AbilityPort: {fileID: 0}
   <TriggerUnit>k__BackingField: {fileID: 11400000, guid: a8abaa042a0c91e419a26ca30aca8534, type: 2}
+--- !u!114 &5554844275135922303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48e480133ef12de45b057b05200bfe18, type: 3}
+  m_Name: Ability Composite Unit
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -24, y: 24}
+  ports:
+    keys:
+    - abilityBehaviorUnitNode
+    - childrenNodes
+    values:
+    - _fieldName: abilityBehaviorUnitNode
+      _node: {fileID: 5554844275135922303}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: Behaviors
+        node: {fileID: -1675303231543081318}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 1
+      _dynamic: 0
+    - _fieldName: childrenNodes
+      _node: {fileID: 5554844275135922303}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: behaviorUnitNode
+        node: {fileID: -7905692598869226581}
+        reroutePoints: []
+      - fieldName: behaviorUnitNode
+        node: {fileID: 7494371429803429389}
+        reroutePoints: []
+      - fieldName: behaviorUnitNode
+        node: {fileID: 8279445585780198371}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 2
+      _dynamic: 0
+  <Order>k__BackingField: 0
+  <RuntimeToken>k__BackingField: 4
+  unitNodeRefrences: []
+  abilityBehaviorUnitNode: {fileID: 0}
+  childrenNodes: {fileID: 0}
+  <AbilityCompositeUnit>k__BackingField: {fileID: 11400000, guid: c59fbc28a60586941a0a3142800c1581, type: 2}
+--- !u!114 &6566311197276814849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47e81e9173269f34d95839e3f60a84c1, type: 3}
+  m_Name: Ability Effect
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -296, y: -280}
+  ports:
+    keys:
+    - Ability
+    - Behaviors
+    values:
+    - _fieldName: Ability
+      _node: {fileID: 6566311197276814849}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityNode, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: EffectsPorts
+        node: {fileID: 2425494127417331491}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 2
+      _dynamic: 0
+    - _fieldName: Behaviors
+      _node: {fileID: 6566311197276814849}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: abilityBehaviorUnitNode
+        node: {fileID: -6148324191030657719}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 1
+      _typeConstraint: 1
+      _dynamic: 0
+  EffectHeadInfo:
+    ID: 0
+    Name: 
+    Description: 
+    Icon: {fileID: 0}
+  <Order>k__BackingField: 0
+  Ability: {fileID: 0}
+  Behaviors: {fileID: 0}
+--- !u!114 &7494371429803429389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
+  m_Name: Ability Action Unit
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 232, y: 184}
+  ports:
+    keys:
+    - behaviorUnitNode
+    values:
+    - _fieldName: behaviorUnitNode
+      _node: {fileID: 7494371429803429389}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: childrenNodes
+        node: {fileID: 5554844275135922303}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 1
+      _dynamic: 0
+  <Order>k__BackingField: 1
+  <RuntimeToken>k__BackingField: 6
+  unitNodeRefrences:
+  - FieldName: Target
+    RunTimeToken:
+      RunTimeToken: -1
+  - FieldName: aaa
+    RunTimeToken:
+      RunTimeToken: -1
+  behaviorUnitNode: {fileID: 0}
+  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
+--- !u!114 &8279445585780198371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
+  m_Name: Ability Action Unit
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 232, y: 376}
+  ports:
+    keys:
+    - behaviorUnitNode
+    values:
+    - _fieldName: behaviorUnitNode
+      _node: {fileID: 8279445585780198371}
+      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
+        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: childrenNodes
+        node: {fileID: 5554844275135922303}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 1
+      _dynamic: 0
+  <Order>k__BackingField: 2
+  <RuntimeToken>k__BackingField: 7
+  unitNodeRefrences:
+  - FieldName: Target
+    RunTimeToken:
+      RunTimeToken: -1
+  - FieldName: aaa
+    RunTimeToken:
+      RunTimeToken: -1
+  behaviorUnitNode: {fileID: 0}
+  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}

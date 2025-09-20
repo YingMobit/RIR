@@ -11,7 +11,8 @@ namespace AbilitySystem.Editor.AbilityEditor {
         public HeadInfo EffectHeadInfo;
         [Tooltip("在 Ability.Effects 中的排序（编译/导出时使用）")]
         [field: SerializeField,ReadOnly] public int Order { get; private set; }
-        public int maxRuntmeToken { get; private set; }
+        public int startToken { get; private set; }
+        public int maxRuntimeToken { get; private set; }
 
         // 父：Ability（单连覆盖）
         [Input(backingValue: ShowBackingValue.Never,
@@ -28,7 +29,9 @@ namespace AbilitySystem.Editor.AbilityEditor {
         public override void OnCreateConnection(NodePort from,NodePort to) {
             base.OnCreateConnection(from,to);
             if(from.node == this) {
-                (to.node as AbilityBehaviorUnitNode).SetRuntimeToken(0);
+                maxRuntimeToken = (to.node as AbilityBehaviorUnitNode).SetRuntimeToken(startToken) - 1;
+            } else {
+                RefreshRuntimeToken();
             }
         }
         
@@ -38,14 +41,34 @@ namespace AbilitySystem.Editor.AbilityEditor {
                 Order = -1;
         }
 
+        public void RefreshRuntimeToken(){
+            if(Order == 0) {
+                startToken = 0;
+            } else if(Order > 0) {
+                startToken = (GetInputPort(nameof(Ability)).Connection.node as AbilityNode).GetEffect(Order - 1).maxRuntimeToken+1;
+            } else {
+                Debug.LogError("Order didn't set yet");
+                return;
+            }
+            AbilityBehaviorUnitNode node = GetOutputPort(nameof(Behaviors)).Connection?.node as AbilityBehaviorUnitNode;
+            if(node != null)
+                maxRuntimeToken = node.SetRuntimeToken(startToken) - 1;
+        }
+
         public void SetOrder(AbilityNode node,int order) {
             if(node == null)
                 return;
             Order = order;
         }
 
-        public void SetMaxRunTimeToken(int token) {
-            maxRuntmeToken = token;
+        public void OnBehaviorNodeDisplayedToken(int newToken) {
+            maxRuntimeToken = newToken;
+            var abilityNode = (GetInputPort(nameof(Ability)).Connection.node as AbilityNode);
+            foreach(var effect in abilityNode.GetEffects()) { 
+                if(effect.Order > Order) {
+                    effect.RefreshRuntimeToken();
+                } 
+            }
         }
 
         public AbilityEffect Build() { 

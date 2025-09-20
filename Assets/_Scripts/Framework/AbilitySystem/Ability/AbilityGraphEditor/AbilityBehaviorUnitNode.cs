@@ -26,6 +26,7 @@ namespace AbilitySystem.Editor.AbilityEditor {
                     (port.node as AbilityBehaviorUnitNode).SetOrder(this,index++);
                     if(RuntimeToken != -1) {
                         nextToken = (port.node as AbilityBehaviorUnitNode).SetRuntimeToken(nextToken);
+                        OnTokenDisplayed(nextToken-1);
                     }
                 }
             } else {
@@ -33,6 +34,8 @@ namespace AbilitySystem.Editor.AbilityEditor {
                     Order = 0;
             }
         }
+
+        public abstract void OnTokenDisplayed(int newToken);
 
         public override void OnRemoveConnection(NodePort port) {
             base.OnRemoveConnection(port);

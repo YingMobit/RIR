@@ -52,5 +52,14 @@ namespace AbilitySystem.Editor.AbilityEditor {
             }
             return nextToken;
         }
+
+        public override void OnTokenDisplayed(int newToken) {
+            Node node = GetInputPort(nameof(abilityBehaviorUnitNode)).Connection.node;
+            if(node is AbilityBehaviorUnitNode behaviorNode) {
+                behaviorNode.OnTokenDisplayed(newToken);
+            } else if(node is AbilityEffectNode effectNode) {
+                effectNode.OnBehaviorNodeDisplayedToken(newToken);
+            }
+        }
     }
 }

@@ -32,10 +32,18 @@ namespace AbilitySystem.Editor.AbilityEditor {
             return unit;
         }
 
-
         public override int SetRuntimeToken(int token) {
             RuntimeToken = token;
             return token + 1;
+        }
+
+        public override void OnTokenDisplayed(int newToken) {
+            Node node = GetInputPort(nameof(behaviorUnitNode)).Connection.node;
+            if(node is AbilityBehaviorUnitNode behaviorNode){ 
+                behaviorNode.OnTokenDisplayed(newToken);
+            } else if(node is AbilityEffectNode effectNode) {
+                effectNode.OnBehaviorNodeDisplayedToken(newToken);
+            }
         }
     }
 }
