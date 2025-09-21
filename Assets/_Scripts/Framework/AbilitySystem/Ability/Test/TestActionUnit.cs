@@ -7,9 +7,12 @@ namespace AbilitySystem {
         public UnitNodeRefrence Target;
         public UnitNodeRefrence aaa;
         public override void OnTriggered(AbilityRuntimeContext abilityRuntimeContext) { }
-        public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) => default;
-        public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext, bool allEffectFinished) => default;
-        public override TaskStatus OnInterrupt(IIntreruptionContext intreruptionContext) => default;
+        public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
+            Debug.Log("Ability Action Excuted");
+            return TaskStatus.Suceeded;
+        }
+        public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext, bool allEffectFinished) => TaskStatus.Suceeded;
+        public override TaskStatus OnInterrupt(InteruptionContext intreruptionContext) => default;
         public override AbilityBehaviorUnit Clone() {
             var inst = CreateInstance<TestActionUnit>();
             inst.HeadInfo = this.HeadInfo;

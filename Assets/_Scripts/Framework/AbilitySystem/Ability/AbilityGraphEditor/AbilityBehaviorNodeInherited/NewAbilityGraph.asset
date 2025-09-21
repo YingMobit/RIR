@@ -1,46 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7905692598869226581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
-  m_Name: Ability Action Unit
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 232, y: -8}
-  ports:
-    keys:
-    - behaviorUnitNode
-    values:
-    - _fieldName: behaviorUnitNode
-      _node: {fileID: -7905692598869226581}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: childrenNodes
-        node: {fileID: 5554844275135922303}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  <Order>k__BackingField: 0
-  <RuntimeToken>k__BackingField: 5
-  unitNodeRefrences:
-  - FieldName: Target
-    RunTimeToken:
-      RunTimeToken: -1
-  - FieldName: aaa
-    RunTimeToken:
-      RunTimeToken: -1
-  behaviorUnitNode: {fileID: 0}
-  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
 --- !u!114 &-7863797731955967841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,7 +13,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 264, y: -440}
+  position: {x: 168, y: -200}
   ports:
     keys:
     - behaviorUnitNode
@@ -95,7 +54,7 @@ MonoBehaviour:
   m_Name: Ability Composite Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -8, y: -344}
+  position: {x: -72, y: -296}
   ports:
     keys:
     - abilityBehaviorUnitNode
@@ -124,9 +83,6 @@ MonoBehaviour:
       - fieldName: behaviorUnitNode
         node: {fileID: -7863797731955967841}
         reroutePoints: []
-      - fieldName: behaviorUnitNode
-        node: {fileID: 984254879724554449}
-        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 2
@@ -150,7 +106,7 @@ MonoBehaviour:
   m_Name: Ability Effect
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -268.00754, y: 63.263817}
+  position: {x: -296, y: 56}
   ports:
     keys:
     - Ability
@@ -208,52 +164,9 @@ MonoBehaviour:
   - {fileID: 4589870103288574444}
   - {fileID: -1675303231543081318}
   - {fileID: 5554844275135922303}
-  - {fileID: -7905692598869226581}
   - {fileID: 7494371429803429389}
   - {fileID: 8279445585780198371}
   - {fileID: -7863797731955967841}
-  - {fileID: 984254879724554449}
---- !u!114 &984254879724554449
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add37c0c14e1e8e4c8540c6e51c91c28, type: 3}
-  m_Name: Ability Action Unit
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 264, y: -232}
-  ports:
-    keys:
-    - behaviorUnitNode
-    values:
-    - _fieldName: behaviorUnitNode
-      _node: {fileID: 984254879724554449}
-      _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
-        Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: childrenNodes
-        node: {fileID: -6148324191030657719}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 1
-      _typeConstraint: 1
-      _dynamic: 0
-  <Order>k__BackingField: 2
-  <RuntimeToken>k__BackingField: 3
-  unitNodeRefrences:
-  - FieldName: Target
-    RunTimeToken:
-      RunTimeToken: -1
-  - FieldName: aaa
-    RunTimeToken:
-      RunTimeToken: -1
-  behaviorUnitNode: {fileID: 0}
-  <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
 --- !u!114 &2425494127417331491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,7 +233,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 280, y: -632}
+  position: {x: 168, y: -376}
   ports:
     keys:
     - behaviorUnitNode
@@ -342,10 +255,10 @@ MonoBehaviour:
   unitNodeRefrences:
   - FieldName: Target
     RunTimeToken:
-      RunTimeToken: 4
+      RunTimeToken: -1
   - FieldName: aaa
     RunTimeToken:
-      RunTimeToken: 2
+      RunTimeToken: -1
   behaviorUnitNode: {fileID: 0}
   <AbilityActionUnit>k__BackingField: {fileID: 11400000, guid: 0c29b1ddd9d757f41a3892be4c6703f4, type: 2}
 --- !u!114 &5182241627519913452
@@ -393,7 +306,7 @@ MonoBehaviour:
   m_Name: Ability Composite Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -24, y: 24}
+  position: {x: -72, y: 72}
   ports:
     keys:
     - abilityBehaviorUnitNode
@@ -416,9 +329,6 @@ MonoBehaviour:
       _typeQualifiedName: AbilitySystem.Editor.AbilityEditor.AbilityBehaviorUnitNode,
         Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
-      - fieldName: behaviorUnitNode
-        node: {fileID: -7905692598869226581}
-        reroutePoints: []
       - fieldName: behaviorUnitNode
         node: {fileID: 7494371429803429389}
         reroutePoints: []
@@ -499,7 +409,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 232, y: 184}
+  position: {x: 168, y: 8}
   ports:
     keys:
     - behaviorUnitNode
@@ -516,7 +426,7 @@ MonoBehaviour:
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
-  <Order>k__BackingField: 1
+  <Order>k__BackingField: 0
   <RuntimeToken>k__BackingField: 6
   unitNodeRefrences:
   - FieldName: Target
@@ -540,7 +450,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 232, y: 376}
+  position: {x: 168, y: 184}
   ports:
     keys:
     - behaviorUnitNode
@@ -557,7 +467,7 @@ MonoBehaviour:
       _connectionType: 1
       _typeConstraint: 1
       _dynamic: 0
-  <Order>k__BackingField: 2
+  <Order>k__BackingField: 1
   <RuntimeToken>k__BackingField: 7
   unitNodeRefrences:
   - FieldName: Target

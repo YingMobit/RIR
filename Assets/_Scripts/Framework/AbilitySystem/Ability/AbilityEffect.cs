@@ -6,10 +6,12 @@ namespace AbilitySystem {
     /// </summary>
     public class AbilityEffect {
         public HeadInfo EffectHeadInfo { get; private set; }
+        public int InteruptionPriority{ get; private set; }
         public AbilityBehaviorUnit RootBehaviorUnit { get; private set; }
 
-        public void OnBuild(HeadInfo headInfo,AbilityBehaviorUnit root) {
+        public void OnBuild(HeadInfo headInfo,int interuptionPriority,AbilityBehaviorUnit root) {
             EffectHeadInfo = headInfo;
+            InteruptionPriority = interuptionPriority;
             RootBehaviorUnit = root;
         }
     }

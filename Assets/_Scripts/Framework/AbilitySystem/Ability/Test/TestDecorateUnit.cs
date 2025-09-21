@@ -6,7 +6,7 @@ namespace AbilitySystem {
         public override void OnTriggered(AbilityRuntimeContext abilityRuntimeContext) { }
         public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) => TaskStatus.Suceeded;
         public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext, bool allEffectFinished) => TaskStatus.Suceeded;
-        public override TaskStatus OnInterrupt(IIntreruptionContext intreruptionContext) => TaskStatus.Suceeded;
+        public override TaskStatus OnInterrupt(InteruptionContext intreruptionContext) => TaskStatus.Suceeded;
         public override AbilityBehaviorUnit Clone() {
             var inst = CreateInstance<TestDecorateUnit>();
             inst.HeadInfo = this.HeadInfo;

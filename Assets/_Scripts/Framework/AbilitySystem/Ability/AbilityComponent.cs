@@ -1,22 +1,24 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace AbilitySystem {
     /// <summary>
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>
     public class AbilityComponent {
-        Dictionary<int,Ability> legalAbilities;//所有当前已经注册的Ability
-        Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks;//所有当前正在运行的Ability对应的Task
-        HashSet<int> runningAbilities;//所有当前正在运行的Ability
+        Dictionary<int,Ability> legalAbilities = new();//所有当前已经注册的Ability
+        Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks = new();//所有当前正在运行的Ability对应的Task
+        HashSet<int> runningAbilities = new();//所有当前正在运行的Ability
 
-        List<Ability> abilitiesToRegist;//等待注册的Ability
-        List<int> abilitiesToRemove;//等待移除的AbilityID
-        List<int> abilitiesToCreateTask;//等待创建Task的AbilityID
-        List<AbilityExcutionTask> tasksToRemove;//等待移除的Task
-        HashSet<AbilityExcutionTask> tasksExiting;//正在执行清理工作的Task
-        List<AbilityExcutionTask> tasksToRelease;//清理工作完成可回收的Task
+        List<Ability> abilitiesToRegist = new();//等待注册的Ability
+        List<int> abilitiesToRemove = new();//等待移除的AbilityID
+        List<int> abilitiesToCreateTask = new();//等待创建Task的AbilityID
+        List<AbilityExcutionTask> tasksToRemove = new();//等待移除的Task
+        HashSet<AbilityExcutionTask> tasksExiting = new();//正在执行清理工作的Task
+        List<AbilityExcutionTask> tasksToRelease = new();//清理工作完成可回收的Task
+        List<AbilityRuntimeContext> tasksToRercover = new();//等待帧末恢复的task
         #region API
         public void RegistAbility(Ability ability) {
             if(legalAbilities.ContainsKey(ability.AbilityHeadInfo.ID)) { 
@@ -53,12 +55,52 @@ namespace AbilitySystem {
             return false;
         }
 
-        public void InterruptAbility(IIntreruptionContext intreruptionContext) { 
+        public InteruptionHandler InterruptAbility(InteruptionContext interuptionContext) {
+            List<AbilityExcutionTask> interuptedTasks = new();
+            foreach(var tasks in runningTasks.Values) { 
+                foreach(var task in tasks) { 
+                    if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) { 
+                        interuptedTasks.Add(task);
+                    }
+                }
+            }
             
+            foreach(var task in interuptedTasks){
+                runningTasks[task.Ability.AbilityHeadInfo.ID].Remove(task);
+                task.OnInterrupted(interuptionContext);
+            }
+
+            foreach(var pair in runningTasks){ 
+                if(pair.Value.Count == 0){ 
+                    runningAbilities.Remove(pair.Key);
+                }
+            }
+
+            List<AbilityRuntimeContext> pictures=new();
+            foreach(var task in interuptedTasks){
+                pictures.Add(task.runtimeContext);
+                PoolCenter.Instance.ReleaseInstance(task);
+            }
+            
+            return new(pictures);
+        }
+
+        public void RecoverTask(List<AbilityRuntimeContext> abilityRuntimeContexts) { 
+            foreach(var context in abilityRuntimeContexts){ 
+                RecoverTask(context);
+            }
+        }
+
+        public void RecoverTask(AbilityRuntimeContext abilityRuntimeContext) {
+            tasksToRercover.Add(abilityRuntimeContext);
         }
         #endregion
 
         #region Life Time
+        public void Init(){ 
+            
+        }
+
         public void Update(AbilityComponentContext abilityComponentContext) {
             //尝试触发所有legalAbilities中的Ability
             foreach(var legalAbility in legalAbilities.Values) {
@@ -107,6 +149,12 @@ namespace AbilitySystem {
             }
             abilitiesToRegist.Clear();
 
+            //完成本帧技能恢复
+            foreach(var task in tasksToRercover){
+                RegistTask(task,abilityComponentContext);
+            }
+            tasksToRercover.Clear();
+
             //完成本帧的技能移除
             foreach(var abilityID in abilitiesToRemove) { 
                 legalAbilities.Remove(abilityID);
@@ -127,10 +175,10 @@ namespace AbilitySystem {
                 if(exitStatus == TaskStatus.Suceeded) {
                     tasksToRelease.Add(task);
                 } else if(exitStatus == TaskStatus.Failed) {
-                    Debug.LogError($"Exit task of Ability: {task.Ability.AbilityHeadInfo.Name} failed!");
+                    Debug.LogError($"Exit newTask of Ability: {task.Ability.AbilityHeadInfo.Name} failed!");
                     tasksToRelease.Add(task);
                 } else {
-                    Debug.LogAssertion($"Unexpected exitStatus: {exitStatus} from task of Ablity: {task.Ability.AbilityHeadInfo.Name}");
+                    Debug.LogAssertion($"Unexpected exitStatus: {exitStatus} from newTask of Ablity: {task.Ability.AbilityHeadInfo.Name}");
                 }
             }
 
@@ -147,8 +195,9 @@ namespace AbilitySystem {
         private void RegistTask(int abilityID,AbilityComponentContext abilityComponentContext) {
             var newTask = PoolCenter.Instance.GetInstance<AbilityExcutionTask>(PoolableObjectTypeCollection.AbilityExcutionTask);
             var runtimeContext = PoolCenter.Instance.GetInstance<AbilityRuntimeContext>(PoolableObjectTypeCollection.AbilityRuntimeContext);
-            runtimeContext.BindAbility(abilityID);
             runtimeContext.BindComponentContext(abilityComponentContext);
+            runtimeContext.BindAbility(abilityID);
+            runtimeContext.Init();
             newTask.BindRuntimeContext(runtimeContext);
             HashSet<AbilityExcutionTask> taskSet;
             if(runningTasks.ContainsKey(abilityID)) {
@@ -159,6 +208,20 @@ namespace AbilitySystem {
             }
             taskSet.Add(newTask);
             newTask.OnTriggered(abilityComponentContext);
+        }
+
+        private void RegistTask(AbilityRuntimeContext runtimeContext,AbilityComponentContext componentContext) {
+            var newTask = PoolCenter.Instance.GetInstance<AbilityExcutionTask>(PoolableObjectTypeCollection.AbilityExcutionTask);
+            runtimeContext.BindComponentContext(componentContext);
+            newTask.BindRuntimeContext(runtimeContext);
+            HashSet<AbilityExcutionTask> taskSet;
+            if(runningTasks.ContainsKey(runtimeContext.AbilityID)) {
+                taskSet = runningTasks[runtimeContext.AbilityID];
+            } else {
+                taskSet = new();
+                runningTasks.Add(runtimeContext.AbilityID,taskSet);
+            }
+            taskSet.Add(newTask);
         }
         #endregion
     }

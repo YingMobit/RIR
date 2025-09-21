@@ -13,7 +13,7 @@ namespace AbilitySystem {
         public abstract void OnTriggered(AbilityRuntimeContext abilityRuntimeContext);
         public abstract TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext);
         public abstract TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished);
-        public abstract TaskStatus OnInterrupt(IIntreruptionContext intreruptionContext);
+        public abstract TaskStatus OnInterrupt(InteruptionContext interuptionContext);
 
         [HideInInspector] public List<AbilityBehaviorUnit> Childs=new();
         public AbilityBehaviorUnit Child => Childs!= null && Childs.Count > 0 ? Childs[0] : null;

@@ -9,7 +9,7 @@ namespace AbilitySystem.Editor.AbilityEditor {
     public class AbilityEffectNode : Node {
         [Header("Effect")]
         public HeadInfo EffectHeadInfo;
-        [Tooltip("在 Ability.Effects 中的排序（编译/导出时使用）")]
+        [field: SerializeField] public int InteruptionPriority;
         [field: SerializeField,ReadOnly] public int Order { get; private set; }
         public int startToken { get; private set; }
         public int maxRuntimeToken { get; private set; }
@@ -75,7 +75,7 @@ namespace AbilitySystem.Editor.AbilityEditor {
             AbilityEffect effect = new AbilityEffect();
             foreach(var port in GetOutputPort(nameof(Behaviors)).GetConnections()) {
                 if(port.node is AbilityBehaviorUnitNode node) { 
-                    effect.OnBuild(EffectHeadInfo,node.Build());
+                    effect.OnBuild(EffectHeadInfo,InteruptionPriority,node.Build());
                 }
             }
             return effect;

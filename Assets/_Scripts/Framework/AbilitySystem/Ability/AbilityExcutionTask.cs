@@ -8,6 +8,7 @@ namespace AbilitySystem{
         public AbilityRuntimeContext runtimeContext { get; private set; }
         public Ability Ability => runtimeContext.Ability;
         private AbilityEffect currentEffect => Ability.Effects[runtimeContext.currentEffectIndex];
+        public int CurrentInteruptionPriority => currentEffect.InteruptionPriority;
 
         //驱动事件使用函数传参而不是设置AbilityRuntimeContext是为了避免上下文过期
         public void OnTriggered(AbilityComponentContext abilityComponentContext) {
@@ -71,12 +72,13 @@ namespace AbilitySystem{
                 }
             }
 
+            Debug.Log($"Exit,Status: {allEffectExited}");
             return allEffectExited ? TaskStatus.Suceeded : TaskStatus.Running;
         }
 
         //暂时不做打断
-        public TaskStatus OnInterrupted(IIntreruptionContext intreruptionContext) {
-            return default; 
+        public void OnInterrupted(InteruptionContext interuptionContext) {
+                
         }
 
         public void BindRuntimeContext(AbilityRuntimeContext abilityRuntimeContext) {

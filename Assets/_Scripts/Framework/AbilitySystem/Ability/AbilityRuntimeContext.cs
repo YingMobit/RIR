@@ -10,17 +10,30 @@ namespace AbilitySystem {
         public int AbilityID { get; private set; }
         public Ability Ability => AbilityComponentContext.Abilities[AbilityID];
         public AbilityComponentContext AbilityComponentContext { get; private set; }
-        
-        private Dictionary<int,BlackBoard> LocalBlackBoards;
         public short currentEffectIndex { get; private set; } = -1;
+        public bool Interuptable;
+        private Dictionary<int,BlackBoard> LocalBlackBoards;
 
         public bool MoveNext() {
+            currentEffectIndex++;
             if(currentEffectIndex == Ability.Effects.Count) {
                 return false;
             } else { 
-                currentEffectIndex++;
                 return true;
             }
+        }
+        public BlackBoard GetBlackBoard(int runtimeToken) { 
+            if(LocalBlackBoards.ContainsKey(runtimeToken)) { 
+                return LocalBlackBoards[runtimeToken];
+            }
+            var blackBoard = PoolCenter.Instance.GetInstance<BlackBoard>(PoolableObjectTypeCollection.BlackBoard);
+            LocalBlackBoards.Add(runtimeToken, blackBoard);
+            return blackBoard;
+        }
+
+        public void Init() { 
+            currentEffectIndex = 0;
+            Interuptable = true;
         }
 
         public bool BindAbility(int abilityID) {
@@ -35,23 +48,19 @@ namespace AbilitySystem {
             AbilityComponentContext = abilityComponentContext;
         }
 
-        public void GetBlackBoard() { 
-            
-        }
-
         #region IPoolable
         public int PoolableType => PoolableObjectTypeCollection.AbilityRuntimeContext;
 
         public void Dispose() {
             AbilityComponentContext = null;
             LocalBlackBoards = null;
-            currentEffectIndex = -1;
+            currentEffectIndex = 0;
             AbilityID = -1;
         }
 
         public void Reset() {
             LocalBlackBoards = new Dictionary<int, BlackBoard>();
-            currentEffectIndex = -1;
+            currentEffectIndex = 0;
             AbilityID = -1;
         }
 
