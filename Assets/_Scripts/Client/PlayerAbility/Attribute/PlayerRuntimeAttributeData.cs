@@ -1,14 +1,14 @@
 using UnityEngine;
 
-public class PlayerRuntimeAbilityData {
+public class PlayerRuntimeAttributeData {
     [Header("ÒÆ¶¯")]
-    [SerializeField] public AbilityValues<float> WalkSpeed;
-    [SerializeField] public AbilityValues<float> RunSpeed;
-    [SerializeField] public AbilityValues<float> JumpHeight;
-    [SerializeField] public AbilityValues<float> JumpVerticalImpulse;
+    [SerializeField] public Attribute<float> WalkSpeed;
+    [SerializeField] public Attribute<float> RunSpeed;
+    [SerializeField] public Attribute<float> JumpHeight;
+    [SerializeField] public Attribute<float> JumpVerticalImpulse;
     public PlayerController playerController;
 
-    public PlayerRuntimeAbilityData(PlayerAbilityConfigData configData) {
+    public PlayerRuntimeAttributeData(PlayerAttributeConfigData configData) {
         WalkSpeed = new(configData.WalkSpeed,(ori,cur) => {
             GlobalEventCenter.Instance.Invoke<IPlayerWalkSpeedChanged>(new PlayerWalkSpeedChangedData(ori,cur));
         });

@@ -7,8 +7,8 @@ public class CharactorJumpUp : CharactorStateBase {
     public override IStateMachine stateMachine { get; set; }
     private Animator animator;
     private Rigidbody rigidbody;
-    private AbilityValues<float> jumpHeight;
-    private AbilityValues<float> jumpHorizontalImpulse;
+    private Attribute<float> jumpHeight;
+    private Attribute<float> jumpHorizontalImpulse;
     private float posYLastFrame;
     private InputHandleProvider inputHandler;
 

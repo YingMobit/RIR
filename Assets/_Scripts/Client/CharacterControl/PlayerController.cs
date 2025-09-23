@@ -3,10 +3,10 @@ using Unity.Entities;
 using UnityEngine;
 //容器类，用于管理一个玩家实体上的所有组件
 public class PlayerController : MonoBehaviour {
-    [SerializeField] private PlayerAbilityConfigData PlayerAbilityConfigData;
+    [SerializeField] private PlayerAttributeConfigData PlayerAbilityConfigData;
     public CharactorActionFSM charactorActionFSM;
     public CharactorMovementFSM charactorMovementFSM;
-    public PlayerRuntimeAbilityData playerRuntimeAbilityData;
+    public PlayerRuntimeAttributeData playerRuntimeAbilityData;
     public IShootable Weapon;
 
     private Entity entity;

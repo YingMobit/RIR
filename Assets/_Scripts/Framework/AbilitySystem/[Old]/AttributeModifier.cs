@@ -1,37 +1,37 @@
 using System;
-public abstract class AbilityModifier<TValue> {
+public abstract class AttributeModifier<TValue> {
     public abstract void Modify(ref TValue oriValue);
 }
 
-public class FloatAddAbilityModifier : AbilityModifier<float> {
+public class FloatAddAttributeModifier : AttributeModifier<float> {
     private float add;
     public override void Modify(ref float oriValue) {
         oriValue += add;
     }
 
-    public FloatAddAbilityModifier(float addin) {
+    public FloatAddAttributeModifier(float addin) {
         add = addin;
     }
 }
 
-public class IntAddAbilityModifier : AbilityModifier<int> {
+public class IntAddAttributeModifier : AttributeModifier<int> {
     private int add;
     public override void Modify(ref int oriValue) {
         oriValue += add;
     }
-    public IntAddAbilityModifier(int addin) {
+    public IntAddAttributeModifier(int addin) {
         add = addin;
     }
 }
 
-public class MultiperAbilityModifier : AbilityModifier<float> {
+public class MultiperAttributeModifier : AttributeModifier<float> {
     private float multiper;
 
     public override void Modify(ref float oriValue) {
         oriValue *= multiper;
     }
 
-    public MultiperAbilityModifier(float _multiper) {
+    public MultiperAttributeModifier(float _multiper) {
         multiper = _multiper;
     }
 }

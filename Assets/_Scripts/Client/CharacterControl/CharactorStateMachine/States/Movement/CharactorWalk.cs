@@ -16,7 +16,7 @@ public class CharactorWalk : CharactorStateBase {
     #region Runtime Data
     public override IStateMachine stateMachine { get; set; }
     InputHandleProvider inputHandler;
-    AbilityValues<float> WalkSpeed;
+    Attribute<float> WalkSpeed;
     #endregion
 
     public void Init(Animator _animator,Rigidbody _rigidbody,InputHandleProvider _inputHandler) {
