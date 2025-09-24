@@ -16,7 +16,7 @@ public class Vector2SmoothEffector : InputProcessor<Vector2> {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void Init() {
-        InputSystem.RegisterProcessor<Vector2SmoothEffector>();
+        UnityEngine.InputSystem.InputSystem.RegisterProcessor<Vector2SmoothEffector>();
     }
 
     public override Vector2 Process(Vector2 value,InputControl control) {

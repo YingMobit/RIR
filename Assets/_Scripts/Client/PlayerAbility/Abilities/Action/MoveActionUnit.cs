@@ -6,7 +6,7 @@ public class MoveActionUnit : AbilityActionUnit {
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        abilityRuntimeContext.AbilityComponentContext.Controllers[];
+        //abilityRuntimeContext.AbilityComponentContext.Controllers[];
         return TaskStatus.Suceeded;
     }
 

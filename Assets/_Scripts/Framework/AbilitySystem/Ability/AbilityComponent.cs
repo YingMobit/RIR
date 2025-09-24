@@ -21,7 +21,7 @@ namespace AbilitySystem {
         List<AbilityRuntimeContext> tasksToRercover = new();//等待帧末恢复的task
         #region API
         public void RegistAbility(Ability ability) {
-            if(legalAbilities.ContainsKey(ability.AbilityHeadInfo.ID)) { 
+            if(legalAbilities.ContainsKey(ability.AbilityHeadInfo.ID)) {
                 Debug.Log($"Ability: {ability.AbilityHeadInfo.Name} has already been registered!");
                 return;
             }
@@ -29,24 +29,24 @@ namespace AbilitySystem {
         }
 
         public void RemoveAbility(int abilityID) {
-            if(!legalAbilities.ContainsKey(abilityID)) { 
+            if(!legalAbilities.ContainsKey(abilityID)) {
                 Debug.Log($"AbilityID: {abilityID} has not been registered!");
                 return;
             }
             abilitiesToRemove.Add(abilityID);
         }
 
-        public bool AbilityLegal(int abilityID) { 
+        public bool AbilityLegal(int abilityID) {
             return legalAbilities.ContainsKey(abilityID);
         }
 
-        public bool AbilityRunning(int abilityID) { 
+        public bool AbilityRunning(int abilityID) {
             return AbilityLegal(abilityID) && runningAbilities.Contains(abilityID);
         }
 
         public bool AbilityExiting(int abilityID,out AbilityExcutionTask abilityExcutionTask) {
             abilityExcutionTask = null;
-            foreach(var task in tasksExiting) { 
+            foreach(var task in tasksExiting) {
                 if(task.Ability.AbilityHeadInfo.ID == abilityID) {
                     abilityExcutionTask = task;
                     return true;
@@ -57,36 +57,36 @@ namespace AbilitySystem {
 
         public InteruptionHandler InterruptAbility(InteruptionContext interuptionContext) {
             List<AbilityExcutionTask> interuptedTasks = new();
-            foreach(var tasks in runningTasks.Values) { 
-                foreach(var task in tasks) { 
-                    if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) { 
+            foreach(var tasks in runningTasks.Values) {
+                foreach(var task in tasks) {
+                    if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) {
                         interuptedTasks.Add(task);
                     }
                 }
             }
-            
-            foreach(var task in interuptedTasks){
+
+            foreach(var task in interuptedTasks) {
                 runningTasks[task.Ability.AbilityHeadInfo.ID].Remove(task);
                 task.OnInterrupted(interuptionContext);
             }
 
-            foreach(var pair in runningTasks){ 
-                if(pair.Value.Count == 0){ 
+            foreach(var pair in runningTasks) {
+                if(pair.Value.Count == 0) {
                     runningAbilities.Remove(pair.Key);
                 }
             }
 
-            List<AbilityRuntimeContext> pictures=new();
-            foreach(var task in interuptedTasks){
+            List<AbilityRuntimeContext> pictures = new();
+            foreach(var task in interuptedTasks) {
                 pictures.Add(task.runtimeContext);
                 PoolCenter.Instance.ReleaseInstance(task);
             }
-            
+
             return new(pictures);
         }
 
-        public void RecoverTask(List<AbilityRuntimeContext> abilityRuntimeContexts) { 
-            foreach(var context in abilityRuntimeContexts){ 
+        public void RecoverTask(List<AbilityRuntimeContext> abilityRuntimeContexts) {
+            foreach(var context in abilityRuntimeContexts) {
                 RecoverTask(context);
             }
         }
@@ -97,8 +97,8 @@ namespace AbilitySystem {
         #endregion
 
         #region Life Time
-        public void Init(){ 
-            
+        public void Init() {
+
         }
 
         public void Update(AbilityComponentContext abilityComponentContext) {
@@ -106,14 +106,14 @@ namespace AbilitySystem {
             foreach(var legalAbility in legalAbilities.Values) {
                 if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
-                    ) { 
+                    ) {
                     runningAbilities.Add(legalAbility.AbilityHeadInfo.ID);
                     abilitiesToCreateTask.Add(legalAbility.AbilityHeadInfo.ID);
                 }
             }
 
             //创建Trigger成功的AbilityExcutionTask
-            foreach(var toCreateAbility in abilitiesToCreateTask) { 
+            foreach(var toCreateAbility in abilitiesToCreateTask) {
                 RegistTask(toCreateAbility,abilityComponentContext);
             }
             abilitiesToCreateTask.Clear();
@@ -121,16 +121,16 @@ namespace AbilitySystem {
             //更新所有正在运行的AbilityExcutionTask
             TaskStatus taskStatus;
             foreach(var tasks in runningTasks.Values) {
-                foreach(var task in tasks) { 
+                foreach(var task in tasks) {
                     taskStatus = task.OnUpdate(abilityComponentContext);
-                    if(taskStatus.IsFinished()) { 
+                    if(taskStatus.IsFinished()) {
                         tasksToRemove.Add(task);
                     }
                 }
             }
 
             //移除所有已经完成的AbilityExcutionTask
-            foreach(var task in tasksToRemove) { 
+            foreach(var task in tasksToRemove) {
                 tasksExiting.Add(task);
                 HashSet<AbilityExcutionTask> taskSet = runningTasks[task.Ability.AbilityHeadInfo.ID];
                 taskSet.Remove(task);
@@ -144,22 +144,22 @@ namespace AbilitySystem {
 
         public void LateUpdate(AbilityComponentContext abilityComponentContext) {
             //完成本帧的技能注册
-            foreach(var ability in abilitiesToRegist) { 
+            foreach(var ability in abilitiesToRegist) {
                 legalAbilities.Add(ability.AbilityHeadInfo.ID,ability);
             }
             abilitiesToRegist.Clear();
 
             //完成本帧技能恢复
-            foreach(var task in tasksToRercover){
+            foreach(var task in tasksToRercover) {
                 RegistTask(task,abilityComponentContext);
             }
             tasksToRercover.Clear();
 
             //完成本帧的技能移除
-            foreach(var abilityID in abilitiesToRemove) { 
+            foreach(var abilityID in abilitiesToRemove) {
                 legalAbilities.Remove(abilityID);
                 if(runningAbilities.Contains(abilityID)) {
-                    foreach(var task in runningTasks[abilityID]) { 
+                    foreach(var task in runningTasks[abilityID]) {
                         tasksExiting.Add(task);
                     }
                     runningTasks.Remove(abilityID);
@@ -170,7 +170,7 @@ namespace AbilitySystem {
 
             //执行本帧的Task清理
             TaskStatus exitStatus;
-            foreach(var task in tasksExiting) { 
+            foreach(var task in tasksExiting) {
                 exitStatus = task.OnExit(abilityComponentContext);
                 if(exitStatus == TaskStatus.Suceeded) {
                     tasksToRelease.Add(task);
@@ -183,7 +183,7 @@ namespace AbilitySystem {
             }
 
             //完成本帧的Task回收
-            foreach(var deadTask in tasksToRelease) { 
+            foreach(var deadTask in tasksToRelease) {
                 tasksExiting.Remove(deadTask);
                 PoolCenter.Instance.ReleaseInstance(deadTask);
             }
@@ -202,8 +202,8 @@ namespace AbilitySystem {
             HashSet<AbilityExcutionTask> taskSet;
             if(runningTasks.ContainsKey(abilityID)) {
                 taskSet = runningTasks[abilityID];
-            } else { 
-                taskSet = new ();
+            } else {
+                taskSet = new();
                 runningTasks.Add(abilityID,taskSet);
             }
             taskSet.Add(newTask);
