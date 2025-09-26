@@ -1,6 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ECS {
     public class ComponentCodeGenerator {
@@ -28,6 +31,12 @@ using UnityEngine;
 public class {className} : ECS.Component
 {{
     public override ComponentTypeEnum ComponentType => ComponentTypeEnum.{className};
+    public override void OnAttach(Entity entity) {{
+        // 初始化组件
+    }}
+    public override void Reset(Entity entity) {{
+        // 重置组件状态
+    }}
     // 其他字段和方法
 }}
 ";
@@ -43,41 +52,69 @@ public class {className} : ECS.Component
 
         static void UpdateComponentEnum(string className) {
             string enumPath = "Assets/_Scripts/Framework/ECS/Components/ComponentTypeEnum.cs";
-            string enumContent = File.ReadAllText(enumPath);
+            if(!File.Exists(enumPath)) {
+                Debug.LogError("ComponentTypeEnum.cs not found at path: " + enumPath);
+                return;
+            }
+            string content = File.ReadAllText(enumPath);
 
-            // 检查是否已存在该枚举成员
-            if(enumContent.Contains($"{className} ="))
+            // 如果已经有该成员直接返回
+            if(content.Contains($" {className} =") || content.Contains($"\n{className} ="))
                 return;
 
-            // 找到枚举左括号的位置
-            int insertIndex = enumContent.IndexOf('{',enumContent.IndexOf("enum")) + 1;
-            string newMember = $"\n        {className} = 1 << {GetNextEnumIndex(enumContent)},";
-
-            // 插入新成员到左括号后
-            enumContent = enumContent.Insert(insertIndex,newMember);
-            File.WriteAllText(enumPath,enumContent);
-        }
-
-        static int GetNextEnumIndex(string enumContent) {
-            int maxIndex = -1;
-            var lines = enumContent.Split('\n');
-            foreach(var line in lines) {
-                var trimmed = line.Trim();
-                if(trimmed.EndsWith(",")) {
-                    var parts = trimmed.Split('=');
-                    if(parts.Length == 2) {
-                        var valuePart = parts[1].Trim();
-                        if(valuePart.StartsWith("1 <<")) {
-                            var indexStr = valuePart.Substring(4).TrimEnd(',');
-                            if(int.TryParse(indexStr,out int idx)) {
-                                if(idx > maxIndex)
-                                    maxIndex = idx;
-                            }
-                        }
-                    }
-                }
+            // 1. 解析现有枚举项 (Name = 1 << n,)
+            var entryRegex = new Regex(@"^\s*(\w+)\s*=\s*1\s*<<\s*(\d+)\s*,", RegexOptions.Multiline);
+            var matches = entryRegex.Matches(content);
+            var entries = new List<(string name,int index)>();
+            foreach(Match m in matches) {
+                string name = m.Groups[1].Value;
+                if(name == "None") continue; // 忽略 None 或其它保留
+                int idx = int.Parse(m.Groups[2].Value);
+                entries.Add((name,idx));
             }
-            return maxIndex + 1;
+
+            int nextIndex = entries.Count == 0 ? 0 : entries.Max(e => e.index) + 1;
+            entries.Add((className,nextIndex));
+            entries = entries.OrderBy(e => e.index).ToList();
+
+            // 2. 重新生成枚举块（仅替换 AUTO 区域或插入到 enum 花括号后）
+            // 找到 enum ComponentTypeEnum 的 '{'
+            int enumDecl = content.IndexOf("enum ComponentTypeEnum");
+            if(enumDecl < 0) { Debug.LogError("Cannot locate enum ComponentTypeEnum"); return; }
+            int enumOpen = content.IndexOf('{', enumDecl);
+            if(enumOpen < 0) { Debug.LogError("Cannot locate '{' for ComponentTypeEnum"); return; }
+            int enumClose = content.IndexOf('}', enumOpen+1); // 只到第一个关闭，后面是 extension class
+            if(enumClose < 0) { Debug.LogError("Cannot locate '}' for ComponentTypeEnum"); return; }
+
+            // 枚举体原始文本
+            string enumBody = content.Substring(enumOpen+1, enumClose - enumOpen -1);
+            // 移除旧的 1 << n 行
+            enumBody = entryRegex.Replace(enumBody, string.Empty);
+            // 清理多余空行
+            enumBody = Regex.Replace(enumBody, "\n{2,}", "\n");
+
+            // 新条目文本
+            string indent = "        ";
+            var enumLines = entries.Select(e => $"{indent}{e.name} = 1 << {e.index},");
+            string newEnumBody = "\n" + string.Join("\n", enumLines) + "\n";
+            content = content.Remove(enumOpen+1, enumClose - enumOpen -1)
+                             .Insert(enumOpen+1, newEnumBody);
+
+            // 3. 更新 COMPONENT_TYPE_COUNT 行
+            int newCount = entries.Count; // 不含 None
+            var countRegex = new Regex(@"public const int COMPONENT_TYPE_COUNT = \d+;");
+            if(countRegex.IsMatch(content)) {
+                content = countRegex.Replace(content, $"public const int COMPONENT_TYPE_COUNT = {newCount};");
+            }
+
+            // 4. 更新 COMPONENT_TYPE_MAPPING 数组内容
+            var mapRegex = new Regex(@"public static readonly Type\[] COMPONENT_TYPE_MAPPING = new Type\[.*?\]\s*{(.*?)};", RegexOptions.Singleline);
+            content = mapRegex.Replace(content, m => {
+                string mappingLines = string.Join("\n", entries.Select(e => $"            typeof({e.name}), // index {e.index}"));
+                return $"public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{{\n{mappingLines}\n        }};";
+            });
+
+            File.WriteAllText(enumPath, content);
         }
     }
 
