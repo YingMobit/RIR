@@ -84,8 +84,6 @@ namespace ECS {
             if(component == null)
                 return;
 
-            // 线性查找（可选：若需要更高性能，可为 Component 基类添加 PoolSlotIndex 字段以 O(1) 回收）
-
             if(!_activeFlags[index])
                 return;
 

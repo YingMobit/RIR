@@ -3,21 +3,27 @@ using System.Collections.Generic;
 
 namespace ECS {
     public enum ComponentTypeEnum {
-    }
+        Test1 = 1 << 0,
+        NewComponent = 1 << 1,
+        HAHAHA = 1 << 2,
+}
 
 
     public static class ComponentTypeEnumExtension {
-        public const int COMPONENT_TYPE_COUNT = 0;
-        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{ 
+        public const int COMPONENT_TYPE_COUNT = 3;
+        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{
+            typeof(Test1), // index 0
+            typeof(NewComponent), // index 1
+            typeof(HAHAHA), // index 2
         };
 
         public static uint GetIndex(this ComponentTypeEnum componentType) {
             int value = (int)componentType;
 
-            // ±ØÐëÊÇµ¥±ÈÌØ£¨¼´Ã¶¾ÙÖµÊÇ 2 µÄÃÝ£©
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½ï¿½ï¿½ï¿½Ø£ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½Öµï¿½ï¿½ 2 ï¿½ï¿½ï¿½Ý£ï¿½
             if((value & (value - 1)) != 0) {
                 throw new System.ArgumentException(
-                    $"Ã¶¾ÙÖµ {componentType} = {value} ²»ÊÇµ¥Ò»±ÈÌØ£¨Î´°´ 1<<n ¶¨Òå£©");
+                    $"Ã¶ï¿½ï¿½Öµ {componentType} = {value} ï¿½ï¿½ï¿½Çµï¿½Ò»ï¿½ï¿½ï¿½Ø£ï¿½Î´ï¿½ï¿½ 1<<n ï¿½ï¿½ï¿½å£©");
             }
 
             uint index = 0;
@@ -35,11 +41,11 @@ namespace ECS {
             if(componentType == 0)
                 return System.Array.Empty<ComponentTypeEnum>();
 
-            // ÏÈÍ³¼Æ set bit Êý
+            // ï¿½ï¿½Í³ï¿½ï¿½ set bit ï¿½ï¿½
             uint temp = componentType;
             int count = 0;
             while(temp != 0) {
-                temp &= (temp - 1); // Çå³ý×îµÍÎ» 1
+                temp &= (temp - 1); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î» 1
                 count++;
             }
 

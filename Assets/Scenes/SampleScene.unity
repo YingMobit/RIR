@@ -577,7 +577,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 839991979}
-  - component: {fileID: 839991978}
+  - component: {fileID: 839991980}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -585,19 +585,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &839991978
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 839991977}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c6e3e22cc0d895b4185e4cafa920b563, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000, guid: 3712f20ca77350a4dac2c8524046a02c, type: 2}
 --- !u!4 &839991979
 Transform:
   m_ObjectHideFlags: 0
@@ -613,6 +600,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &839991980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839991977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2067b325b4415eb4fb359c22a07b1679, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoRunFunctionalOnStart: 0
+  stressEntityCount: 100
+  togglesPerEntity: 8
+  stressRounds: 3
+  randomSeed: 12345
+  functionalKey: 113
+  stressKey: 119
+  refreshEntityKey: 101
+  logEachFailure: 1
 --- !u!1 &1875915299
 GameObject:
   m_ObjectHideFlags: 0

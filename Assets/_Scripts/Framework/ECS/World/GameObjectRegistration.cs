@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace ECS {
     internal class GameObjectRegistration {
-        private Dictionary<int,GameObject> IDGameObjectMap;
+        private Dictionary<int,GameObject> IDGameObjectMap = new();
 
-        public int GetID(GameObject gameObject) { 
+        public int GetID(GameObject gameObject) {
             if(gameObject) {
                 int id = gameObject.GetInstanceID();
                 if(!IDGameObjectMap.ContainsKey(id)) {
@@ -16,9 +16,9 @@ namespace ECS {
             return -1;
         }
 
-        public void OnReleaseEntity(Entity entity) { 
-            if(IDGameObjectMap.ContainsKey(entity.GameObjectID)) { 
-                IDGameObjectMap.Remove(entity.GameObjectID);
+        public void OnReleaseEntity(Entity entity) {
+            if(IDGameObjectMap.ContainsKey(entity.GameObjectID)) {
+                //IDGameObjectMap.Remove(entity.GameObjectID);
             } else {
                 Debug.LogError($"Haven't registed this ID:{entity.GameObjectID} befor");
             }

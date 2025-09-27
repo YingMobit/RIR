@@ -12,21 +12,21 @@ namespace ECS {
         public IReadOnlyList<ComponentSet> ComponentSets => componentSets;
         public IReadOnlyList<Entity> Entities => entities;
 
-        public Query With<TComponent>(ComponentTypeEnum componentType) where TComponent : Component , new() {
+        public Query With(ComponentTypeEnum componentType) {
             uint mask = componentType.ToMask();
             if((includeMask & mask) == mask)
                 return this;
             includeMask |= mask;
             if(entities.Count == 0 && componentSets.Count == 0) {
-                List<TComponent> components = world.GetComponents<TComponent>(componentType,out entities);
+                List<Component> components = world.GetComponents(componentType,out entities);
                 foreach(var comp in components) { 
-                    componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(comp));
+                    componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(componentType, comp));
                 }
             } else {
                 Fliter();
-                var newComponents = world.GetComponentsOnEntities<TComponent>(entities,componentType);
+                var newComponents = world.GetComponentsOnEntities(entities,componentType);
                 for(int i = 0; i < componentSets.Count; i++) {
-                    componentSets[i].AddComponent(newComponents[i]);
+                    componentSets[i].AddComponent(componentType,newComponents[i]);
                 }
             }
             return this;

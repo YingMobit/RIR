@@ -2,33 +2,41 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ECS { 
+namespace ECS {
     public class EntitySparseArray {
         private readonly List<int[]> sparseArrayBucket;
-        private static int[] TemplateIndexArray; 
+        private static int[] TemplateIndexArray;
 
-        public void SetIndex(int entityID,int bindIndex) { 
+        public void SetIndex(int entityID,int bindIndex) {
             int bucketIndex = entityID / EntityManager.ENTITY_BUCKET_SIZE;
             int indexInBucket = entityID % EntityManager.ENTITY_BUCKET_SIZE;
-            while(bucketIndex >= sparseArrayBucket.Count) { 
+            while(bucketIndex >= sparseArrayBucket.Count) {
                 sparseArrayBucket.Add(AllocNewPage());
             }
             sparseArrayBucket[bucketIndex][indexInBucket] = bindIndex;
         }
 
-        public void RemoveIndex(int entityID) { 
+        public void RemoveIndex(int entityID) {
             int bucketIndex = entityID / EntityManager.ENTITY_BUCKET_SIZE;
-            if(bucketIndex >= sparseArrayBucket.Count) { 
-                Debug.LogError($"The Bind Index of this Entity:{entityID} Has Not Been Setted");
+            if(bucketIndex >= sparseArrayBucket.Count) {
+                Debug.LogWarning($"The Bind Index of this Entity:{entityID} Has Not Been Setted");
+                int count = bucketIndex - sparseArrayBucket.Count;
+                for(; count-- > 0;) {
+                    sparseArrayBucket.Add(AllocNewPage());
+                }
             }
             int indexInBucket = entityID % EntityManager.ENTITY_BUCKET_SIZE;
             sparseArrayBucket[bucketIndex][indexInBucket] = -1;
         }
 
-        public int GetIndex(int entityID) { 
+        public int GetIndex(int entityID) {
             int bucketIndex = entityID / EntityManager.ENTITY_BUCKET_SIZE;
-            if(bucketIndex >= sparseArrayBucket.Count) { 
-                Debug.LogError($"The Bind Index of this Entity:{entityID} Has Not Been Setted");
+            if(bucketIndex >= sparseArrayBucket.Count) {
+                Debug.LogWarning($"The Bind Index of this Entity:{entityID} Has Not Been Setted");
+                int count = bucketIndex - sparseArrayBucket.Count;
+                for(; count-- > 0;) {
+                    sparseArrayBucket.Add(AllocNewPage());
+                }
             }
             int indexInBucket = entityID % EntityManager.ENTITY_BUCKET_SIZE;
             return sparseArrayBucket[bucketIndex][indexInBucket];
@@ -45,9 +53,9 @@ namespace ECS {
             sparseArrayBucket.Add(AllocNewPage());
         }
 
-        static EntitySparseArray() { 
+        static EntitySparseArray() {
             TemplateIndexArray = new int[EntityManager.ENTITY_BUCKET_SIZE];
-            for(int i=0;i < EntityManager.ENTITY_BUCKET_SIZE; i++) { 
+            for(int i = 0; i < EntityManager.ENTITY_BUCKET_SIZE; i++) {
                 TemplateIndexArray[i] = -1;
             }
         }

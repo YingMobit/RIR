@@ -2,24 +2,24 @@ using System.Collections.Generic;
 using System;
 using ReferencePoolingSystem;
 
+using UnityEngine;
+
 namespace ECS { 
     public class ComponentSet : IReference<ComponentSet> {
-        private Dictionary<Type,Component> components = new();
+        private Dictionary<ComponentTypeEnum,Component> components = new();
 
-        public TComponent GetComponent<TComponent>() where TComponent : Component {
-            Type type = typeof(TComponent);
-            if(components.ContainsKey(type)) {
-                return components[type] as TComponent;
+        public TComponent GetComponent<TComponent>(ComponentTypeEnum componentType) where TComponent : Component {
+            if(components.ContainsKey(componentType)) {
+                return components[componentType] as TComponent;
             }
             return null;
         }
 
-        public ComponentSet AddComponent<TComponent>(TComponent component) where TComponent : Component {
-            Type type = typeof(TComponent);
-            if(components.ContainsKey(type)) {
-                throw new ArgumentException($"ComponentSet Already Contains Component of Type {type}");
+        public ComponentSet AddComponent(ComponentTypeEnum componentType,Component component) {
+            if(components.ContainsKey(componentType)) {
+                Debug.LogError($"ComponentSet Already Contains Component of Type {componentType}");
             }
-            components[type] = component;
+            components[componentType] = component;
             return this;
         }
 

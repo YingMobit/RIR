@@ -5,61 +5,65 @@ namespace ECS {
         public int EntityID { get; private set; }
         public int GameObjectID { get; private set; }
         public short Version { get; private set; }
-        public uint Anchetype { get; private set; }
+        public uint Archetype { get; private set; }
 
         public readonly bool HasComponent(ComponentTypeEnum componentTypeMask) {
             uint mask = componentTypeMask.ToMask();
-            return (Anchetype & mask) == mask;
+            return (Archetype & mask) == mask;
         }
 
         public readonly bool HasAllComponents(uint componentTypeMask) {
-            return (Anchetype & componentTypeMask) == componentTypeMask;
+            return (Archetype & componentTypeMask) == componentTypeMask;
         }
 
         public readonly bool HasAnyComponent(uint componentTypeMask) {
-            return (Anchetype & componentTypeMask) != 0;
+            return (Archetype & componentTypeMask) != 0;
         }
 
         public readonly bool WithOutComponent(ComponentTypeEnum componentTypeMask) {
             uint mask = componentTypeMask.ToMask();
-            return (Anchetype & mask) == 0;
+            return (Archetype & mask) == 0;
         }
 
         public readonly bool WithOutAllComponents(uint componentTypeMask) {
-            return (Anchetype & componentTypeMask) == 0;
+            return (Archetype & componentTypeMask) == 0;
         }
 
         public readonly bool WithOutAnyComponent(uint componentTypeMask) {
-            return (Anchetype & componentTypeMask) != 0;
+            return (Archetype & componentTypeMask) != 0;
         }
 
-        internal void OnAddComponent(uint componentTypes) { 
-            Anchetype |= componentTypes;
+        internal void OnAddComponent(uint componentTypesToAdd) {
+            Archetype |= componentTypesToAdd;
         }
 
-        internal void OnRemoveComponent(uint componentTypes) { 
-            Anchetype &= ~componentTypes;
+        internal void OnRemoveComponent(uint componentTypesToRemove) {
+            Archetype &= ~componentTypesToRemove;
         }
 
-        public void Set(int entityID,int gameObjectID,short version,uint ancheType) {
+        public void Set(int entityID,int gameObjectID,short version,uint archeType) {
             EntityID = entityID;
             GameObjectID = gameObjectID;
             Version = version;
-            Anchetype = ancheType;
+            Archetype = archeType;
         }
 
-        public Entity(int entityID,int gameObjectID,short version,uint ancheType) {
+        public void SetArchetype(uint archeType) {
+            Archetype = archeType;
+        }
+
+        public Entity(int entityID,int gameObjectID,short version,uint archeType) {
             EntityID = entityID;
             GameObjectID = gameObjectID;
             Version = version;
-            Anchetype = ancheType;
+            Archetype = archeType;
         }
 
-        public static bool operator == (Entity a,Entity b) {
+        public static bool operator ==(Entity a,Entity b) {
             return a.EntityID == b.EntityID && a.Version == b.Version;
         }
 
-        public static bool operator != (Entity a,Entity b) {
+        public static bool operator !=(Entity a,Entity b) {
             return !(a == b);
         }
 
