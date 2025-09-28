@@ -37,32 +37,27 @@ namespace ECS {
         }
 
         #region GetComponents
-        public List<Component> GetComponents(ComponentTypeEnum componentType) {
-            return componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents();
+        public void GetComponents(ComponentTypeEnum componentType,out List<Component> components) {
+            components = componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents();
         }
 
-        public List<Component> GetComponents(ComponentTypeEnum componentType,out List<Entity> entities) {
+        public void GetComponents(ComponentTypeEnum componentType,in List<Component> components,in List<Entity> entities) {
             uint componentMask = componentType.ToMask();
-            List<Component> result = new();
-            entities = new();
             foreach(var entity in entityManager.GetActiveEntities()) {
                 if((entity.Archetype & componentMask) == componentMask) {
                     entities.Add(entity);
-                    result.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
+                    components.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
                 }
             }
-            return result;
         }
-        public Component GetComponentOnEntity(Entity entity,ComponentTypeEnum componentType) {
-            return componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
+        public void GetComponentOnEntity(Entity entity,ComponentTypeEnum componentType,out Component component) {
+            component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
         }
 
-        public List<Component> GetComponentsOnEntities(List<Entity> entities,ComponentTypeEnum componentType) {
-            List<Component> result = new();
+        public void GetComponentsOnEntities(List<Entity> entities,ComponentTypeEnum componentType,in List<Component> components) {
             foreach(var entity in entities) {
-                result.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
+                components.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
             }
-            return result;
         }
 
 
@@ -77,7 +72,7 @@ namespace ECS {
         #region AddComponent (值传递实现，通过 EntityManager 间接修改真实实体)
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType,out Component component) {
             if(entity.HasComponent(componentType)) {
-                component = GetComponentOnEntity(entity,componentType);
+                GetComponentOnEntity(entity,componentType,out component);
                 return true;
             }
             component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out int index);

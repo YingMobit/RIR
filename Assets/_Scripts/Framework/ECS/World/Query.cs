@@ -1,5 +1,7 @@
 using ReferencePoolingSystem;
+using System;
 using System.Collections.Generic;
+using UnityEngine.Pool;
 
 namespace ECS { 
     public class Query : IReference<Query> {
@@ -17,18 +19,20 @@ namespace ECS {
             if((includeMask & mask) == mask)
                 return this;
             includeMask |= mask;
+            List<Component> components = ListPool<Component>.Get();
             if(entities.Count == 0 && componentSets.Count == 0) {
-                List<Component> components = world.GetComponents(componentType,out entities);
+                world.GetComponents(componentType,in components,in entities);
                 foreach(var comp in components) { 
                     componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(componentType, comp));
                 }
             } else {
                 Fliter();
-                var newComponents = world.GetComponentsOnEntities(entities,componentType);
+                world.GetComponentsOnEntities(entities,componentType,in components);
                 for(int i = 0; i < componentSets.Count; i++) {
-                    componentSets[i].AddComponent(componentType,newComponents[i]);
+                    componentSets[i].AddComponent(componentType,components[i]);
                 }
             }
+            ListPool<Component>.Release(components);
             return this;
         }
 
@@ -46,12 +50,17 @@ namespace ECS {
             for(int i = entities.Count-1;i >=0 ; i--) {
                 if(!entities[i].HasAllComponents(includeMask) || entities[i].HasAnyComponent(excludeMask)) { 
                     entities.RemoveAt(i);
+                    var set = componentSets[i];
                     componentSets.RemoveAt(i);
+                    ReferencePoolingCenter.Instance.ReleaseReference(set);
                 }
             }
         }
 
         public void OnRecycle() {
+            foreach(var set in componentSets) { 
+                ReferencePoolingCenter.Instance.ReleaseReference(set);
+            }
             componentSets.Clear();
             entities.Clear();
             includeMask = 0;

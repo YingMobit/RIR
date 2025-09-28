@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace ECS {
@@ -78,13 +79,17 @@ namespace ECS {
             return activePos[id] >= 0 && entity.Version == entities[id].Version;
         }
 
-        public List<Entity> GetActiveEntities() {
+        public void GetActiveEntities(in List<Entity> _entities) {
             // 如需零 GC，可改成传入外部 List 复用或提供枚举器
-            var res = new List<Entity>(activeList.Count);
             for(int i = 0; i < activeList.Count; i++) {
-                res.Add(entities[activeList[i]]);
+                _entities.Add(entities[activeList[i]]);
             }
-            return res;
+        }
+
+        public IEnumerable<Entity> GetActiveEntities() {
+            for(int i = 0; i < activeList.Count; i++) {
+                yield return entities[activeList[i]];
+            }
         }
 
         private void Grow() {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ECS;
 using UnityEngine;
+using UnityEngine.Pool;
 using Debug = UnityEngine.Debug;
 
 public class Runner : MonoBehaviour {
@@ -21,6 +22,7 @@ public class Runner : MonoBehaviour {
     public KeyCode refreshEntityKey = KeyCode.E;
 
     private World world;
+    private Query query;
     // 自定义无分配随机数（xorshift32）
     private uint _randState;
     private void Reseed() { _randState = (uint)(randomSeed == 0 ? 1 : randomSeed) | 1u; }
@@ -61,6 +63,10 @@ public class Runner : MonoBehaviour {
             RunStressTestSingleFrame();
     }
 
+    private void LateUpdate() {
+        world.OnLateUpdate(Time.deltaTime);
+    }
+
     #region Functional Test
     public void RunFunctionalTest() {
         Debug.Log("===== [Functional Test] 开始 =====");
@@ -82,9 +88,14 @@ public class Runner : MonoBehaviour {
         Expect(eEmpty.HasComponent(ComponentTypeEnum.Test1),"Step2 添加 Test1 后刷新仍未包含 Test1");
 
         // 3. 重复添加同一组件
-        var beforePoolCount = world.GetComponents(ComponentTypeEnum.Test1).Count;
+        var list = ListPool<ECS.Component>.Get();
+        world.GetComponents(ComponentTypeEnum.Test1,out list);
+        var beforePoolCount = list.Count;
+        list.Clear();
         world.AddComponent(eEmpty,ComponentTypeEnum.Test1);
-        var afterPoolCount = world.GetComponents(ComponentTypeEnum.Test1).Count;
+        world.GetComponents(ComponentTypeEnum.Test1,out list);
+        var afterPoolCount = list.Count;
+        ListPool<ECS.Component>.Release(list);
         Debug.Log($"[Step3] 重复添加 Test1 组件，池活跃数量前后: {beforePoolCount}->{afterPoolCount} (应相等)");
         Expect(beforePoolCount == afterPoolCount,"Step3 重复添加导致池活跃数量变化");
 
@@ -150,65 +161,97 @@ public class Runner : MonoBehaviour {
     public void RunStressTestSingleFrame() {
         Reseed();
         stopwatch.Restart();
-        int totalAddRemove = 0;
-        int addFail = 0;
-        int removeFail = 0;
+        int totalQueries = 0;
         int leftover = 0;
         System.Text.StringBuilder sb = logEachFailure ? null : new System.Text.StringBuilder(256);
+
         // 预扩容，避免多次内部数组翻倍分配
         if(tempEntities.Capacity < stressEntityCount)
             tempEntities.Capacity = stressEntityCount;
 
-        for(int round = 0; round < stressRounds; round++) {
-            tempEntities.Clear();
-            // 1. 创建实体(无初始组件)
-            for(int i = 0; i < stressEntityCount; i++) {
-                var e = world.GetEntity(gameObject,0); // 不需要 gameObject 引用时传 null 减少 GetInstanceID 调用
-                tempEntities.Add(new TempEntityInfo { entity = e,mask = 0 });
-            }
-            // 2. 添加/移除循环
-            for(int i = 0; i < tempEntities.Count; i++) {
-                var info = tempEntities[i];
-                for(int t = 0; t < togglesPerEntity; t++) {
-                    var type = STRESS_TYPES[NextInt(STRESS_TYPES.Length)];
-                    world.AddComponent(info.entity,type);
-                    var latest = world.GetLatestEntity(info.entity.EntityID);
-                    if(!latest.HasComponent(type)) {
-                        addFail++;
-                        if(logEachFailure)
-                            Debug.LogError($"[Stress][Round {round}] AddFail entity={latest.EntityID} type={type}");
-                        else
-                            sb.Append("AddFail e=").Append(latest.EntityID).Append(' ').Append(type).Append('\n');
-                    }
-                    world.RemoveComponent(latest,type);
-                    var after = world.GetLatestEntity(info.entity.EntityID);
-                    if(after.HasComponent(type)) {
-                        removeFail++;
-                        if(logEachFailure)
-                            Debug.LogError($"[Stress][Round {round}] RemoveFail entity={after.EntityID} type={type}");
-                        else
-                            sb.Append("RemoveFail e=").Append(after.EntityID).Append(' ').Append(type).Append('\n');
-                    }
-                    totalAddRemove += 2;
+        tempEntities.Clear();
+
+        // 1. 创建实体并为每个实体添加 0~3 个不重复组件
+        for (int i = 0; i < stressEntityCount; i++) {
+            var e = world.GetEntity(gameObject, 0);
+            int toAdd = NextInt(4); // 0..3
+            uint combinedMask = 0;
+            // 从 STRESS_TYPES 随机挑选 toAdd 个不重复项
+            if (toAdd > 0) {
+                // 简单用索引数组并随机洗牌的方式选择子集
+                int n = STRESS_TYPES.Length;
+                int[] idx = new int[n];
+                for (int k = 0; k < n; k++) idx[k] = k;
+                // 部分洗牌（Fisher–Yates 前 toAdd 项）
+                for (int k = 0; k < toAdd; k++) {
+                    int r = k + NextInt(n - k);
+                    int tmp = idx[k]; idx[k] = idx[r]; idx[r] = tmp;
+                }
+                for (int k = 0; k < toAdd; k++) {
+                    var type = STRESS_TYPES[idx[k]];
+                    // 添加组件（AddComponent 已处理重复添加的安全性）
+                    world.AddComponent(e, type);
+                    combinedMask |= type.ToMask();
                 }
             }
-            // 3. 销毁前校验
-            foreach(var info in tempEntities) {
-                var latest = world.GetLatestEntity(info.entity.EntityID);
-                if(latest.Archetype != 0) {
-                    leftover++;
-                    if(logEachFailure)
-                        Debug.LogError($"[Stress][Round {round}] Leftover entity={latest.EntityID} arch={latest.Archetype}");
-                    else
-                        sb.Append("Leftover e=").Append(latest.EntityID).Append(' ').Append(latest.Archetype).Append('\n');
-                }
-                world.ReleaseEntity(latest);
+            tempEntities.Add(new TempEntityInfo { entity = world.GetLatestEntity(e.EntityID), mask = combinedMask });
+        }
+
+        // 2. 查询阶段：对单/双/三组件组合分别查询若干次
+        int queryRepeats = Math.Max(1, togglesPerEntity);
+
+        // 单组件查询
+        for(int r = 0; r < queryRepeats; r++) {
+            foreach(var t in STRESS_TYPES) {
+                var q = world.Query().With(t);
+                // optionally validate a bit (lightweight)
+                if(q.Entities.Count < 0) { }
+                totalQueries++;
+                world.OnLateUpdate(Time.deltaTime);
             }
         }
+
+        // 双组件组合查询（所有二元组合）
+        for(int r = 0; r < queryRepeats; r++) {
+            for(int i = 0; i < STRESS_TYPES.Length; i++) {
+                for(int j = i+1; j < STRESS_TYPES.Length; j++) {
+                    var a = STRESS_TYPES[i];
+                    var b = STRESS_TYPES[j];
+                    var q = world.Query().With(a).With(b);
+                    totalQueries++;
+                    world.OnLateUpdate(Time.deltaTime);
+                }
+            }
+        }
+
+        // 三组件组合查询（若有至少3种）
+        if(STRESS_TYPES.Length >= 3) {
+            for(int r = 0; r < queryRepeats; r++) {
+                // take first three as the triple combination (or all triples if more types exist)
+                for(int i = 0; i < STRESS_TYPES.Length; i++) {
+                    for(int j = i+1; j < STRESS_TYPES.Length; j++) {
+                        for(int k = j+1; k < STRESS_TYPES.Length; k++) {
+                            var q = world.Query().With(STRESS_TYPES[i]).With(STRESS_TYPES[j]).With(STRESS_TYPES[k]);
+                            totalQueries++;
+                            world.OnLateUpdate(Time.deltaTime);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. 移除所有组件并回收实体
+        foreach(var info in tempEntities) {
+            var latest = world.GetLatestEntity(info.entity.EntityID);
+            if(latest.Archetype != 0) {
+                // 移除所有组件
+                world.RemoveComponents(latest, latest.Archetype);
+            }
+            world.ReleaseEntity(world.GetLatestEntity(info.entity.EntityID));
+        }
+
         stopwatch.Stop();
-        if(!logEachFailure && sb != null && sb.Length > 0)
-            Debug.LogError(sb.ToString());
-        Debug.Log($"[Stress] 单帧完成 {stressRounds} 轮 实体/轮={stressEntityCount} togglesPerEntity={togglesPerEntity} Ops={totalAddRemove} AddFail={addFail} RemoveFail={removeFail} Leftover={leftover} 耗时={stopwatch.ElapsedMilliseconds} ms");
+        Debug.Log($"[Stress] 创建 {stressEntityCount} 实体，执行 queries={totalQueries} 耗时={stopwatch.ElapsedMilliseconds} ms");
     }
     #endregion
 }

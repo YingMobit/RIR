@@ -15,6 +15,13 @@ namespace ECS {
             return null;
         }
 
+        public Component GetComponent(ComponentTypeEnum componentType) {
+            if(components.ContainsKey(componentType)) {
+                return components[componentType];
+            }
+            return null;
+        }
+
         public ComponentSet AddComponent(ComponentTypeEnum componentType,Component component) {
             if(components.ContainsKey(componentType)) {
                 Debug.LogError($"ComponentSet Already Contains Component of Type {componentType}");
