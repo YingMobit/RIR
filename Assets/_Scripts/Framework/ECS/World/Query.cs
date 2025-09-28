@@ -1,9 +1,9 @@
-using ReferencePoolingSystem;
 using System;
 using System.Collections.Generic;
+using ReferencePoolingSystem;
 using UnityEngine.Pool;
 
-namespace ECS { 
+namespace ECS {
     public class Query : IReference<Query> {
         World world;
         List<ComponentSet> componentSets;
@@ -22,8 +22,8 @@ namespace ECS {
             List<Component> components = ListPool<Component>.Get();
             if(entities.Count == 0 && componentSets.Count == 0) {
                 world.GetComponents(componentType,in components,in entities);
-                foreach(var comp in components) { 
-                    componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(componentType, comp));
+                foreach(var comp in components) {
+                    componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(componentType,comp));
                 }
             } else {
                 Fliter();
@@ -40,15 +40,15 @@ namespace ECS {
             excludeMask |= componentType.ToMask();
             if(entities.Count == 0 && componentSets.Count == 0) {
                 return this;
-            } else { 
+            } else {
                 Fliter();
             }
             return this;
         }
 
         private void Fliter() {
-            for(int i = entities.Count-1;i >=0 ; i--) {
-                if(!entities[i].HasAllComponents(includeMask) || entities[i].HasAnyComponent(excludeMask)) { 
+            for(int i = entities.Count - 1; i >= 0; i--) {
+                if(!entities[i].HasAllComponents(includeMask) || entities[i].HasAnyComponent(excludeMask)) {
                     entities.RemoveAt(i);
                     var set = componentSets[i];
                     componentSets.RemoveAt(i);
@@ -57,8 +57,21 @@ namespace ECS {
             }
         }
 
+
+        public Query() {
+            componentSets = new List<ComponentSet>();
+            entities = new List<Entity>();
+            includeMask = 0;
+            excludeMask = 0;
+        }
+
+        public Query BindWorld(World world) {
+            this.world = world;
+            return this;
+        }
+        int IReference.IndexInRefrencePool { get; set; }
         public void OnRecycle() {
-            foreach(var set in componentSets) { 
+            foreach(var set in componentSets) {
                 ReferencePoolingCenter.Instance.ReleaseReference(set);
             }
             componentSets.Clear();
@@ -73,16 +86,8 @@ namespace ECS {
             entities = null;
         }
 
-        public Query() { 
-            componentSets = new List<ComponentSet>();
-            entities = new List<Entity>();
-            includeMask = 0;
-            excludeMask = 0;
-        }
-
-        public Query BindWorld(World world) { 
-            this.world = world;
-            return this;
+        public IReference Clone() {
+            return new Query();
         }
     }
 }

@@ -6,7 +6,6 @@ namespace ECS {
     /// 外部仍通过原 API 名称 GetComponentPool&lt;TComponent&gt; 获取，但返回类型变为非泛型 ComponentPool。
     /// </summary>
     public sealed class ComponentPoolManager {
-        private const int DEFAULT_INITIAL_POOL_CAPACITY = 8;
         private ComponentPool[] _pools;      // 按类型索引
 
         public ComponentPoolManager() {
@@ -18,7 +17,8 @@ namespace ECS {
 
             var pool = _pools[idx];
             if(pool == null) {
-                pool = new ComponentPool(componentType,ComponentTypeEnumExtension.COMPONENT_TYPE_MAPPING[componentType.GetIndex()],DEFAULT_INITIAL_POOL_CAPACITY);
+                pool = new ComponentPool();
+                pool.Init(componentType);
                 _pools[idx] = pool;
             }
             return pool;

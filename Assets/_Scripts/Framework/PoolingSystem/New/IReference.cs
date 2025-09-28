@@ -1,11 +1,12 @@
 using System;
 
-namespace ReferencePoolingSystem { 
+namespace ReferencePoolingSystem {
     public interface IReference : IDisposable {
+        internal int IndexInRefrencePool { get; set; }
         public void OnRecycle();
+        public IReference Clone();
     }
 
-    public interface IReference<TRefrence> : IReference where TRefrence : IReference , new() {
-        
+    public interface IReference<TRefrence> : IReference where TRefrence : IReference, new() {
     }
 }

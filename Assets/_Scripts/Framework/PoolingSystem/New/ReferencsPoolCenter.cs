@@ -2,25 +2,25 @@ using System;
 using System.Collections.Generic;
 using Utility;
 
-namespace ReferencePoolingSystem { 
+namespace ReferencePoolingSystem {
     public class ReferencePoolingCenter : Singleton<ReferencePoolingCenter> {
-        private Dictionary<Type, ReferencePool> referencePools = new Dictionary<Type, ReferencePool>();
+        private Dictionary<Type,ReferencePool> referencePools = new Dictionary<Type,ReferencePool>();
 
-        public TReference GetReference<TReference>() where TReference : IReference<TReference> ,new() { 
+        public TReference GetReference<TReference>() where TReference : IReference<TReference>, new() {
             Type type = typeof(TReference);
-            if(!referencePools.TryGetValue(type, out var pool)) {
+            if(!referencePools.TryGetValue(type,out var pool)) {
                 pool = new ReferencePool();
                 pool.Init<TReference>();
-                referencePools.Add(type, pool);
+                referencePools.Add(type,pool);
             }
-            return pool.GetRefrence<TReference>();
+            return pool.GetReference<TReference>();
         }
 
-        public void ReleaseReference<TReference>(IReference<TReference> reference) where TReference : IReference<TReference> , new() { 
+        public void ReleaseReference<TReference>(IReference<TReference> reference) where TReference : IReference<TReference>, new() {
             Type type = typeof(TReference);
-            if(referencePools.TryGetValue(type, out var pool)) {
+            if(referencePools.TryGetValue(type,out var pool)) {
                 pool.Recycle(reference);
-            } else { 
+            } else {
                 UnityEngine.Debug.LogError($"RefrencePoolingSystem ReleaseRefrence Error, No Pool For Type {type}");
             }
         }

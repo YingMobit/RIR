@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace ECS {
     public class EntitySparseArray {
-        private readonly List<int[]> sparseArrayBucket;
-        private static int[] TemplateIndexArray;
+        private readonly List<uint[]> sparseArrayBucket;
+        private static uint[] TemplateIndexArray;
 
-        public void SetIndex(int entityID,int bindIndex) {
+        public void SetIndex(int entityID,uint bindIndex) {
             int bucketIndex = entityID / EntityManager.ENTITY_BUCKET_SIZE;
             int indexInBucket = entityID % EntityManager.ENTITY_BUCKET_SIZE;
             while(bucketIndex >= sparseArrayBucket.Count) {
@@ -26,10 +26,10 @@ namespace ECS {
                 }
             }
             int indexInBucket = entityID % EntityManager.ENTITY_BUCKET_SIZE;
-            sparseArrayBucket[bucketIndex][indexInBucket] = -1;
+            sparseArrayBucket[bucketIndex][indexInBucket] = 0;
         }
 
-        public int GetIndex(int entityID) {
+        public uint GetIndex(int entityID) {
             int bucketIndex = entityID / EntityManager.ENTITY_BUCKET_SIZE;
             if(bucketIndex >= sparseArrayBucket.Count) {
                 Debug.LogWarning($"The Bind Index of this Entity:{entityID} Has Not Been Setted");
@@ -42,8 +42,8 @@ namespace ECS {
             return sparseArrayBucket[bucketIndex][indexInBucket];
         }
 
-        private int[] AllocNewPage() {
-            int[] newPage = new int[EntityManager.ENTITY_BUCKET_SIZE];
+        private uint[] AllocNewPage() {
+            uint[] newPage = new uint[EntityManager.ENTITY_BUCKET_SIZE];
             Array.Copy(TemplateIndexArray,newPage,EntityManager.ENTITY_BUCKET_SIZE);
             return newPage;
         }
@@ -54,9 +54,9 @@ namespace ECS {
         }
 
         static EntitySparseArray() {
-            TemplateIndexArray = new int[EntityManager.ENTITY_BUCKET_SIZE];
+            TemplateIndexArray = new uint[EntityManager.ENTITY_BUCKET_SIZE];
             for(int i = 0; i < EntityManager.ENTITY_BUCKET_SIZE; i++) {
-                TemplateIndexArray[i] = -1;
+                TemplateIndexArray[i] = 0;
             }
         }
     }

@@ -1,10 +1,9 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using ReferencePoolingSystem;
-
 using UnityEngine;
 
-namespace ECS { 
+namespace ECS {
     public class ComponentSet : IReference<ComponentSet> {
         private Dictionary<ComponentTypeEnum,Component> components = new();
 
@@ -33,10 +32,15 @@ namespace ECS {
         public void OnRecycle() {
             components.Clear();
         }
-
         public void Dispose() {
             OnRecycle();
             components = null;
         }
+
+        public IReference Clone() {
+            return new ComponentSet();
+        }
+
+        int IReference.IndexInRefrencePool { get; set; }
     }
 }

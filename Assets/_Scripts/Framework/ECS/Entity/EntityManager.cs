@@ -34,12 +34,12 @@ namespace ECS {
             }
         }
 
-        public Entity GetEntity(int gameObjectID,uint archetype = 0) {
+        public Entity GetEntity(int gameObjectID) {
             if(freeCount == 0) {
                 Grow();
             }
             int id = freeStack[--freeCount];
-            entities[id].Set(id,gameObjectID,entities[id].Version,archetype);
+            entities[id].Set(id,gameObjectID,entities[id].Version,0);
             activePos[id] = activeList.Count;
             activeList.Add(id);
             return entities[id];
@@ -80,7 +80,9 @@ namespace ECS {
         }
 
         public void GetActiveEntities(in List<Entity> _entities) {
-            // 如需零 GC，可改成传入外部 List 复用或提供枚举器
+            _entities.Clear();
+            if(_entities.Capacity < activeList.Count)
+                _entities.Capacity = activeList.Count;
             for(int i = 0; i < activeList.Count; i++) {
                 _entities.Add(entities[activeList[i]]);
             }

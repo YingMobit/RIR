@@ -15,7 +15,7 @@ namespace ECS {
 
         #region API
         public Entity GetEntity(GameObject gameObject,uint componentTypeMask) {
-            Entity newEntity = entityManager.GetEntity(registration.GetID(gameObject),componentTypeMask);
+            Entity newEntity = entityManager.GetEntity(registration.GetID(gameObject));
             if(componentTypeMask != 0)
                 AddComponents(newEntity,componentTypeMask);
             return entityManager.GetEntityCopy(newEntity.EntityID);
@@ -75,7 +75,9 @@ namespace ECS {
                 GetComponentOnEntity(entity,componentType,out component);
                 return true;
             }
-            component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out int index);
+            component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
+            if(index == 0)
+                Debug.LogError("Here");
             entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
             entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;
@@ -84,7 +86,9 @@ namespace ECS {
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType) {
             if(entity.HasComponent(componentType))
                 return true;
-            var component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out int index);
+            var component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
+            if(index == 0)
+                Debug.LogError("Here");
             entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
             entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;

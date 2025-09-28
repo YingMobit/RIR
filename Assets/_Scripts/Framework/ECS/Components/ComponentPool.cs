@@ -1,117 +1,112 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ECS {
     /// <summary>
-    /// 非泛型组件池：存放同一 ComponentTypeEnum 类型（单一具体派生 Component）的实例。
-    /// 使用槽位索引 (index) 访问；内部复用 slot，不保证遍历顺序稳定。
+    /// 为了保证稀疏数组有无效值，0号组件为无效组件，组件池永远不会租出它
     /// </summary>
     public sealed class ComponentPool {
-        private readonly ComponentTypeEnum _componentTypeEnum;
-        private readonly Type _concreteType;
 
-        private readonly List<Component> _components;      // 槽位存放组件实例
-        private readonly Stack<int> _freeIndices;          // 空闲槽位
-        private bool[] _activeFlags;                       // 槽是否活跃
-        private int _activeCount;
+        private const int DEFAULT_BUCKET_CAPACITY = 16;
+        public int ActiveComponentCount => components.Count - freeComponentIndexs.Count - 1;
+        public int FreeComponentCount => freeComponentIndexs.Count;
+        public int TotalComponentCount => components.Count;
+        private ComponentTypeEnum componentTypeEnum;
+        private List<Component> components;
+        private bool[] activeMap;
+        private Stack<uint> freeComponentIndexs;
+        private Component componentTemplate;
 
-        public ComponentTypeEnum ComponentTypeEnum => _componentTypeEnum;
-        public Type ConcreteType => _concreteType;
 
-        public int ActiveCount => _activeCount;
-        public int InActiveCount => _freeIndices.Count;
-        public int TotalCount => _components.Count;
-
-        public ComponentPool(ComponentTypeEnum componentTypeEnum,Type concreteType,int initialCapacity) {
-            if(!typeof(Component).IsAssignableFrom(concreteType))
-                throw new ArgumentException($"Type {concreteType} is not a Component",nameof(concreteType));
-
-            _componentTypeEnum = componentTypeEnum;
-            _concreteType = concreteType;
-
-            if(initialCapacity < 0)
-                initialCapacity = 0;
-            _components = new List<Component>(initialCapacity);
-            _freeIndices = new Stack<int>(initialCapacity);
-            _activeFlags = new bool[initialCapacity > 0 ? initialCapacity : 4];
-
-            Prewarm(initialCapacity);
-        }
-
-        private void Prewarm(int count) {
-            for(int i = 0; i < count; i++) {
-                var inst = (Component)Activator.CreateInstance(_concreteType);
-                _components.Add(inst);
-                _freeIndices.Push(i);
+        public void Init(ComponentTypeEnum componentTypeEnum) {
+            this.componentTypeEnum = componentTypeEnum;
+            components = new(DEFAULT_BUCKET_CAPACITY);
+            freeComponentIndexs = new(DEFAULT_BUCKET_CAPACITY);
+            activeMap = new bool[DEFAULT_BUCKET_CAPACITY];
+            componentTemplate = (Component)Activator.CreateInstance(ComponentTypeEnumExtension.COMPONENT_TYPE_MAPPING[componentTypeEnum.GetIndex()]);
+            components.Add(componentTemplate);
+            for(uint i = 1; i < DEFAULT_BUCKET_CAPACITY; i++) {
+                components.Add(componentTemplate.Clone());
+                freeComponentIndexs.Push(i);
             }
         }
 
-        private void EnsureCapacity(int desired) {
-            if(desired <= _components.Count)
-                return;
-            int oldCap = _components.Count;
-            int growTo = Math.Max(desired,oldCap == 0 ? 4 : oldCap * 2);
-
-            if(growTo > _activeFlags.Length)
-                Array.Resize(ref _activeFlags,growTo);
-
-            for(int i = oldCap; i < growTo; i++) {
-                var inst = (Component)Activator.CreateInstance(_concreteType);
-                _components.Add(inst);
-                _freeIndices.Push(i);
+        private void ExpandPool() {
+            uint startIndex = (uint)TotalComponentCount;
+            components.Capacity += DEFAULT_BUCKET_CAPACITY;
+            Array.Resize(ref activeMap,components.Capacity);
+            for(uint i = 0; i < DEFAULT_BUCKET_CAPACITY; i++) {
+                if(startIndex + i != 0) {
+                    components.Add(componentTemplate.Clone());
+                    freeComponentIndexs.Push(startIndex + i);
+                }
             }
         }
 
         /// <summary>
         /// 申请一个组件实例并绑定实体。返回该实例，输出槽位索引。
         /// </summary>
-        public Component GetInstance(Entity entity,out int index) {
-            if(_freeIndices.Count == 0)
-                EnsureCapacity(_components.Count + 1);
-
-            index = _freeIndices.Pop();
-            var comp = _components[index];
-            _activeFlags[index] = true;
-            _activeCount++;
-            comp.OnAttach(entity);
-            return comp;
+        public Component GetInstance(Entity entity,out uint index) {
+            if(freeComponentIndexs.Count == 0) {
+                ExpandPool();
+            }
+            index = freeComponentIndexs.Pop();
+            components[(int)index].OnAttach(entity);
+            activeMap[index] = true;
+            return components[(int)index];
         }
 
         /// <summary>
         /// 归还组件实例。若组件不属于该池将抛异常。
         /// </summary>
-        public void ReleaseInstance(Component component,Entity entity,int index) {
-            if(component == null)
+        public void ReleaseInstance(Component component,Entity entity,uint index) {
+            if(index >= TotalComponentCount) {
+                Debug.LogError($"index out of range:{index}");
                 return;
-
-            if(!_activeFlags[index])
+            }
+            if(index == 0) {
+                Debug.LogError("Zero index Component should not be rented");
                 return;
-
+            }
+            if(component.ComponentType != componentTypeEnum) {
+                Debug.LogError($"Component Type dismatch,wanted:{componentTypeEnum}, actual: {component.ComponentType}");
+                return;
+            }
+            if(component != GetActiveInstance(index)) {
+                Debug.LogError("Not the same Component");
+            }
             component.Reset(entity);
-            _activeFlags[index] = false;
-            _activeCount--;
-            _freeIndices.Push(index);
+            freeComponentIndexs.Push(index);
+            activeMap[index] = false;
         }
 
         /// <summary>
         /// 根据槽位索引取得活跃组件实例；如果非活跃返回 null。
         /// </summary>
-        public Component GetActiveInstance(int index) {
-            if((uint)index >= (uint)_components.Count)
+        public Component GetActiveInstance(uint index) {
+            if(index == 0) {
+                Debug.LogError("Zero index Component should not be rented");
                 return null;
-            if(!_activeFlags[index])
+            }
+            if(!activeMap[index]) {
+                Debug.LogError($"this component is not active:{index}");
                 return null;
-            return _components[index];
+            }
+            return components[(int)index];
         }
 
         /// <summary>
         /// 返回当前所有活跃组件（复制列表）。
         /// </summary>
         public List<Component> GetAllActiveComponents() {
-            var res = new List<Component>(_activeCount);
-            for(int i = 0; i < _components.Count; i++) {
-                if(_activeFlags[i])
-                    res.Add(_components[i]);
+            List<Component> res = new(ActiveComponentCount);
+            int maxCount = TotalComponentCount;
+            for(int i = 1; i < maxCount; i++) {
+                if(activeMap[i]) {
+                    res.Add(components[i]);
+                }
             }
             return res;
         }
