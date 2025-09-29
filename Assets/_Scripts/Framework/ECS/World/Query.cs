@@ -21,15 +21,16 @@ namespace ECS {
             includeMask |= mask;
             List<Component> components = ListPool<Component>.Get();
             if(entities.Count == 0 && componentSets.Count == 0) {
-                world.GetComponents(componentType,in components,in entities);
+                world.GetComponents(componentType,out components,in entities);
                 foreach(var comp in components) {
                     componentSets.Add(world.ReferencePoolingCenter.GetReference<ComponentSet>().AddComponent(componentType,comp));
                 }
             } else {
                 Fliter();
-                world.GetComponentsOnEntities(entities,componentType,in components);
-                for(int i = 0; i < componentSets.Count; i++) {
-                    componentSets[i].AddComponent(componentType,components[i]);
+                Component component;
+                for(int i = 0; i < entities.Count; i++) {
+                    world.GetComponentOnEntity(entities[i],componentType,out component);
+                    componentSets[i].AddComponent(componentType,component);
                 }
             }
             ListPool<Component>.Release(components);

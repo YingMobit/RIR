@@ -1,130 +1,124 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using UnityEngine;
 
 namespace ECS {
     public class EntityManager {
         public const int ENTITY_BUCKET_SIZE = 64;
+        public uint ActiveEntityCount => activeCount;
+        public uint InActiveEntityCount => freeCount;
+        public uint TotalEntityCount => freeCount + activeCount;
 
         private Entity[] entities;
-
-        // 空闲实体索引栈
-        private int[] freeStack;
-        private int freeCount;
-
-        // 活跃实体 ID 动态数组
-        private readonly List<int> activeList = new();
-
-        // 映射：entityID -> 在 activeList 中的位置；未激活为 -1
-        private int[] activePos;
-
-        public int ActiveEntityCount => activeList.Count;
-        public int InActiveEntityCount => freeCount;
-        public int TotalEntityCount => entities.Length;
+        private uint[] freeEntityIndexStack;
+        private uint[] activeEntityIndexStack;//活跃实体的ID栈
+        private uint[] indexOfActiveEntityInStack;//活跃实体在ID栈中的位置
+        private bool[] activeMap;
+        private uint freeCount;
+        private uint activeCount;
 
         public EntityManager() {
             entities = new Entity[ENTITY_BUCKET_SIZE];
-            freeStack = new int[ENTITY_BUCKET_SIZE];
-            activePos = new int[ENTITY_BUCKET_SIZE];
-            freeCount = 0;
-            for(int i = 0; i < ENTITY_BUCKET_SIZE; i++) {
-                entities[i].Set(i,-1,0,0);
-                activePos[i] = -1;
-                freeStack[freeCount++] = i;
+            freeEntityIndexStack = new uint[ENTITY_BUCKET_SIZE];
+            activeMap = new bool[ENTITY_BUCKET_SIZE];
+            activeEntityIndexStack = new uint[ENTITY_BUCKET_SIZE];
+            indexOfActiveEntityInStack = new uint[ENTITY_BUCKET_SIZE];
+
+            for(uint i = 0; i < ENTITY_BUCKET_SIZE; i++) {
+                freeEntityIndexStack[i] = i;
+                indexOfActiveEntityInStack[i] = uint.MaxValue;
+                entities[i].Set(i + 1,-1,0,0);
             }
+            freeCount = ENTITY_BUCKET_SIZE;
+            activeCount = 0;
         }
 
         public Entity GetEntity(int gameObjectID) {
             if(freeCount == 0) {
                 Grow();
             }
-            int id = freeStack[--freeCount];
-            entities[id].Set(id,gameObjectID,entities[id].Version,0);
-            activePos[id] = activeList.Count;
-            activeList.Add(id);
-            return entities[id];
+            uint index = PopFreeEntityIndex();
+            activeMap[index] = true;
+            PushActiveEntityIndex(index);
+            entities[index].Set(index + 1,gameObjectID,entities[index].Version,0);
+            return entities[index];
         }
 
-        public void ReleaseEntity(Entity entity) {
-            int id = entity.EntityID;
-            if(id < 0 || id >= entities.Length)
+        public void ReleaseEntity(in Entity entity) {
+            if(!activeMap[entity.EntityID - 1]) {
+                Debug.LogError($"entity:{entity} is not active");
                 return;
-            int pos = activePos[id];
-            if(pos < 0)
-                return; // 已经是非激活
-
-            int lastIdx = activeList.Count - 1;
-            if(pos != lastIdx) {
-                int lastId = activeList[lastIdx];
-                activeList[pos] = lastId;
-                activePos[lastId] = pos;
             }
-            activeList.RemoveAt(lastIdx);
-            activePos[id] = -1;
-
-            // 版本递增并清空
-            entities[id].Set(id,0,(short)(entities[id].Version + 1),0);
-
-            // 防止意外(大家都不活跃但是有人说他要回收了)
-            if(freeCount == freeStack.Length) {
-                Array.Resize(ref freeStack,freeStack.Length * 2);
-            }
-            freeStack[freeCount++] = id;
+            PushFreeEntityIndex(entity.EntityID - 1);
+            PopActiveEntityIndex(entity.EntityID - 1);
+            activeMap[entity.EntityID - 1] = false;
+            entities[entity.EntityID - 1].Set(entity.EntityID,-1,(short)(entity.Version + 1),0);
         }
 
-        public bool IsActive(Entity entity) {
-            int id = entity.EntityID;
-            if(id < 0 || id >= entities.Length)
-                return false;
-            return activePos[id] >= 0 && entity.Version == entities[id].Version;
-        }
-
-        public void GetActiveEntities(in List<Entity> _entities) {
-            _entities.Clear();
-            if(_entities.Capacity < activeList.Count)
-                _entities.Capacity = activeList.Count;
-            for(int i = 0; i < activeList.Count; i++) {
-                _entities.Add(entities[activeList[i]]);
-            }
+        public bool IsActive(in Entity entity) {
+            return activeMap[entity.EntityID - 1];
         }
 
         public IEnumerable<Entity> GetActiveEntities() {
-            for(int i = 0; i < activeList.Count; i++) {
-                yield return entities[activeList[i]];
+            for(int i = 0; i < activeCount; i++) {
+                yield return entities[activeEntityIndexStack[i]];
             }
         }
 
         private void Grow() {
-            int oldLen = entities.Length;
-            int newLen = oldLen + ENTITY_BUCKET_SIZE;
-
-            Array.Resize(ref entities,newLen);
-            Array.Resize(ref activePos,newLen);
-
-            // 扩大 freeStack（若需要）
-            if(freeStack.Length < newLen) {
-                Array.Resize(ref freeStack,newLen);
+            uint startIndex = (uint)entities.Length;
+            int newLength = entities.Length + ENTITY_BUCKET_SIZE;
+            Array.Resize(ref entities,newLength);
+            Array.Resize(ref freeEntityIndexStack,newLength);
+            Array.Resize(ref activeMap,newLength);
+            Array.Resize(ref activeEntityIndexStack,newLength);
+            Array.Resize(ref indexOfActiveEntityInStack,newLength);
+            for(uint i = 0; i < ENTITY_BUCKET_SIZE; i++) {
+                entities[startIndex + i].Set(startIndex + i + 1,-1,0,0);
+                freeEntityIndexStack[freeCount + i] = startIndex + i;
+                indexOfActiveEntityInStack[startIndex + i] = uint.MaxValue;
             }
+            freeCount += ENTITY_BUCKET_SIZE;
+        }
 
-            for(int i = oldLen; i < newLen; i++) {
-                entities[i].Set(i,-1,0,0);
-                activePos[i] = -1;
-                freeStack[freeCount++] = i;
+        private uint PopFreeEntityIndex() {
+            return freeEntityIndexStack[--freeCount];
+        }
+
+        private void PushFreeEntityIndex(uint index) {
+            freeEntityIndexStack[freeCount++] = index;
+        }
+
+        private void PopActiveEntityIndex(uint index) {
+            uint indexInStack = indexOfActiveEntityInStack[index];
+            if(indexInStack >= activeCount) {
+                Debug.LogError($"entity:{index + 1} is not in activeEntityStack");
+                return;
             }
+            activeEntityIndexStack[indexInStack] = activeEntityIndexStack[--activeCount];
+            indexOfActiveEntityInStack[index] = uint.MaxValue;
+            indexOfActiveEntityInStack[activeEntityIndexStack[indexInStack]] = indexInStack;
+        }
+
+        private void PushActiveEntityIndex(uint index) {
+            indexOfActiveEntityInStack[index] = activeCount;
+            activeEntityIndexStack[activeCount++] = index;
         }
 
         #region Internal Mutation Helpers
-        internal void AddComponentMask(int entityID,uint mask) {
-            ref var e = ref entities[entityID];
+        internal void AddComponentMask(uint entityID,uint mask) {
+            ref var e = ref entities[entityID - 1];
             e.OnAddComponent(mask);
         }
 
-        internal void RemoveComponentMask(int entityID,uint mask) {
-            ref var e = ref entities[entityID];
+        internal void RemoveComponentMask(uint entityID,uint mask) {
+            ref var e = ref entities[entityID - 1];
             e.OnRemoveComponent(mask);
         }
 
-        internal Entity GetEntityCopy(uint entityID) => entities[entityID];
+        internal Entity GetEntityCopy(uint entityID) => entities[entityID - 1];
         #endregion
     }
 }

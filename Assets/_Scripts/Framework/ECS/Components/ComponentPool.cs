@@ -61,7 +61,8 @@ namespace ECS {
         /// <summary>
         /// 归还组件实例。若组件不属于该池将抛异常。
         /// </summary>
-        public void ReleaseInstance(Component component,Entity entity,uint index) {
+        public void ReleaseInstance(Component component,Entity entity) {
+            uint index = component.ComponentID;
             if(index >= TotalComponentCount) {
                 Debug.LogError($"index out of range:{index}");
                 return;
@@ -100,15 +101,15 @@ namespace ECS {
         /// <summary>
         /// 返回当前所有活跃组件（复制列表）。
         /// </summary>
-        public List<Component> GetAllActiveComponents() {
-            List<Component> res = new(ActiveComponentCount);
+        public void GetAllActiveComponents(in List<Component> _components) {
             int maxCount = TotalComponentCount;
+            if(components.Capacity < ActiveComponentCount)
+                components.Capacity = ActiveComponentCount;
             for(int i = 1; i < maxCount; i++) {
                 if(activeMap[i]) {
-                    res.Add(components[i]);
+                    _components.Add(components[i]);
                 }
             }
-            return res;
         }
     }
 }
