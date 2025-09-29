@@ -124,7 +124,7 @@ namespace ECS {
             e.OnRemoveComponent(mask);
         }
 
-        internal Entity GetEntityCopy(int entityID) => entities[entityID];
+        internal Entity GetEntityCopy(uint entityID) => entities[entityID];
         #endregion
     }
 }

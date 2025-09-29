@@ -5,35 +5,40 @@ using UnityEngine;
 
 namespace ECS {
     public class ComponentSet : IReference<ComponentSet> {
-        private Dictionary<ComponentTypeEnum,Component> components = new();
+        public uint ReferenceType => ReferenceTypes.COMPONENT_SET;
+        private Component[] components = new Component[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
 
         public TComponent GetComponent<TComponent>(ComponentTypeEnum componentType) where TComponent : Component {
-            if(components.ContainsKey(componentType)) {
-                return components[componentType] as TComponent;
+            uint index = componentType.GetIndex();
+            if(components[index] != null) {
+                return components[index] as TComponent;
             }
             return null;
         }
 
         public Component GetComponent(ComponentTypeEnum componentType) {
-            if(components.ContainsKey(componentType)) {
-                return components[componentType];
+            uint index = componentType.GetIndex();
+            if(components[index] != null) {
+                return components[index];
             }
             return null;
         }
 
         public ComponentSet AddComponent(ComponentTypeEnum componentType,Component component) {
-            if(components.ContainsKey(componentType)) {
+            uint index = componentType.GetIndex();
+            if(components[index] != null) {
                 Debug.LogError($"ComponentSet Already Contains Component of Type {componentType}");
             }
-            components[componentType] = component;
+            components[index] = component;
             return this;
         }
 
         public void OnRecycle() {
-            components.Clear();
+            Array.Clear(components, 0, components.Length);
         }
         public void Dispose() {
             OnRecycle();
+            Array.Clear(components, 0, components.Length);
             components = null;
         }
 

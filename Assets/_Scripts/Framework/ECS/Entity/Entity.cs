@@ -2,7 +2,7 @@
 
 namespace ECS {
     public struct Entity : IEquatable<Entity> {
-        public int EntityID { get; private set; }
+        public uint EntityID { get; private set; }
         public int GameObjectID { get; private set; }
         public short Version { get; private set; }
         public uint Archetype { get; private set; }
@@ -41,7 +41,7 @@ namespace ECS {
             Archetype &= ~componentTypesToRemove;
         }
 
-        public void Set(int entityID,int gameObjectID,short version,uint archeType) {
+        public void Set(uint entityID,int gameObjectID,short version,uint archeType) {
             EntityID = entityID;
             GameObjectID = gameObjectID;
             Version = version;
@@ -52,7 +52,7 @@ namespace ECS {
             Archetype = archeType;
         }
 
-        public Entity(int entityID,int gameObjectID,short version,uint archeType) {
+        public Entity(uint entityID,int gameObjectID,short version,uint archeType) {
             EntityID = entityID;
             GameObjectID = gameObjectID;
             Version = version;
@@ -68,7 +68,7 @@ namespace ECS {
         }
 
         public override int GetHashCode() {
-            return (EntityID << 16) | (ushort)Version;
+            return (int) (EntityID << 16) | (ushort)Version;
         }
 
         bool IEquatable<Entity>.Equals(Entity other) {

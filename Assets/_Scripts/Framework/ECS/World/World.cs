@@ -5,11 +5,14 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace ECS {
+    //将稀疏数组的结构改为存储EntityID
     public class World {
         private GameObjectRegistration registration;
         private ComponentPoolManager componentPoolManager;
         private EntityManager entityManager;
-        private List<EntitySparseArray> entitySparseArrays;
+        private SparseArray[] entitySearchSparseArrays;
+        private SparseArray[] componentSearchSparseArrays;
+        public ReferencePoolingCenter ReferencePoolingCenter { get; private set; }
 
         private List<Query> activeQuriesCurrentFrame;
 
@@ -24,7 +27,7 @@ namespace ECS {
         /// <summary>
         /// 返回当前最新的实体副本（根据内部存储）。用于外部在调用 Add/Remove 后刷新本地缓存的 Entity 结构体。
         /// </summary>
-        public Entity GetLatestEntity(int entityID) => entityManager.GetEntityCopy(entityID);
+        public Entity GetLatestEntity(uint entityID) => entityManager.GetEntityCopy(entityID);
 
         public Entity GetLatestEntity(Entity entity) {
             return entityManager.GetEntityCopy(entity.EntityID);
@@ -41,28 +44,29 @@ namespace ECS {
             components = componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents();
         }
 
-        public void GetComponents(ComponentTypeEnum componentType,in List<Component> components,in List<Entity> entities) {
-            uint componentMask = componentType.ToMask();
-            foreach(var entity in entityManager.GetActiveEntities()) {
-                if((entity.Archetype & componentMask) == componentMask) {
-                    entities.Add(entity);
-                    components.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
-                }
+        public void GetComponents(ComponentTypeEnum componentType,out List<Component> components,in List<Entity> entityCopies) {
+            components = componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents();
+            int count = components.Count;
+            if(entityCopies.Capacity < count) entityCopies.Capacity = count;
+            entityCopies.Clear();
+            for(int i=0;i < count ; i++) {
+                entityCopies.Add(entityManager.GetEntityCopy(entitySearchSparseArrays[componentType.GetIndex()].GetIndex(components[i].ComponentID)));
             }
         }
         public void GetComponentOnEntity(Entity entity,ComponentTypeEnum componentType,out Component component) {
-            component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
+            
+
         }
 
         public void GetComponentsOnEntities(List<Entity> entities,ComponentTypeEnum componentType,in List<Component> components) {
             foreach(var entity in entities) {
-                components.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
+                components.Add(componentPoolManager.GetComponentPool(componentType).GetActiveInstance(// entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID)));
             }
         }
 
 
         public Query Query() {
-            var query = ReferencePoolingCenter.Instance.GetReference<Query>();
+            var query = ReferencePoolingCenter.GetReference<Query>();
             query.BindWorld(this);
             activeQuriesCurrentFrame.Add(query);
             return query;
@@ -78,7 +82,7 @@ namespace ECS {
             component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
             if(index == 0)
                 Debug.LogError("Here");
-            entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
+            // entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
             entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
@@ -89,7 +93,7 @@ namespace ECS {
             var component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
             if(index == 0)
                 Debug.LogError("Here");
-            entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
+            // entitySparseArrays[(int)componentType.GetIndex()].SetIndex(entity.EntityID,index);
             entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
@@ -115,11 +119,11 @@ namespace ECS {
                 Debug.LogError($"Entity:{entity.EntityID} doesn't has this type of Component:{componentType}");
                 return false;
             }
-            var component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
+            var component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(// entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
             if(component == null)
                 return false;
-            componentPoolManager.GetComponentPool(componentType).ReleaseInstance(component,entity,entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
-            entitySparseArrays[(int)componentType.GetIndex()].RemoveIndex(entity.EntityID);
+            componentPoolManager.GetComponentPool(componentType).ReleaseInstance(component,entity,// entitySparseArrays[(int)componentType.GetIndex()].GetIndex(entity.EntityID));
+            // entitySparseArrays[(int)componentType.GetIndex()].RemoveIndex(entity.EntityID);
             entityManager.RemoveComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
@@ -157,7 +161,7 @@ namespace ECS {
             // System Call
 
             foreach(var query in activeQuriesCurrentFrame) {
-                ReferencePoolingCenter.Instance.ReleaseReference(query);
+                ReferencePoolingCenter.ReleaseReference(query);
             }
             activeQuriesCurrentFrame.Clear();
         }
@@ -172,11 +176,12 @@ namespace ECS {
             registration = new GameObjectRegistration();
             componentPoolManager = new ComponentPoolManager();
             entityManager = new EntityManager();
-            entitySparseArrays = new List<EntitySparseArray>();
+            entitySearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
             activeQuriesCurrentFrame = new List<Query>();
+            ReferencePoolingCenter = new ReferencePoolingCenter();
 
             for(int i = 0; i < ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT; i++) {
-                entitySparseArrays.Add(new EntitySparseArray());
+                entitySearchSparseArrays[i] = new SparseArray();
             }
         }
     }

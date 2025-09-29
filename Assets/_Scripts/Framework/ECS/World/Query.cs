@@ -23,7 +23,7 @@ namespace ECS {
             if(entities.Count == 0 && componentSets.Count == 0) {
                 world.GetComponents(componentType,in components,in entities);
                 foreach(var comp in components) {
-                    componentSets.Add(ReferencePoolingCenter.Instance.GetReference<ComponentSet>().AddComponent(componentType,comp));
+                    componentSets.Add(world.ReferencePoolingCenter.GetReference<ComponentSet>().AddComponent(componentType,comp));
                 }
             } else {
                 Fliter();
@@ -52,7 +52,7 @@ namespace ECS {
                     entities.RemoveAt(i);
                     var set = componentSets[i];
                     componentSets.RemoveAt(i);
-                    ReferencePoolingCenter.Instance.ReleaseReference(set);
+                    world.ReferencePoolingCenter.ReleaseReference(set);
                 }
             }
         }
@@ -69,10 +69,12 @@ namespace ECS {
             this.world = world;
             return this;
         }
+
+        public uint ReferenceType => ReferenceTypes.QUERY;
         int IReference.IndexInRefrencePool { get; set; }
         public void OnRecycle() {
             foreach(var set in componentSets) {
-                ReferencePoolingCenter.Instance.ReleaseReference(set);
+                world.ReferencePoolingCenter.ReleaseReference(set);
             }
             componentSets.Clear();
             entities.Clear();

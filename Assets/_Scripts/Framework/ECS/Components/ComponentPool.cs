@@ -9,7 +9,7 @@ namespace ECS {
     /// </summary>
     public sealed class ComponentPool {
 
-        private const int DEFAULT_BUCKET_CAPACITY = 16;
+        public const int DEFAULT_BUCKET_CAPACITY = 64;
         public int ActiveComponentCount => components.Count - freeComponentIndexs.Count - 1;
         public int FreeComponentCount => freeComponentIndexs.Count;
         public int TotalComponentCount => components.Count;
@@ -26,9 +26,9 @@ namespace ECS {
             freeComponentIndexs = new(DEFAULT_BUCKET_CAPACITY);
             activeMap = new bool[DEFAULT_BUCKET_CAPACITY];
             componentTemplate = (Component)Activator.CreateInstance(ComponentTypeEnumExtension.COMPONENT_TYPE_MAPPING[componentTypeEnum.GetIndex()]);
-            components.Add(componentTemplate);
+            components.Add(componentTemplate.SetComponentID(0));
             for(uint i = 1; i < DEFAULT_BUCKET_CAPACITY; i++) {
-                components.Add(componentTemplate.Clone());
+                components.Add(componentTemplate.Clone().SetComponentID(i));
                 freeComponentIndexs.Push(i);
             }
         }
@@ -39,7 +39,7 @@ namespace ECS {
             Array.Resize(ref activeMap,components.Capacity);
             for(uint i = 0; i < DEFAULT_BUCKET_CAPACITY; i++) {
                 if(startIndex + i != 0) {
-                    components.Add(componentTemplate.Clone());
+                    components.Add(componentTemplate.Clone().SetComponentID(startIndex + i));
                     freeComponentIndexs.Push(startIndex + i);
                 }
             }

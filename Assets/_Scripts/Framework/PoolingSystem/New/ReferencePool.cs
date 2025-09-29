@@ -4,24 +4,21 @@ using UnityEngine;
 
 namespace ReferencePoolingSystem {
     public class ReferencePool {
-        private List<IReference[]> referenceBuckets;
+        private List<IReference> references;
         private Stack<int> freeReferenceIndexs;
         private int totalReferenceCount = 0;
         private Type referenceType;
         private IReference ReferenceTemplate;
-        private const int DEFAULT_BUCKET_CAPACITY = 16;
-        private const int DEFAULT_BUCKET_COUNT = 4;
+        private const int DEFAULT_REFERENCE_COUNT = 64;
 
         Type tempType;
 
         public void Init<TReference>() where TReference : IReference<TReference>, new() {
             referenceType = typeof(TReference);
-            referenceBuckets = new(DEFAULT_BUCKET_COUNT);
-            freeReferenceIndexs = new(DEFAULT_BUCKET_COUNT);
+            references = new(DEFAULT_REFERENCE_COUNT);
+            freeReferenceIndexs = new(DEFAULT_REFERENCE_COUNT);
             ReferenceTemplate = new TReference();
-            for(int i = 0; i < DEFAULT_BUCKET_COUNT; i++) {
-                ExpandPool();
-            }
+            ExpandPool();
         }
 
         public TReference GetReference<TReference>() where TReference : IReference<TReference>, new() {
@@ -31,7 +28,7 @@ namespace ReferencePoolingSystem {
                     ExpandPool();
                 }
                 int freeIndex = freeReferenceIndexs.Pop();
-                return (TReference)referenceBuckets[freeIndex / DEFAULT_BUCKET_CAPACITY][freeIndex % DEFAULT_BUCKET_CAPACITY];
+                return (TReference)references[freeIndex];
             } else {
                 Debug.LogError($"RefrencePool GetReference Type Error, Current Type is {referenceType}, But Get Type is {tempType}");
                 return default;
@@ -55,13 +52,14 @@ namespace ReferencePoolingSystem {
         }
 
         private void ExpandPool() {
-            IReference[] bucket = new IReference[DEFAULT_BUCKET_CAPACITY];
-            for(int i = 0; i < DEFAULT_BUCKET_CAPACITY; i++) {
-                bucket[i] = ReferenceTemplate.Clone();
-                bucket[i].IndexInRefrencePool = totalReferenceCount;
-                freeReferenceIndexs.Push(totalReferenceCount++);
+            references.Capacity += DEFAULT_REFERENCE_COUNT;
+            for(int i = 0; i < DEFAULT_REFERENCE_COUNT; i++) {
+                var reference = ReferenceTemplate.Clone();
+                reference.IndexInRefrencePool = totalReferenceCount;
+                references.Add(reference);
+                freeReferenceIndexs.Push(totalReferenceCount);
+                totalReferenceCount++;
             }
-            referenceBuckets.Add(bucket);
         }
     }
 }
