@@ -23,6 +23,11 @@ public class Runner : MonoBehaviour {
 
     private World world;
     private Query query;
+    public int CurrentEntityCount { get => world.GetEntityCount(); } 
+    public int CurrentActiveEntityCount { get => world.GetActiveEntityCount(); }
+    public int CurrentComponentCount => world.GetComponentCount( ComponentTypeEnum.Test1) + world.GetComponentCount(ComponentTypeEnum.HAHAHA) + world.GetComponentCount(ComponentTypeEnum.NewComponent);
+    public int CurrentActiveComponentCount => world.GetActiveComponentCount(ComponentTypeEnum.Test1) + world.GetActiveComponentCount(ComponentTypeEnum.HAHAHA) + world.GetActiveComponentCount(ComponentTypeEnum.NewComponent);
+
     // 自定义无分配随机数（xorshift32）
     private uint _randState;
     private void Reseed() { _randState = (uint)(randomSeed == 0 ? 1 : randomSeed) | 1u; }
@@ -89,11 +94,11 @@ public class Runner : MonoBehaviour {
 
         // 3. 重复添加同一组件
         var list = ListPool<ECS.Component>.Get();
-        world.GetComponents(ComponentTypeEnum.Test1,out list);
+        world.GetComponents(ComponentTypeEnum.Test1,list);
         var beforePoolCount = list.Count;
         list.Clear();
         world.AddComponent(eEmpty,ComponentTypeEnum.Test1);
-        world.GetComponents(ComponentTypeEnum.Test1,out list);
+        world.GetComponents(ComponentTypeEnum.Test1,list);
         var afterPoolCount = list.Count;
         ListPool<ECS.Component>.Release(list);
         Debug.Log($"[Step3] 重复添加 Test1 组件，池活跃数量前后: {beforePoolCount}->{afterPoolCount} (应相等)");
@@ -106,16 +111,16 @@ public class Runner : MonoBehaviour {
         Expect(eEmpty.HasComponent(ComponentTypeEnum.HAHAHA),"Step4 添加 HAHAHA 失败");
 
         // 5. 查询验证
-        var q = world.Query().With(ComponentTypeEnum.Test1);
+        var q = world.Query().With(ComponentTypeEnum.Test1).Execute();
         Debug.Log($"[Step5] Query With(Test1) Count={q.Entities.Count}");
         Expect(q.Entities.Count > 0,"Step5 Query(Test1) 结果应 > 0");
         world.OnLateUpdate(Time.deltaTime); // 手动回收查询对象
-        q = world.Query().With(ComponentTypeEnum.Test1).With(ComponentTypeEnum.NewComponent);
+        q = world.Query().With(ComponentTypeEnum.Test1).With(ComponentTypeEnum.NewComponent).Execute();
         Debug.Log($"[Step5] Query With(Test1,NewComponent) Count={q.Entities.Count}");
         foreach(var ent in q.Entities)
             Expect(ent.HasComponent(ComponentTypeEnum.Test1) && ent.HasComponent(ComponentTypeEnum.NewComponent),"Step5 Query(Test1,NewComponent) 存在不符合条件实体");
         world.OnLateUpdate(Time.deltaTime);
-        q = world.Query().With(ComponentTypeEnum.Test1).With(ComponentTypeEnum.NewComponent).Without<HAHAHA>(ComponentTypeEnum.HAHAHA);
+        q = world.Query().With(ComponentTypeEnum.Test1).With(ComponentTypeEnum.NewComponent).Without<HAHAHA>(ComponentTypeEnum.HAHAHA).Execute();
         Debug.Log($"[Step5] Query With(Test1,NewComponent) Without(HAHAHA) Count={q.Entities.Count}");
         foreach(var ent in q.Entities)
             Expect(!ent.HasComponent(ComponentTypeEnum.HAHAHA),"Step5 Query Without(HAHAHA) 结果仍包含 HAHAHA");
@@ -172,38 +177,41 @@ public class Runner : MonoBehaviour {
         tempEntities.Clear();
 
         // 1. 创建实体并为每个实体添加 0~3 个不重复组件
-        for (int i = 0; i < stressEntityCount; i++) {
-            var e = world.GetEntity(gameObject, 0);
+        for(int i = 0; i < stressEntityCount; i++) {
+            var e = world.GetEntity(gameObject,0);
             int toAdd = NextInt(4); // 0..3
             uint combinedMask = 0;
             // 从 STRESS_TYPES 随机挑选 toAdd 个不重复项
-            if (toAdd > 0) {
+            if(toAdd > 0) {
                 // 简单用索引数组并随机洗牌的方式选择子集
                 int n = STRESS_TYPES.Length;
                 int[] idx = new int[n];
-                for (int k = 0; k < n; k++) idx[k] = k;
+                for(int k = 0; k < n; k++)
+                    idx[k] = k;
                 // 部分洗牌（Fisher–Yates 前 toAdd 项）
-                for (int k = 0; k < toAdd; k++) {
+                for(int k = 0; k < toAdd; k++) {
                     int r = k + NextInt(n - k);
-                    int tmp = idx[k]; idx[k] = idx[r]; idx[r] = tmp;
+                    int tmp = idx[k];
+                    idx[k] = idx[r];
+                    idx[r] = tmp;
                 }
-                for (int k = 0; k < toAdd; k++) {
+                for(int k = 0; k < toAdd; k++) {
                     var type = STRESS_TYPES[idx[k]];
                     // 添加组件（AddComponent 已处理重复添加的安全性）
-                    world.AddComponent(e, type);
+                    world.AddComponent(e,type);
                     combinedMask |= type.ToMask();
                 }
             }
-            tempEntities.Add(new TempEntityInfo { entity = world.GetLatestEntity(e.EntityID), mask = combinedMask });
+            tempEntities.Add(new TempEntityInfo { entity = world.GetLatestEntity(e.EntityID),mask = combinedMask });
         }
 
         // 2. 查询阶段：对单/双/三组件组合分别查询若干次
-        int queryRepeats = Math.Max(1, togglesPerEntity);
+        int queryRepeats = Math.Max(1,togglesPerEntity);
 
         // 单组件查询
         for(int r = 0; r < queryRepeats; r++) {
             foreach(var t in STRESS_TYPES) {
-                var q = world.Query().With(t);
+                var q = world.Query().With(t).Execute();
                 // optionally validate a bit (lightweight)
                 if(q.Entities.Count < 0) { }
                 totalQueries++;
@@ -214,10 +222,10 @@ public class Runner : MonoBehaviour {
         // 双组件组合查询（所有二元组合）
         for(int r = 0; r < queryRepeats; r++) {
             for(int i = 0; i < STRESS_TYPES.Length; i++) {
-                for(int j = i+1; j < STRESS_TYPES.Length; j++) {
+                for(int j = i + 1; j < STRESS_TYPES.Length; j++) {
                     var a = STRESS_TYPES[i];
                     var b = STRESS_TYPES[j];
-                    var q = world.Query().With(a).With(b);
+                    var q = world.Query().With(a).With(b).Execute();
                     totalQueries++;
                     world.OnLateUpdate(Time.deltaTime);
                 }
@@ -229,9 +237,9 @@ public class Runner : MonoBehaviour {
             for(int r = 0; r < queryRepeats; r++) {
                 // take first three as the triple combination (or all triples if more types exist)
                 for(int i = 0; i < STRESS_TYPES.Length; i++) {
-                    for(int j = i+1; j < STRESS_TYPES.Length; j++) {
-                        for(int k = j+1; k < STRESS_TYPES.Length; k++) {
-                            var q = world.Query().With(STRESS_TYPES[i]).With(STRESS_TYPES[j]).With(STRESS_TYPES[k]);
+                    for(int j = i + 1; j < STRESS_TYPES.Length; j++) {
+                        for(int k = j + 1; k < STRESS_TYPES.Length; k++) {
+                            var q = world.Query().With(STRESS_TYPES[i]).With(STRESS_TYPES[j]).With(STRESS_TYPES[k]).Execute();
                             totalQueries++;
                             world.OnLateUpdate(Time.deltaTime);
                         }
@@ -245,7 +253,7 @@ public class Runner : MonoBehaviour {
             var latest = world.GetLatestEntity(info.entity.EntityID);
             if(latest.Archetype != 0) {
                 // 移除所有组件
-                world.RemoveComponents(latest, latest.Archetype);
+                world.RemoveComponents(latest,latest.Archetype);
             }
             world.ReleaseEntity(world.GetLatestEntity(info.entity.EntityID));
         }

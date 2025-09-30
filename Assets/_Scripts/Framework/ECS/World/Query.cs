@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ReferencePoolingSystem;
 using UnityEngine.Pool;
 
@@ -8,6 +9,7 @@ namespace ECS {
         World world;
         List<ComponentSet> componentSets;
         List<Entity> entities;
+        ComponentTypeEnum[] componentTypes;
         uint includeMask;
         uint excludeMask;
 
@@ -15,49 +17,67 @@ namespace ECS {
         public IReadOnlyList<Entity> Entities => entities;
 
         public Query With(ComponentTypeEnum componentType) {
-            uint mask = componentType.ToMask();
-            if((includeMask & mask) == mask)
-                return this;
-            includeMask |= mask;
-            List<Component> components = ListPool<Component>.Get();
-            if(entities.Count == 0 && componentSets.Count == 0) {
-                world.GetComponents(componentType,out components,in entities);
-                foreach(var comp in components) {
-                    componentSets.Add(world.ReferencePoolingCenter.GetReference<ComponentSet>().AddComponent(componentType,comp));
-                }
-            } else {
-                Fliter();
-                Component component;
-                for(int i = 0; i < entities.Count; i++) {
-                    world.GetComponentOnEntity(entities[i],componentType,out component);
-                    componentSets[i].AddComponent(componentType,component);
-                }
-            }
-            ListPool<Component>.Release(components);
+            includeMask |= componentType.ToMask();
             return this;
         }
 
         public Query Without<TComponent>(ComponentTypeEnum componentType) where TComponent : Component {
             excludeMask |= componentType.ToMask();
-            if(entities.Count == 0 && componentSets.Count == 0) {
-                return this;
-            } else {
-                Fliter();
-            }
             return this;
         }
 
-        private void Fliter() {
-            for(int i = entities.Count - 1; i >= 0; i--) {
-                if(!entities[i].HasAllComponents(includeMask) || entities[i].HasAnyComponent(excludeMask)) {
-                    entities.RemoveAt(i);
-                    var set = componentSets[i];
-                    componentSets.RemoveAt(i);
-                    world.ReferencePoolingCenter.ReleaseReference(set);
+        public Query Execute() {
+            componentTypes = includeMask.MaskToEnums();
+            if(componentTypes.Length == 0) return this;
+
+            int minCount = int.MaxValue;
+            int count;
+            ComponentTypeEnum pivotType = componentTypes[0];
+            foreach(var type in componentTypes) {
+                count = world.GetActiveComponentCount(type);
+                if(count < minCount) { 
+                    pivotType = type;
+                    minCount = count;
                 }
             }
-        }
 
+            List<Component> pivotComponents = ListPool<Component>.Get();
+            world.GetComponents(pivotType,pivotComponents,entities);
+            for(int i= entities.Count - 1; i >= 0; i--) {
+                if(!(entities[i].HasAllComponents(includeMask) && entities[i].WithOutAllComponents(excludeMask))) {
+                    if(i == entities.Count - 1) {
+                        pivotComponents.RemoveAt(i);
+                        entities.RemoveAt(i);
+                    } else {
+                        pivotComponents[i] = pivotComponents[pivotComponents.Count - 1];
+                        pivotComponents.RemoveAt(pivotComponents.Count - 1);
+                        entities[i] = entities[entities.Count - 1];
+                        entities.RemoveAt(entities.Count - 1);
+                    }
+                }
+            }
+
+            int fitCount = entities.Count;
+            ComponentSet set;
+            Component temp;
+            for(int i=0;i < fitCount; i++) {
+                set = world.ReferencePoolingCenter.GetReference<ComponentSet>();
+                componentSets.Add(set);
+                set.AddComponent(pivotType,pivotComponents[i]);
+                for(int j = 0;j < componentTypes.Length ; j++) {
+                    if(componentTypes[j] != pivotType) {
+                        world.GetComponentOnEntity(entities[i],componentTypes[j],out temp);
+                        set.AddComponent(componentTypes[j],temp);
+                    }
+                }
+            }
+
+            set = null;
+            temp = null;
+            pivotComponents.Clear();
+            ListPool<Component>.Release(pivotComponents);
+            return this;
+        }
 
         public Query() {
             componentSets = new List<ComponentSet>();
@@ -79,6 +99,7 @@ namespace ECS {
             }
             componentSets.Clear();
             entities.Clear();
+            if(componentTypes != null) Array.Clear(componentTypes,0,componentTypes.Length);
             includeMask = 0;
             excludeMask = 0;
         }

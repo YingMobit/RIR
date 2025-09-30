@@ -15,9 +15,13 @@ namespace ECS {
         private SparseArray[] componentSearchSparseArrays;
         public ReferencePoolingCenter ReferencePoolingCenter { get; private set; }
         private List<Query> activeQuriesCurrentFrame;
-        private List<List<Component>> activeComponentListCurrnetFrame;
 
         #region API
+        public int GetEntityCount() => (int)entityManager.TotalEntityCount;
+        public int GetActiveEntityCount() => (int)entityManager.ActiveEntityCount;
+        public int GetComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).TotalComponentCount;
+        public int GetActiveComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).ActiveComponentCount;
+        
         public Entity GetEntity(GameObject gameObject,uint componentTypeMask) {
             Entity newEntity = entityManager.GetEntity(registration.GetID(gameObject));
             if(componentTypeMask != 0)
@@ -40,16 +44,13 @@ namespace ECS {
             entityManager.ReleaseEntity(entity);
         }
 
+
         #region GetComponents
-        public void GetComponents(ComponentTypeEnum componentType,out List<Component> components) {
-            components = ListPool<Component>.Get();
-            activeComponentListCurrnetFrame.Add(components);
+        public void GetComponents(ComponentTypeEnum componentType,in List<Component> components) {
             componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
         }
 
-        public void GetComponents(ComponentTypeEnum componentType,out List<Component> components,in List<Entity> entityCopies) {
-            components = ListPool<Component>.Get();
-            activeComponentListCurrnetFrame.Add(components);
+        public void GetComponents(ComponentTypeEnum componentType,in List<Component> components,in List<Entity> entityCopies) {
             componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
             int count = components.Count;
             if(entityCopies.Capacity < count)
@@ -177,11 +178,7 @@ namespace ECS {
             foreach(var query in activeQuriesCurrentFrame) {
                 ReferencePoolingCenter.ReleaseReference(query);
             }
-            foreach(var list in activeComponentListCurrnetFrame) {
-                //ListPool<Component>.Release(list);
-            }
             activeQuriesCurrentFrame.Clear();
-            activeComponentListCurrnetFrame.Clear();
         }
 
         public void OnNetworkUpdate(int frameCount) {
@@ -197,7 +194,6 @@ namespace ECS {
             entitySearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
             componentSearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
             activeQuriesCurrentFrame = new List<Query>();
-            activeComponentListCurrnetFrame = new List<List<Component>>();
             ReferencePoolingCenter = new ReferencePoolingCenter();
 
             for(int i = 0; i < ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT; i++) {
