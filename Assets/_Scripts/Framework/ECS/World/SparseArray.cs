@@ -53,5 +53,14 @@ namespace ECS {
         static SparseArray() {
             TemplateIndexArray = new uint[ComponentPool.DEFAULT_BUCKET_CAPACITY];
         }
+
+        public void OnDestroy() {
+            foreach(var array in sparseArrayBucket) { 
+                Array.Clear(array,0,array.Length);
+            }
+            sparseArrayBucket.Clear();
+            Array.Clear(TemplateIndexArray,0,TemplateIndexArray.Length);
+            TemplateIndexArray = null;
+        }
     }
 }

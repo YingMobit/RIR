@@ -31,6 +31,14 @@ namespace ReferencePoolingSystem {
             }
             referencePools[index].Recycle(reference);
         }
+
+        public void OnDestroy() {
+            foreach(var pool in referencePools) {
+                pool.OnDestroy();
+            }
+            Array.Clear(referencePools, 0, referencePools.Length);
+            referencePools = null;
+        }
     }
 
     public class ReferenceTypes { 

@@ -120,5 +120,18 @@ namespace ECS {
 
         internal Entity GetEntityCopy(uint entityID) => entities[entityID - 1];
         #endregion
+
+        public void OnDestroy() { 
+            Array.Clear(entities,0,entities.Length);
+            Array.Clear(freeEntityIndexStack,0,freeEntityIndexStack.Length);
+            Array.Clear(activeMap,0,activeMap.Length);
+            Array.Clear(activeEntityIndexStack,0,activeEntityIndexStack.Length);
+            Array.Clear(indexOfActiveEntityInStack,0,indexOfActiveEntityInStack.Length);
+            entities = null;
+            freeEntityIndexStack = null;
+            activeMap = null;
+            indexOfActiveEntityInStack = null;
+            activeMap = null;
+        }
     }
 }

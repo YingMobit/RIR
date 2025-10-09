@@ -23,5 +23,13 @@ namespace ECS {
             }
             return pool;
         }
+
+        public void OnDestroy() {
+            foreach(var pool in _pools) {
+                pool.OnDestroy();
+            }
+            Array.Clear(_pools,0,_pools.Length);
+            _pools = null;
+        }
     }
 }

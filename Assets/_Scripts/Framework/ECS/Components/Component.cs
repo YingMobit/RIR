@@ -5,6 +5,7 @@
         public abstract void OnAttach(Entity entity);
         public abstract void Reset(Entity entity);
         public abstract Component Clone();
+        public abstract void OnDestroy();
 
         internal Component SetComponentID(uint id) {
             ComponentID = id;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using ReferencePoolingSystem;
 using Unity.Entities;
+using Unity.Physics;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -15,6 +16,8 @@ namespace ECS {
         private SparseArray[] componentSearchSparseArrays;
         public ReferencePoolingCenter ReferencePoolingCenter { get; private set; }
         private List<Query> activeQuriesCurrentFrame;
+
+        private List<ISystem> systems;
 
         #region API
         public int GetEntityCount() => (int)entityManager.TotalEntityCount;
@@ -169,11 +172,15 @@ namespace ECS {
 
         #region Life Time
         public void OnUpdate(float deltaTime) {
-            // System Call
+            foreach(var sys in systems) { 
+                sys.OnFrameUpdate(this,deltaTime);
+            }
         }
 
         public void OnLateUpdate(float deltaTime) {
-            // System Call
+            foreach(var sys in systems) { 
+                sys.OnFrameLateUpdate(this);
+            }
 
             foreach(var query in activeQuriesCurrentFrame) {
                 ReferencePoolingCenter.ReleaseReference(query);
@@ -182,8 +189,36 @@ namespace ECS {
         }
 
         public void OnNetworkUpdate(int frameCount) {
-            // System Call
+            foreach(var sys in systems) { 
+                sys.OnNetworkUpdate(this,frameCount);
+            }
+        }
 
+        public void OnDestroy() {
+            foreach(var sys in systems) { 
+                sys.OnDestroy(this);
+            }
+            systems.Clear();
+            systems = null;
+
+            entityManager.OnDestroy();
+            componentPoolManager.OnDestroy();
+            registration.OnDestroy();
+            foreach(var sparseArray in entitySearchSparseArrays) { 
+                sparseArray.OnDestroy();
+            }
+            foreach(var sparseArray in componentSearchSparseArrays) { 
+                sparseArray.OnDestroy();
+            }
+            entitySearchSparseArrays = null;
+            componentSearchSparseArrays = null;
+            foreach(var query in activeQuriesCurrentFrame) {
+                ReferencePoolingCenter.ReleaseReference(query);
+            }
+            activeQuriesCurrentFrame.Clear();
+            activeQuriesCurrentFrame = null;
+            ReferencePoolingCenter.OnDestroy();
+            ReferencePoolingCenter = null;
         }
         #endregion
 
@@ -199,6 +234,22 @@ namespace ECS {
             for(int i = 0; i < ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT; i++) {
                 entitySearchSparseArrays[i] = new SparseArray();
                 componentSearchSparseArrays[i] = new SparseArray();
+            }
+
+            LoadAllSystems();
+        }
+
+        void LoadAllSystems() { 
+            systems = new List<ISystem>();
+            ISystem system;
+            foreach(var type in SystemTypeCollection.SystemTypes) { 
+                system = (ISystem)System.Activator.CreateInstance(type);
+                systems.Add(system);
+            }
+
+            systems.Sort((a,b) =>  a.Order > b.Order? -1: 1);
+            foreach(var _system in systems) { 
+                _system.OnInit(this);
             }
         }
     }

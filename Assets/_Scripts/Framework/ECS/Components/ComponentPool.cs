@@ -171,5 +171,22 @@ namespace ECS {
                 _components.Add(components[(int)idx]);
             }
         }
+
+        public void OnDestroy() {
+            foreach(var compo in components) {
+                compo.OnDestroy();
+            }
+
+            components.Clear();
+            components = null;
+            Array.Clear(freeComponentIndexStack,0,freeComponentIndexStack.Length);
+            freeComponentIndexStack = null;
+            Array.Clear(activeComponentIndexStack,0,activeComponentIndexStack.Length);
+            activeComponentIndexStack = null;
+            Array.Clear(indexOfActiveComponentInStack,0,indexOfActiveComponentInStack.Length);
+            indexOfActiveComponentInStack = null;
+            componentTemplate.OnDestroy();
+            componentTemplate = null;
+        }
     }
 }

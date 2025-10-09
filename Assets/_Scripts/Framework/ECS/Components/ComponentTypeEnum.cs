@@ -3,18 +3,12 @@ using System.Collections.Generic;
 
 namespace ECS {
     public enum ComponentTypeEnum {
-        Test1 = 1 << 0,
-        NewComponent = 1 << 1,
-        HAHAHA = 1 << 2,
-}
+    }
 
 
     public static class ComponentTypeEnumExtension {
-        public const int COMPONENT_TYPE_COUNT = 3;
+        public const int COMPONENT_TYPE_COUNT = 0;
         public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{
-            typeof(Test1), // index 0
-            typeof(NewComponent), // index 1
-            typeof(HAHAHA), // index 2
         };
 
         public static uint GetIndex(this ComponentTypeEnum componentType) {

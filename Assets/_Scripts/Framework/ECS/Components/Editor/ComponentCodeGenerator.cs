@@ -37,7 +37,9 @@ public class {className} : ECS.Component
     public override void Reset(Entity entity) {{
         // 重置组件状态
     }}
-    // 其他字段和方法
+    public override void OnDestroy() {{
+        // 清理组件
+    }}
 }}
 ";
 

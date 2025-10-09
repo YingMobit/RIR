@@ -61,5 +61,16 @@ namespace ReferencePoolingSystem {
                 totalReferenceCount++;
             }
         }
+    
+        public void OnDestroy() {
+            foreach(var reference in references) {
+                reference.OnRecycle();
+            }
+            references.Clear();
+            freeReferenceIndexs.Clear();
+            totalReferenceCount = 0;
+            referenceType = null;
+            ReferenceTemplate = null;
+        }
     }
 }

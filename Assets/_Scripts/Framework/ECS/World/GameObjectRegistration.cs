@@ -23,5 +23,10 @@ namespace ECS {
                 Debug.LogError($"Haven't registed this ID:{entity.GameObjectID} befor");
             }
         }
+
+        public void OnDestroy() {
+            IDGameObjectMap.Clear();
+            IDGameObjectMap = null;
+        }
     }
 }
