@@ -247,7 +247,7 @@ namespace ECS {
                 systems.Add(system);
             }
 
-            systems.Sort((a,b) =>  a.Order > b.Order? -1: 1);
+            systems.Sort((a,b) =>  a.Order < b.Order? -1: 1);
             foreach(var _system in systems) { 
                 _system.OnInit(this);
             }

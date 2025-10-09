@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AbilitySystem{
+namespace GAS {
     [Flags]
     public enum TaskStatus { 
         UnStart=1,

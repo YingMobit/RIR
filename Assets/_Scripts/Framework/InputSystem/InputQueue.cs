@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace InputSystem {
+namespace InputSystemNameSpace {
     public class InputQueue {
         private FrameInputModel[] InputCache;
         private int capacity;

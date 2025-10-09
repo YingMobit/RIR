@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AbilitySystem {
+namespace GAS {
     /// <summary>
     /// 一个Ability的配置文件，仅作为AbilityEffect及其触发器的容器
     /// </summary>

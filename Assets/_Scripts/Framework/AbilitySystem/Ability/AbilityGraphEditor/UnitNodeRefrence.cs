@@ -1,7 +1,7 @@
 using Sirenix.OdinInspector;
 using System;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
     [Serializable]
     public class UnitNodeRefrence {
         public int RunTimeToken;

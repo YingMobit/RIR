@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
     [CreateNodeMenu("Ability/Effect")]
     public class AbilityEffectNode : Node {
         [Header("Effect")]

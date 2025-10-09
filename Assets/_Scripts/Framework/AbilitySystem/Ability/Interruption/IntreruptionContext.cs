@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AbilitySystem {
+namespace GAS {
     public struct InteruptionContext {
         public int InteruptionPriority;
         public InteruptionContext(int interuptionPriority) {

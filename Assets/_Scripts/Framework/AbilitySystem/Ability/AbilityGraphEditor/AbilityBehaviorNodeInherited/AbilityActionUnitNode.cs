@@ -2,7 +2,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using XNode;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
     [CreateNodeMenu("Ability/BehaviorUnit/Action")]
     public class AbilityActionUnitNode : AbilityBehaviorUnitNode {
         [Input(backingValue = ShowBackingValue.Never,

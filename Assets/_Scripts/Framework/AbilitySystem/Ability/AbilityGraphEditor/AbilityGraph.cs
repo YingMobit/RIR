@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using XNode;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
 
     [CreateAssetMenu(menuName = "Ability/Ability Graph",fileName = "NewAbilityGraph")]
     [RequireNode(typeof(AbilityNode))]

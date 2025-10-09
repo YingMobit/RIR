@@ -31,6 +31,8 @@ namespace ECS {
 using UnityEngine;
 
 public class {className} : ISystem {{
+    public int Order => 0;
+
     public void OnInit(World world) {{
         // ≥ı ºªØ
     }}

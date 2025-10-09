@@ -1,3 +1,3 @@
-namespace AbilitySystem {
+namespace GAS {
     public abstract class AbilityActionUnit : AbilityBehaviorUnit { }
 }

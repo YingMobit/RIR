@@ -2,7 +2,7 @@ using System;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace InputSystem { 
+namespace InputSystemNameSpace { 
     [Flags]
     [Serializable]
     public enum InputTypeEnum{ 
@@ -29,8 +29,8 @@ namespace InputSystem {
             return (int)value;
         }
 
-        public static bool HasInputType(this InputTypeEnum type,InputTypeEnum expectedInput) {
-            return (type & expectedInput) == expectedInput;
+        public static bool HasInputType(this int type,InputTypeEnum expectedInput) {
+            return (type & (int)expectedInput) == (int)expectedInput;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
     [CreateNodeMenu("Ability/BehaviorUnit/Decorator")]
     public class AbilityDecorateUnitNode : AbilityBehaviorUnitNode {
         [Input(backingValue = ShowBackingValue.Never,

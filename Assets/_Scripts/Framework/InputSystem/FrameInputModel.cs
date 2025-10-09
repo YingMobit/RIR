@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace InputSystem {
+namespace InputSystemNameSpace {
     [Serializable]
     public struct FrameInputModel {
         public int KeyCodeinputs;

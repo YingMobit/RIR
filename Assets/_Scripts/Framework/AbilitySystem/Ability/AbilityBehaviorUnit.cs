@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AbilitySystem {
+namespace GAS {
     /// <summary>
     /// 技能行为逻辑编写的最小单位
     /// </summary>
@@ -15,7 +15,7 @@ namespace AbilitySystem {
         public abstract TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished);
         public abstract TaskStatus OnInterrupt(InteruptionContext interuptionContext);
 
-        [HideInInspector] public List<AbilityBehaviorUnit> Childs=new();
+        [HideInInspector] public List<AbilityBehaviorUnit> Childs = new();
         public AbilityBehaviorUnit Child => Childs!= null && Childs.Count > 0 ? Childs[0] : null;
 
         public abstract AbilityBehaviorUnit Clone();

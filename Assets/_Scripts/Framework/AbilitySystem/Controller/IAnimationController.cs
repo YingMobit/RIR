@@ -1,4 +1,4 @@
-﻿namespace AbilitySystem{
+﻿namespace GAS {
     internal interface IAnimationController : IController {
 
     }

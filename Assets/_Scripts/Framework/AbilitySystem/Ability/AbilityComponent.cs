@@ -3,7 +3,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Video;
 
-namespace AbilitySystem {
+namespace GAS {
     /// <summary>
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>

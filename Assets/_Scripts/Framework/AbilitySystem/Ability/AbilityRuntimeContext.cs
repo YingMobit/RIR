@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace AbilitySystem {
+namespace GAS {
     /// <summary>
     /// Ability运行时需要的所有信息，包括AbilityComponentContext和各Unit运行时数据缓存
     /// </summary>

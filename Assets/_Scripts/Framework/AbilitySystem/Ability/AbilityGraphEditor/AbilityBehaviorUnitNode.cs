@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace AbilitySystem.Editor.AbilityEditor {
+namespace GAS.Editor.AbilityEditor {
     [CreateNodeMenu("Ability/Behavior/Base (abstract)")]
     [NodeTint("#5c7080")]
     public abstract class AbilityBehaviorUnitNode : Node {

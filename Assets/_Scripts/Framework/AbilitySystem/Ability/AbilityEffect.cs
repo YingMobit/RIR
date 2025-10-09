@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AbilitySystem {
+namespace GAS {
     /// <summary>
     /// 一个AbilityBehaviorUnit组，对一个游戏效果的打包
     /// </summary>

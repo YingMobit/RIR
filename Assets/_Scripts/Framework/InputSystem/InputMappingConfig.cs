@@ -1,8 +1,8 @@
-using InputSystem;
+using InputSystemNameSpace;
 using System;
 using UnityEngine;
 
-namespace InputSystem{
+namespace InputSystemNameSpace{
     [CreateAssetMenu(fileName = "InputMappingConfig",menuName = "ScriptableObject/InputMappingConfig",order = 0)]
     public class InputMappingConfig : ScriptableObject {
         [Serializable]
