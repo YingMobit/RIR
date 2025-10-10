@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ECS {
     internal class GameObjectRegistration {
@@ -14,6 +15,13 @@ namespace ECS {
                 return id;
             }
             return -1;
+        }
+
+        public GameObject GetGameObject(int id) {
+            if(IDGameObjectMap.ContainsKey(id)) {
+                return IDGameObjectMap[id];
+            }
+            return null;
         }
 
         public void OnReleaseEntity(Entity entity) {

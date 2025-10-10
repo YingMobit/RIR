@@ -1,14 +1,20 @@
+using GAS;
+using InputSystemNameSpace;
 using System;
 using System.Collections.Generic;
 
 namespace ECS {
     public enum ComponentTypeEnum {
+        AbilityComponent    = 1 << 0,
+        InputComponent      = 1 << 1,
     }
 
 
     public static class ComponentTypeEnumExtension {
-        public const int COMPONENT_TYPE_COUNT = 0;
-        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{
+        public const int COMPONENT_TYPE_COUNT = 2;
+        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT] {
+            typeof(AbilityComponent),
+            typeof(InputComponent)
         };
 
         public static uint GetIndex(this ComponentTypeEnum componentType) {

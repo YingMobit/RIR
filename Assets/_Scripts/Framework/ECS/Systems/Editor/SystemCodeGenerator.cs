@@ -37,11 +37,11 @@ public class {className} : ISystem {{
         // 初始化
     }}
 
-    public void OnFrameUpdate(World world,float deltaTime) {{
+    public void OnFrameUpdate(World world,int localFrameCount,float deltaTime) {{
         // 每帧更新
     }}
 
-    public void OnFrameLateUpdate(World world) {{
+    public void OnFrameLateUpdate(World world,int localFrameCount) {{
         // 帧末更新
     }}
     

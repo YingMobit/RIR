@@ -41,6 +41,10 @@ namespace ECS {
             return entityManager.GetEntityCopy(entity.EntityID);
         }
 
+        public GameObject GetGameObject(Entity entity) { 
+            return registration.GetGameObject(entity.GameObjectID);
+        }
+
         public void ReleaseEntity(Entity entity) {
             RemoveAllComponents(entity);
             registration.OnReleaseEntity(entity);
@@ -171,15 +175,15 @@ namespace ECS {
         #endregion
 
         #region Life Time
-        public void OnUpdate(float deltaTime) {
+        public void OnUpdate(int localFrameCount,float deltaTime) {
             foreach(var sys in systems) { 
-                sys.OnFrameUpdate(this,deltaTime);
+                sys.OnFrameUpdate(this,localFrameCount,deltaTime);
             }
         }
 
-        public void OnLateUpdate(float deltaTime) {
+        public void OnLateUpdate(int localFrameCount,float deltaTime) {
             foreach(var sys in systems) { 
-                sys.OnFrameLateUpdate(this);
+                sys.OnFrameLateUpdate(this,localFrameCount);
             }
 
             foreach(var query in activeQuriesCurrentFrame) {
@@ -188,9 +192,9 @@ namespace ECS {
             activeQuriesCurrentFrame.Clear();
         }
 
-        public void OnNetworkUpdate(int frameCount) {
+        public void OnNetworkUpdate(int networkFrameCount) {
             foreach(var sys in systems) { 
-                sys.OnNetworkUpdate(this,frameCount);
+                sys.OnNetworkUpdate(this,networkFrameCount);
             }
         }
 

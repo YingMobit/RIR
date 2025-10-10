@@ -12,7 +12,7 @@ public class InputTrigger : AbilityTriggerUnit {
     }
 
     public override TaskStatus TryTrigger(AbilityComponentContext abilityComponentContext) {
-        var input = abilityComponentContext.GlobalBlacboard.Get<FrameInputModel>(0);
+        var input = abilityComponentContext.GlobalBlacboard.Get<FrameInputData>(0);
         if(input.KeyCodeinputs.HasInputType(inputType)) {
             return TaskStatus.Suceeded;
         }

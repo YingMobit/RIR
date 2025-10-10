@@ -1,13 +1,13 @@
+using ECS;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Video;
+using Component = ECS.Component;
 
 namespace GAS {
     /// <summary>
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>
-    public class AbilityComponent {
+    public class AbilityComponent : Component {
         Dictionary<int,Ability> legalAbilities = new();//所有当前已经注册的Ability
         Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks = new();//所有当前正在运行的Ability对应的Task
         HashSet<int> runningAbilities = new();//所有当前正在运行的Ability
@@ -222,6 +222,47 @@ namespace GAS {
                 runningTasks.Add(runtimeContext.AbilityID,taskSet);
             }
             taskSet.Add(newTask);
+        }
+        #endregion
+
+        #region Component Override
+        public override ComponentTypeEnum ComponentType => ComponentTypeEnum.AbilityComponent;
+        public override void OnAttach(Entity entity) {
+            
+        }
+
+        public override void Reset(Entity entity) {
+            //这个组件不应该被回收
+            throw new System.NotImplementedException();
+        }
+
+        public override Component Clone() {
+            return new AbilityComponent();
+        }
+
+        public override void OnDestroy() {
+            legalAbilities.Clear();
+            runningTasks.Clear();
+            runningAbilities.Clear();
+            abilitiesToRegist.Clear();
+            abilitiesToRemove.Clear();
+            abilitiesToCreateTask.Clear();
+            tasksToRemove.Clear();
+            tasksExiting.Clear();
+            tasksToRelease.Clear();
+            tasksToRercover.Clear();
+
+            legalAbilities = null;
+            runningTasks = null;
+            runningAbilities = null;
+            abilitiesToRegist = null;
+            abilitiesToRemove = null;
+            abilitiesToCreateTask = null;
+            tasksToRemove = null;
+            tasksExiting = null;
+            tasksToRelease = null;
+            tasksToRercover = null;
+            legalAbilities = null;
         }
         #endregion
     }

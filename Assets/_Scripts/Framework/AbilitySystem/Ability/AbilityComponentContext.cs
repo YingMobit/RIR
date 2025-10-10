@@ -6,10 +6,9 @@ namespace GAS {
     public class AbilityComponentContext {
         public IReadOnlyDictionary<int,Ability> Abilities { get; private set; }
         public BlackBoard GlobalBlacboard { get; private set; }
-        public Dictionary<int,IController> Controllers { get; private set; }
-        public Dictionary<int,int> AbilityIDTokenMap { get; private set; }
+        public Dictionary<ControllerTypeEnum,IController> Controllers { get; private set; }
 
-        public AbilityComponentContext(Dictionary<int,Ability> abilities,BlackBoard blackBoard,Dictionary<int,IController> controllers) { 
+        public AbilityComponentContext(Dictionary<int,Ability> abilities,BlackBoard blackBoard,Dictionary<ControllerTypeEnum,IController> controllers) { 
             Abilities = abilities;
             GlobalBlacboard = blackBoard;
             Controllers = controllers;
