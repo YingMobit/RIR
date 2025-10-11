@@ -8,6 +8,8 @@ namespace GAS {
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>
     public class AbilityComponent : Component {
+        public AttributeSet AttributeSet;
+
         Dictionary<int,Ability> legalAbilities = new();//所有当前已经注册的Ability
         Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks = new();//所有当前正在运行的Ability对应的Task
         HashSet<int> runningAbilities = new();//所有当前正在运行的Ability

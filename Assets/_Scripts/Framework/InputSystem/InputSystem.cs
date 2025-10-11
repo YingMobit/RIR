@@ -35,7 +35,7 @@ namespace InputSystemNameSpace {
             cache.LocalFrameCount = localFrameCount;
             cache.NetworkFrameCount = networkFrameCount;
             cache.KeyCodeinputs = currentInput;
-            cache.AimDirections = CursorAimer.Instance.AimDirection;
+            cache.AimDirection = CursorAimer.Instance.AimDirection;
 
             world.GetComponents(ComponentTypeEnum.InputComponent,inputComponents);
             foreach(var input in inputComponents) {

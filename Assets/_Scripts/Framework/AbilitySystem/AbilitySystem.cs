@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using UnityEngine.Pool;
 
 public class AbilitySystem : ISystem {
-    private const int INPUTID_IN_GLOBALBLACKBORAD = 0;
+    public const int INPUTID_IN_GLOBALBLACKBORAD = 0;
 
 
     public int Order => 1;
-    AbilityComponentContextHandler abilityComponentContextHandler;
+    AbilityComponentContextBuilder abilityComponentContextHandler;
     List<Entity> entities;
     List<Component> abilityComponentWithoutInput;
     InputComponent inputComponent;
@@ -25,7 +25,7 @@ public class AbilitySystem : ISystem {
         var query = world.Query().With(ComponentTypeEnum.AbilityComponent).With(ComponentTypeEnum.InputComponent).Execute();
         for(int i=0;i < query.Entities.Count; i++) {
             inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
-            abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent <AbilityComponentContextHandler>();
+            abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
             abilityComponentContextHandler.Context.GlobalBlacboard.Set<InputQueue>(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.InputQueue);
             query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent).Update(abilityComponentContextHandler.Context);
         }
@@ -35,7 +35,7 @@ public class AbilitySystem : ISystem {
             if(entities[i].HasComponent(ComponentTypeEnum.InputComponent)) {
                 continue; 
             }
-            componentContext = world.GetGameObject(entities[i]).GetComponent<AbilityComponentContextHandler>().Context;
+            componentContext = world.GetGameObject(entities[i]).GetComponent<AbilityComponentContextBuilder>().Context;
             (abilityComponentWithoutInput[i] as AbilityComponent).Update(componentContext);
         }
     }

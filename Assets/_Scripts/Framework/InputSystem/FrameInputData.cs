@@ -7,7 +7,7 @@ namespace InputSystemNameSpace {
         public int KeyCodeinputs;
         public int LocalFrameCount;
         public int NetworkFrameCount;
-        public Vector3 AimDirections;
+        public Vector3 AimDirection;
 
         public static FrameInputData Null;
 
@@ -16,14 +16,34 @@ namespace InputSystemNameSpace {
             Null.KeyCodeinputs = 0;
             Null.LocalFrameCount = -1;
             Null.NetworkFrameCount = -1;
-            Null.AimDirections = Vector3.zero;
+            Null.AimDirection = Vector3.zero;
         }
 
         public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,Vector3 aimDir) {
             KeyCodeinputs = input.InputTypeToInt();
             LocalFrameCount = localFrameCount;
             NetworkFrameCount = networkFrameCount;
-            AimDirections = aimDir;
+            AimDirection = aimDir;
         }
+
+        #region Utility
+        public Vector2 MoveInput { get {
+                Vector2 res = Vector2.zero;
+                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveForward)) { 
+                    res += Vector2.up;
+                }
+                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveBackward)) { 
+                    res += Vector2.down;
+                }
+                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveLeft)) { 
+                    res += Vector2.left;
+                }
+                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveRight)) { 
+                    res += Vector2.right;
+                }
+                return res;
+            }
+        }
+        #endregion
     }
 }

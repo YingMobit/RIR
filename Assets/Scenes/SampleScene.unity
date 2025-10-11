@@ -578,7 +578,6 @@ GameObject:
   m_Component:
   - component: {fileID: 839991979}
   - component: {fileID: 839991980}
-  - component: {fileID: 839991981}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -610,38 +609,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 839991977}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2067b325b4415eb4fb359c22a07b1679, type: 3}
+  m_Script: {fileID: 11500000, guid: c881ac30d8beae24094a506489db037e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoRunFunctionalOnStart: 0
-  stressEntityCount: 100
-  togglesPerEntity: 8
-  stressRounds: 3
-  randomSeed: 12345
-  functionalKey: 113
-  stressKey: 119
-  refreshEntityKey: 101
-  _randState: 0
-  logEachFailure: 1
---- !u!114 &839991981
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 839991977}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06a3cebfcce1d7347b228d287eae8bd9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  runner: {fileID: 839991980}
-  entityCountText: {fileID: 0}
-  activeEntityCountText: {fileID: 0}
-  componentCountText: {fileID: 0}
-  activeComponentCountText: {fileID: 0}
-  updateInterval: 0.2
-  _timer: 0
+  attributeNames: []
+  attributeDatas: []
 --- !u!1 &1817491692
 GameObject:
   m_ObjectHideFlags: 0
