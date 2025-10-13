@@ -6,7 +6,7 @@ using XNode;
 
 namespace GAS.Editor.AbilityEditor {
 
-    [CreateAssetMenu(menuName = "Ability/Ability Graph",fileName = "NewAbilityGraph")]
+    [CreateAssetMenu(menuName = "GAS/Ability Graph",fileName = "NewAbilityGraph")]
     [RequireNode(typeof(AbilityNode))]
     public class AbilityGraph : NodeGraph {
         private AbilityNode _root;

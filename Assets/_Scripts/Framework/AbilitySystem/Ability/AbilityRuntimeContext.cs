@@ -10,9 +10,10 @@ namespace GAS {
         public int AbilityID { get; private set; }
         public Ability Ability => AbilityComponentContext.Abilities[AbilityID];
         public AbilityComponentContext AbilityComponentContext { get; private set; }
-        public short currentEffectIndex { get; private set; } = -1;
+        public AbilityComponent AbilityComponent { get; private set; }
         public bool Interuptable;
-        private Dictionary<int,BlackBoard> LocalBlackBoards;
+        private Dictionary<int,BlackBoard> LocalBlackBoards = new();
+        public short currentEffectIndex { get; private set; } = -1;
 
         public bool MoveNext() {
             currentEffectIndex++;
@@ -46,6 +47,10 @@ namespace GAS {
 
         public void BindComponentContext(AbilityComponentContext abilityComponentContext) {
             AbilityComponentContext = abilityComponentContext;
+        }
+
+        public void BindAbilityComponent(AbilityComponent abilityComponent) {
+            AbilityComponent = abilityComponent;
         }
 
         #region IPoolable

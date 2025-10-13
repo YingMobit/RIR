@@ -2,9 +2,11 @@
 
 namespace GAS {
     public struct InteruptionContext {
+        public int SourceID;
         public int InteruptionPriority;
-        public InteruptionContext(int interuptionPriority) {
+        public InteruptionContext(int interuptionPriority,int sourceID) {
             InteruptionPriority = interuptionPriority;
+            SourceID = sourceID;
         }
     }
 

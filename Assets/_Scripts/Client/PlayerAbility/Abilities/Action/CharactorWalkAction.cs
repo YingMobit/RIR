@@ -3,8 +3,8 @@ using InputSystemNameSpace;
 using Unity.Physics;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CharactorWalkAbility",menuName = "GAS/Abilities/Charactor/Walk",order = 0)]
-public class CharactorWalkAbility : AbilityBehaviorUnit {
+[CreateAssetMenu(fileName = "CharactorWalkAction",menuName = "GAS/Action/Charactor/Walk",order = 0)]
+public class CharactorWalkAction : AbilityActionUnit {
     [Header("Animator config")]
     [SerializeField] string WalkStateName = "Walk";
     [SerializeField] int WalkAnimationLayer;
@@ -44,15 +44,13 @@ public class CharactorWalkAbility : AbilityBehaviorUnit {
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        if(transformController.Velocity.sqrMagnitude > 0.01f) {
-            animationController.SetFloatSmooth(AnimationParam_Dir_x,0,WalkSpeedSmoothTime);
-            animationController.SetFloatSmooth(AnimationParam_Dir_z,0,WalkSpeedSmoothTime);
-            animationController.SetFloatSmooth(AnimationParam_Forward,transformController.Velocity.y > 0 ? 1 : -1,WalkSpeedSmoothTime);
-            return TaskStatus.Running;
-        } else {
-            animationController.SetBool(AnimationParam_Walk,false);
-            return TaskStatus.Suceeded;
-        }
+        
+        //设置完平滑参数就可以退出了
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,0,WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,0,WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Forward,transformController.Velocity.y > 0 ? 1 : -1,WalkSpeedSmoothTime);
+        animationController.SetBool(AnimationParam_Walk,false);
+        return TaskStatus.Suceeded;
     }
 
     public override TaskStatus OnInterrupt(InteruptionContext interuptionContext) {

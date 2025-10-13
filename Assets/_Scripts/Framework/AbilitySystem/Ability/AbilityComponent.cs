@@ -70,12 +70,7 @@ namespace GAS {
             foreach(var task in interuptedTasks) {
                 runningTasks[task.Ability.AbilityHeadInfo.ID].Remove(task);
                 task.OnInterrupted(interuptionContext);
-            }
-
-            foreach(var pair in runningTasks) {
-                if(pair.Value.Count == 0) {
-                    runningAbilities.Remove(pair.Key);
-                }
+                runningAbilities.Remove(task.Ability.AbilityHeadInfo.ID);
             }
 
             List<AbilityRuntimeContext> pictures = new();
@@ -83,6 +78,29 @@ namespace GAS {
                 pictures.Add(task.runtimeContext);
                 PoolCenter.Instance.ReleaseInstance(task);
             }
+
+            return new(pictures);
+        }
+
+        public InteruptionHandler InterruptAbility(int abilitID,InteruptionContext interuptionContext) {
+            if(!AbilityLegal(abilitID) || !runningAbilities.Contains(abilitID))
+                return new(new());
+            List<AbilityExcutionTask> interruptionTasks = new();
+            foreach(var task in runningTasks[abilitID]) {
+                if(task.runtimeContext.Interuptable) {
+                    interruptionTasks.Add(task);
+                }
+            }
+
+            List<AbilityRuntimeContext> pictures = new();
+            foreach(var task in interruptionTasks) {
+                runningTasks[abilitID].Remove(task);
+                task.OnInterrupted(interuptionContext);
+                pictures.Add(task.runtimeContext);
+                PoolCenter.Instance.ReleaseInstance(task);
+            }
+
+            runningAbilities.Remove(abilitID);
 
             return new(pictures);
         }
@@ -199,6 +217,7 @@ namespace GAS {
             var runtimeContext = PoolCenter.Instance.GetInstance<AbilityRuntimeContext>(PoolableObjectTypeCollection.AbilityRuntimeContext);
             runtimeContext.BindComponentContext(abilityComponentContext);
             runtimeContext.BindAbility(abilityID);
+            runtimeContext.BindAbilityComponent(this);
             runtimeContext.Init();
             newTask.BindRuntimeContext(runtimeContext);
             HashSet<AbilityExcutionTask> taskSet;

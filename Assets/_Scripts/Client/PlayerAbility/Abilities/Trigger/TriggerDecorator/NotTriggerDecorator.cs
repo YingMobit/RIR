@@ -1,5 +1,7 @@
 using GAS;
+using UnityEngine;
 
+[CreateAssetMenu(fileName = "NotTriggerDecorator",menuName = "GAS/TriggerDecorators/NotTriggerDecorator",order = 0)]
 public class NotTriggerDecorator : AbilityTriggerDecorateUnit {
     public override AbilityTriggerUnit Clone() {
         return new NotTriggerDecorator();

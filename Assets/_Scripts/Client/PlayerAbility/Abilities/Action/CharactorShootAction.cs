@@ -1,8 +1,8 @@
 using GAS;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CharactorShootAbility",menuName = "GAS/Abilities/Charactor/Shoot",order = 0)]
-public class CharactorShootAbility : AbilityBehaviorUnit {
+[CreateAssetMenu(fileName = "CharactorShootAction",menuName = "GAS/Action/Charactor/Shoot",order = 0)]
+public class CharactorShootAction : AbilityActionUnit {
     public override AbilityBehaviorUnit Clone() {
         throw new System.NotImplementedException();
     }

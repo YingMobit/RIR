@@ -1,25 +1,25 @@
 using GAS;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CharactorReloadAbility",menuName = "GAS/Abilities/Charactor/Reload",order = 0)]
-public class CharactorReloadAbility : AbilityBehaviorUnit {
+[CreateAssetMenu(fileName = "CharactorReloadAction",menuName = "GAS/Action/Charactor/Reload",order = 0)]
+public class CharactorReloadAction : AbilityActionUnit {
     public override AbilityBehaviorUnit Clone() {
-        throw new System.NotImplementedException();
+        return Instantiate(this);
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        throw new System.NotImplementedException();
+        return TaskStatus.Running;  
     }
 
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
-        throw new System.NotImplementedException();
+        return TaskStatus.Suceeded; 
     }
 
     public override TaskStatus OnInterrupt(InteruptionContext interuptionContext) {
-        throw new System.NotImplementedException();
+        return TaskStatus.Suceeded;
     }
 
     public override void OnTriggered(AbilityRuntimeContext abilityRuntimeContext) {
-        throw new System.NotImplementedException();
+        
     }
 }

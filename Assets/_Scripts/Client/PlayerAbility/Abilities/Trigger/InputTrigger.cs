@@ -2,6 +2,7 @@ using GAS;
 using InputSystemNameSpace;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "InputTrigger",menuName = "GAS/Triggers/Charactor/InputTrigger",order =0)]
 public class InputTrigger : AbilityTriggerUnit {
     [SerializeField] InputTypeEnum inputType;
 
