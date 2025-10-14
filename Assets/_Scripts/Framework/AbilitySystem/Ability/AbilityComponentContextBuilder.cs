@@ -1,11 +1,13 @@
 using GAS.Editor.AbilityEditor;
+using Sirenix.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GAS { 
+namespace GAS {
+    [RequireComponent(typeof(AttributeSetBuilder))]
     public class AbilityComponentContextBuilder : MonoBehaviour {
         [SerializeField] List<AbilityGraph> AbilityGraphs;
-        [SerializeField] SerializableDictionary<ControllerTypeEnum,IController> ControllerConfig;
+        [SerializeField,OdinSerialize] SerializableDictionary<ControllerTypeEnum,Component> ControllerConfig;
 
         public AbilityComponentContext Context { get; private set; }
         private Dictionary<int,Ability> abilities = new ();
@@ -20,7 +22,15 @@ namespace GAS {
             }
             globalBlackBoard = PoolCenter.Instance.GetInstance<BlackBoard>(PoolableObjectTypeCollection.BlackBoard);
             attributeSet = GetComponent<AttributeSetBuilder>().attributeSet;
-            Context = new(abilities,globalBlackBoard,ControllerConfig.Dictionary,attributeSet);
+            var ControllerDict = new Dictionary<ControllerTypeEnum,IController>();
+            foreach(var pair in ControllerConfig.Dictionary) { 
+                if(pair.Value is IController controller) { 
+                    ControllerDict.Add(pair.Key,controller);
+                } else { 
+                    Debug.LogError($"Controller Config Error: {pair.Key} is not a IController");
+                }
+            }
+            Context = new(abilities,globalBlackBoard,ControllerDict,attributeSet);
         }
     }
 }

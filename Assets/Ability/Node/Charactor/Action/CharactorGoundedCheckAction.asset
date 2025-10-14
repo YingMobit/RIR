@@ -20,5 +20,5 @@ MonoBehaviour:
   Childs: []
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
-  checkDistance: 0.1
+    m_Bits: 64
+  checkDistance: 0.2

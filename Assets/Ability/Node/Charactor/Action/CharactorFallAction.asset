@@ -18,6 +18,6 @@ MonoBehaviour:
     Description: 
     Icon: {fileID: 0}
   Childs: []
-  AnimationParam_FallDown: 
-  FallGravityAttributeName: 
-  InAirSpeedAttributeName: 
+  AnimationParam_FallDown: ShouldFall
+  InAirSpeedAttributeName: InAirSpeed
+  InAirSpeedSmoothTime: 0.5

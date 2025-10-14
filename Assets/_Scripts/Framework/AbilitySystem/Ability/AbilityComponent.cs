@@ -21,6 +21,9 @@ namespace GAS {
         HashSet<AbilityExcutionTask> tasksExiting = new();//正在执行清理工作的Task
         List<AbilityExcutionTask> tasksToRelease = new();//清理工作完成可回收的Task
         List<AbilityRuntimeContext> tasksToRercover = new();//等待帧末恢复的task
+
+        public bool Inited { get; private set; } = false;
+
         #region API
         public void RegistAbility(Ability ability) {
             if(legalAbilities.ContainsKey(ability.AbilityHeadInfo.ID)) {
@@ -117,13 +120,20 @@ namespace GAS {
         #endregion
 
         #region Life Time
-        public void Init() {
-
+        public void Init(AbilityComponentContext abilityComponentContext) {
+            if(Inited)
+                return;
+            Debug.Log("AbilityComponent Init");
+            foreach(var ability in abilityComponentContext.Abilities) {
+                RegistAbility(ability.Value);
+            }
+            Inited = true;
         }
 
         public void Update(AbilityComponentContext abilityComponentContext) {
             //尝试触发所有legalAbilities中的Ability
             foreach(var legalAbility in legalAbilities.Values) {
+                Debug.Log($"AbilityComponent TryTrigger:{legalAbility.AbilityHeadInfo.Name}");
                 if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
                     ) {

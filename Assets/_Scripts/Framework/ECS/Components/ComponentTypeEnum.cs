@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 
 namespace ECS {
+    [Flags]
     public enum ComponentTypeEnum {
         AbilityComponent    = 1 << 0,
         InputComponent      = 1 << 1,
@@ -35,6 +36,14 @@ namespace ECS {
 
         public static uint ToMask(this ComponentTypeEnum componentType) {
             return (uint)componentType;
+        }
+
+        public static uint EnumsToMask(this ComponentTypeEnum[] componentTypes) {
+            uint mask = 0;
+            foreach(var type in componentTypes) {
+                mask |= (uint)type;
+            }
+            return mask;
         }
 
         public static ComponentTypeEnum[] MaskToEnums(this uint componentType) {

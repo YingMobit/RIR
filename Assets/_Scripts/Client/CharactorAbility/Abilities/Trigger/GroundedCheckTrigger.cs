@@ -11,6 +11,7 @@ public class GroundedCheckTrigger : AbilityTriggerUnit {
     }
 
     public override TaskStatus TryTrigger(AbilityComponentContext abilityComponentContext) {
+        Debug.Log("GroundedCheckTrigger TryTrigger");
         if(Physics.Raycast((abilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController).Position,Vector3.down,checkDistance,groundLayer)) {
             return TaskStatus.Suceeded;
         } else {

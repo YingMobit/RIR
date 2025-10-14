@@ -1,54 +1,51 @@
 using GAS;
 using InputSystemNameSpace;
+using Unity.Physics;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CharactorRunAction",menuName = "GAS/Action/Charactor/Run",order = 0)]
-public class CharactorRunAction : AbilityActionUnit {
+[CreateAssetMenu(fileName = "CharactorWalkAction",menuName = "GAS/Action/Charactor/Walk",order = 0)]
+public class CharactorWalkAction : AbilityActionUnit {
     [Header("Animator config")]
-    [SerializeField] string RunStateName = "Run";
-    [SerializeField] int RunAnimationLayer;
     [SerializeField] string AnimationParam_Dir_x;
     [SerializeField] string AnimationParam_Dir_z;
-    [SerializeField] string AnimationParam_Run;
-    [SerializeField] string AnimationParam_Forward;
+    [SerializeField] string AnimationParam_Walk;
     [Header("SmoothConfig")]
-    [SerializeField] float RunSpeedSmoothTime = 0.1f;
-    [Header("Attribute Config")]
-    [SerializeField] string RunSpeedAttributeName = "RunSpeed";
+    [SerializeField] float WalkSpeedSmoothTime;
+    [Header("AttributeConfig")]
+    [SerializeField] string WalkSpeedAttributeName;
     public override AbilityBehaviorUnit Clone() {
         return Instantiate(this);
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
+        Debug.Log($"CharactorWalkAction running");
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = inputQueue.PeekTail().AimDirection;
         var moveDir = new Vector2();
         Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
-
+        
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x,RunSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y,RunSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Forward,inputDir.y > 0 ? 1 : -1,RunSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x,WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y, WalkSpeedSmoothTime);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[RunSpeedAttributeName];
+        var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[WalkSpeedAttributeName];
         var velocity = new Vector3(moveDir.x * walkSpeedAttribute.Float(),transformController.Velocity.y,moveDir.y * walkSpeedAttribute.Float());
-
-        transformController.VelocityTo(velocity,RunSpeedSmoothTime);
+        
+        transformController.VelocityTo(velocity,WalkSpeedSmoothTime);
         return TaskStatus.Running;
     }
 
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-
+        
         //设置完平滑参数就可以退出了
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,0,RunSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,0,RunSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Forward,transformController.Velocity.y > 0 ? 1 : -1,RunSpeedSmoothTime);
-        animationController.SetBool(AnimationParam_Run,false);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,0,WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,0,WalkSpeedSmoothTime);
+        animationController.SetBool(AnimationParam_Walk,false);
         return TaskStatus.Suceeded;
     }
 
@@ -58,6 +55,6 @@ public class CharactorRunAction : AbilityActionUnit {
 
     public override void OnTriggered(AbilityRuntimeContext abilityRuntimeContext) {
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        animationController.SetBool(AnimationParam_Run,true);
+        animationController.SetBool(AnimationParam_Walk,true);
     }
 }

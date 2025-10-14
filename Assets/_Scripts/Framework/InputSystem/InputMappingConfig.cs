@@ -30,6 +30,6 @@ namespace InputSystemNameSpace{
             new(InputTypeEnum.Interact        ,KeyCode.F),
         };
 
-        public const string AssetPath = "ScriptableObject/InputConfig";
+        public const string AssetPath = "ScriptableObject/InputConfig/InputMappingConfig";
     }
 }

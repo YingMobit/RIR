@@ -18,8 +18,8 @@ MonoBehaviour:
     Description: 
     Icon: {fileID: 0}
   Childs: []
-  AnimationParam_JumpUp: 
-  JumpHorizontalSpeedSmoothTime: 0.1
-  JumpHeightAttributeName: 
-  JumpHorizontalImpulseAttributeName: 
-  InAirSpeedAttributeName: 
+  AnimationParam_JumpUp: ShouldJumpUp
+  JumpHorizontalSpeedSmoothTime: 0.5
+  JumpHeightAttributeName: JumpHeight
+  JumpHorizontalImpulseAttributeName: JumpHorizontalImpulse
+  InAirSpeedAttributeName: InAirSpeed

@@ -20,9 +20,8 @@ MonoBehaviour:
   Childs: []
   RunStateName: Run
   RunAnimationLayer: 0
-  AnimationParam_Dir_x: 
-  AnimationParam_Dir_z: 
-  AnimationParam_Run: 
-  AnimationParam_Forward: 
-  RunSpeedSmoothTime: 0.1
+  AnimationParam_Dir_x: Direction_x
+  AnimationParam_Dir_z: Direction_z
+  AnimationParam_Run: ShouldRun
+  RunSpeedSmoothTime: 0.5
   RunSpeedAttributeName: RunSpeed
