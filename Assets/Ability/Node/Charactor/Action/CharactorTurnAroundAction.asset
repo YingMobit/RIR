@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 247090a40de7cf046b2a889e4a478cae, type: 3}
-  m_Name: CharactorJumpAction
+  m_Script: {fileID: 11500000, guid: 6993c18cf49839a4299b0e9213724176, type: 3}
+  m_Name: CharactorTurnAroundAction
   m_EditorClassIdentifier: 
   <HeadInfo>k__BackingField:
     ID: 0
@@ -18,8 +18,4 @@ MonoBehaviour:
     Description: 
     Icon: {fileID: 0}
   Childs: []
-  AnimationParam_JumpUp: ShouldJumpUp
-  JumpHorizontalSpeedSmoothTime: 0.5
-  JumpVerticalImpulseAttributeName: JumpVerticalImpulse
-  JumpHorizontalImpulseAttributeName: JumpHorizontalImpulse
-  InAirSpeedAttributeName: InAirSpeed
+  TurnSmoothTime: 0.5

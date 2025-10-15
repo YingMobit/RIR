@@ -123,7 +123,6 @@ namespace GAS {
         public void Init(AbilityComponentContext abilityComponentContext) {
             if(Inited)
                 return;
-            Debug.Log("AbilityComponent Init");
             foreach(var ability in abilityComponentContext.Abilities) {
                 RegistAbility(ability.Value);
             }
@@ -133,7 +132,6 @@ namespace GAS {
         public void Update(AbilityComponentContext abilityComponentContext) {
             //尝试触发所有legalAbilities中的Ability
             foreach(var legalAbility in legalAbilities.Values) {
-                Debug.Log($"AbilityComponent TryTrigger:{legalAbility.AbilityHeadInfo.Name}");
                 if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
                     ) {

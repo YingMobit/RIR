@@ -8,6 +8,7 @@ using Component = ECS.Component;
 
 public class AbilitySystem : ISystem {
     public const int INPUTID_IN_GLOBALBLACKBORAD = 0;
+    public const int ISFALLINGID_IN_GLOBALBLACKBORAD = 1;
 
 
     public int Order => 1;

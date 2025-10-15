@@ -70,7 +70,6 @@ public class EntityBaker : Singleton<EntityBaker> {
         entityManager.SetComponentData(res,localTransform);
 
         entityManager.AddComponent<Prefab>(res);
-        entityManager.SetName(res,$"{prefab.name}_EntityPrefab");
         return res;
     }
 }

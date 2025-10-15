@@ -105,4 +105,9 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
         vector3SmoothHandler = new();
         quaternionSmoothHandler = new();
     }
+
+    void Update() {
+        vector3SmoothHandler.Update();
+        quaternionSmoothHandler.Update();
+    }
 }

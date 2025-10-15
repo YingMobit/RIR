@@ -29,16 +29,16 @@ namespace InputSystemNameSpace {
         #region Utility
         public Vector2 MoveInput { get {
                 Vector2 res = Vector2.zero;
-                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveForward)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveForward)) { 
                     res += Vector2.up;
                 }
-                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveBackward)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveBackward)) { 
                     res += Vector2.down;
                 }
-                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveLeft)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveLeft)) { 
                     res += Vector2.left;
                 }
-                if(KeyCodeinputs.HasInputType(InputTypeEnum.MoveRight)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveRight)) { 
                     res += Vector2.right;
                 }
                 return res;

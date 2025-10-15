@@ -29,8 +29,12 @@ namespace InputSystemNameSpace {
             return (int)value;
         }
 
-        public static bool HasInputType(this int type,InputTypeEnum expectedInput) {
+        public static bool HasAllInputType(this int type,InputTypeEnum expectedInput) {
             return (type & (int)expectedInput) == (int)expectedInput;
+        }
+
+        public static bool HasAnyInputType(this int type,InputTypeEnum expectedInput) {
+            return (type & (int)expectedInput) != 0;
         }
     }
 }

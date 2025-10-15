@@ -34,7 +34,7 @@ public class ValueSmoothTask<TValue> where TValue : struct , IEquatable<TValue> 
     public bool Update()
     {
         _currentValue = _lerpMethod.Invoke(_initValue, _targetValue, Mathf.Clamp01((Time.time - _startTime) / _smoothTime));
-        _applyData?.Invoke(_targetValue);
+        _applyData?.Invoke(_currentValue);
         if(Time.time - _startTime > _smoothTime)
             return true;
         return false;

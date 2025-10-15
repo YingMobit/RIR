@@ -18,7 +18,6 @@ public class CharactorWalkAction : AbilityActionUnit {
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        Debug.Log($"CharactorWalkAction running");
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = inputQueue.PeekTail().AimDirection;

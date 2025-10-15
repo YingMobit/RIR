@@ -13,8 +13,9 @@ public class InputTrigger : AbilityTriggerUnit {
     }
 
     public override TaskStatus TryTrigger(AbilityComponentContext abilityComponentContext) {
-        var input = abilityComponentContext.GlobalBlacboard.Get<FrameInputData>(0);
-        if(input.KeyCodeinputs.HasInputType(inputType)) {
+        var input = abilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
+        var inputData = input.PeekTail();
+        if(inputData.KeyCodeinputs.HasAnyInputType(inputType)) {
             return TaskStatus.Suceeded;
         }
         return TaskStatus.Failed;

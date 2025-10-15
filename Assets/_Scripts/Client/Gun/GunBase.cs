@@ -26,19 +26,16 @@ public abstract class GunBase : MonoBehaviour, IShootable {
     }
     private IEnumerator StartFactoryInit() {
         yield return new WaitUntil(() => entityPrefabReady);
-        Debug.Log("EntityBaker:entityPrefab Ready");
         FactoryInit();
     }
     protected virtual IEnumerator EntityPrefabInit() {
         yield return new WaitUntil(() => EntityBaker.Instance.Ready);
-        Debug.Log("EntityBaker: EntityBaker Ready");
         bulletPrefab = EntityBaker.Instance.GetEntityPrototype(bulletConfigData.Prefab);
         entityPrefabReady = true;
     }
     protected abstract void FactoryInit();
     protected virtual IEnumerator GetECSSystems() {
         yield return new WaitWhile(() => World.DefaultGameObjectInjectionWorld == null);
-        Debug.Log("GunBase: Entity World Ready");
         entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
     }
     public abstract void Shoot();

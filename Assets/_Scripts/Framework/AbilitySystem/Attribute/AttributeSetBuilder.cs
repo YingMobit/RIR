@@ -6,18 +6,20 @@ namespace GAS {
         [SerializeField] List<string> attributeNames = new();
         [SerializeField] List<AttributeData> attributeDatas = new();
 
-        public AttributeSet attributeSet { get; private set; }
-
-        private void Awake() {
-            if(attributeNames.Count != attributeDatas.Count) {
-                Debug.LogError("Size must match");
-                return;
-            }
-
-            attributeSet = new AttributeSet();
-            for(int i = 0; i < attributeDatas.Count; i++) {
-                attributeSet.AddAttribute(attributeNames[i],new Attribute(attributeDatas[i]));
-            }
+        private AttributeSet _attributeSet;
+        public AttributeSet attributeSet { get {
+                if(_attributeSet == null) { 
+                    _attributeSet = new AttributeSet();
+                    if(attributeNames.Count != attributeDatas.Count) {
+                        Debug.LogError("Size must match");
+                        return null;
+                    }
+                    for(int i = 0; i < attributeDatas.Count; i++) {
+                        attributeSet.AddAttribute(attributeNames[i],new Attribute(attributeDatas[i]));
+                    }
+                }   
+                return _attributeSet;
+            } 
         }
     }
 }

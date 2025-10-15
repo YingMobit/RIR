@@ -9,10 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c609440507d76c42b383116a2e41a66, type: 3}
-  m_Name: GroundedCheckTrigger
+  m_Script: {fileID: 11500000, guid: db2fd9b20ab10ca4d993e3166612585f, type: 3}
+  m_Name: AlwaysTrigger
   m_EditorClassIdentifier: 
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  checkDistance: 0.5

@@ -10,7 +10,7 @@ public class CharactorJumpAction : AbilityActionUnit {
     [Header("Sommth Config")]
     [SerializeField] float JumpHorizontalSpeedSmoothTime = 0.1f;
     [Header("Attribute Config")]
-    [SerializeField] string JumpHeightAttributeName;
+    [SerializeField] string JumpVerticalImpulseAttributeName;
     [SerializeField] string JumpHorizontalImpulseAttributeName;
     [SerializeField] string InAirSpeedAttributeName;
 
@@ -61,7 +61,7 @@ public class CharactorJumpAction : AbilityActionUnit {
         Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
 
-        var jumpHeight = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpHeightAttributeName];
+        var jumpHeight = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpVerticalImpulseAttributeName];
         var jumpHorizontalImpulse = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpHorizontalImpulseAttributeName];
         Vector3 verticalImpulse = jumpHeight.Float() * Vector3.up;
         Vector3 horizontalImpulse = jumpHorizontalImpulse.Float() * new Vector3(moveDir.x,0,moveDir.y).normalized;

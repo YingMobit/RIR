@@ -27,12 +27,15 @@ public class CharactorFallAction : AbilityActionUnit {
         var velocity = new Vector3(moveDir.x * walkSpeedAttribute.Float(),transformController.Velocity.y,moveDir.y * walkSpeedAttribute.Float());
 
         transformController.VelocityTo(velocity,InAirSpeedSmoothTime);
+        abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Set<bool>(AbilitySystem.ISFALLINGID_IN_GLOBALBLACKBORAD,true);
         return TaskStatus.Running;
     }
 
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
+        Debug.Log("Fall Action Exit");
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
         animationController.SetBool(AnimationParam_FallDown,false);
+        abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Set<bool>(AbilitySystem.ISFALLINGID_IN_GLOBALBLACKBORAD,false);
         return TaskStatus.Suceeded;
     }
 

@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 456, y: 8}
+  position: {x: 456, y: 24}
   ports:
     keys:
     - behaviorUnitNode
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 456, y: -168}
+  position: {x: 456, y: -152}
   ports:
     keys:
     - behaviorUnitNode

@@ -28,7 +28,6 @@ public class MachineGun : GunBase {
                      .AddBuilder(new BulletBuilder<BulletMoveComponent>().Set(new(bulletConfigData.BulletSpeed,CursorAimer.Instance.AimDirection)))
                      .AddBuilder(new BulletBuilder<BulletCollisionComponent>().Set(new(bulletConfigData.HitRadius,bulletConfigData.HitMask)))
                      .AddBuilder(new BulletBuilder<BulletDamageComponent>().Set(new(damageInfo.ToBulletDamageInfo())));
-        Debug.Log("Factory Inited");
     }
     #region "Component Build Funcs"
 

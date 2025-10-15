@@ -72,7 +72,6 @@ namespace GAS {
                 }
             }
 
-            Debug.Log($"Exit,Status: {allEffectExited}");
             return allEffectExited ? TaskStatus.Suceeded : TaskStatus.Running;
         }
 
