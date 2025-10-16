@@ -10,9 +10,9 @@ public class CharactorJumpAction : AbilityActionUnit {
     [Header("Sommth Config")]
     [SerializeField] float JumpHorizontalSpeedSmoothTime = 0.1f;
     [Header("Attribute Config")]
-    [SerializeField] string JumpVerticalImpulseAttributeName;
-    [SerializeField] string JumpHorizontalImpulseAttributeName;
-    [SerializeField] string InAirSpeedAttributeName;
+    [SerializeField] int JumpVerticalImpulseAttributeID;
+    [SerializeField] int JumpHorizontalImpulseAttributeID;
+    [SerializeField] int InAirSpeedAttributeID;
 
     float YVelocityLastFrame;
 
@@ -31,7 +31,7 @@ public class CharactorJumpAction : AbilityActionUnit {
             var moveDir = new Vector2();
             Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
             moveDir = rotation * inputDir;
-            var jumpHorizontalSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeName];
+            var jumpHorizontalSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
             Vector3 horizontalVelocity = jumpHorizontalSpeedAttribute.Float() * new Vector3(moveDir.x,0,moveDir.y).normalized;
             transformController.VelocityTo(new Vector3(horizontalVelocity.x,transformController.Velocity.y,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
 
@@ -61,8 +61,8 @@ public class CharactorJumpAction : AbilityActionUnit {
         Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
 
-        var jumpHeight = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpVerticalImpulseAttributeName];
-        var jumpHorizontalImpulse = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpHorizontalImpulseAttributeName];
+        var jumpHeight = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpVerticalImpulseAttributeID];
+        var jumpHorizontalImpulse = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpHorizontalImpulseAttributeID];
         Vector3 verticalImpulse = jumpHeight.Float() * Vector3.up;
         Vector3 horizontalImpulse = jumpHorizontalImpulse.Float() * new Vector3(moveDir.x,0,moveDir.y).normalized;
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;

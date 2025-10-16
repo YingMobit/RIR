@@ -18,7 +18,7 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
         dir.y = 0;
         dir.Normalize();
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        transformController.RotateTo(Quaternion.LookRotation(dir),TurnSmoothTime);
+        transformController.FaceTo(dir);
         return TaskStatus.Running;
     }
 

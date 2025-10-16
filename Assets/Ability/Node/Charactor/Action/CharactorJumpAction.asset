@@ -20,6 +20,6 @@ MonoBehaviour:
   Childs: []
   AnimationParam_JumpUp: ShouldJumpUp
   JumpHorizontalSpeedSmoothTime: 0.5
-  JumpVerticalImpulseAttributeName: JumpVerticalImpulse
-  JumpHorizontalImpulseAttributeName: JumpHorizontalImpulse
-  InAirSpeedAttributeName: InAirSpeed
+  JumpVerticalImpulseAttributeID: 1
+  JumpHorizontalImpulseAttributeID: 2
+  InAirSpeedAttributeID: 0

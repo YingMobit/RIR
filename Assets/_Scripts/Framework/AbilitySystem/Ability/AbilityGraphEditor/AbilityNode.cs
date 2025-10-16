@@ -10,6 +10,7 @@ namespace GAS.Editor.AbilityEditor {
     public class AbilityNode : Node {
         [Header("Ability")]
         public HeadInfo AbilityHeadInfo;
+        public bool Stackable = false;
 
         // 输出到多个 Effect
         [Output(backingValue = ShowBackingValue.Never,
@@ -99,7 +100,7 @@ namespace GAS.Editor.AbilityEditor {
                     }
                 }
             }
-            ability.OnBuild(AbilityHeadInfo,triggerUnit,effects);
+            ability.OnBuild(AbilityHeadInfo,triggerUnit,effects,Stackable);
             return ability;
         }
     }

@@ -11,7 +11,7 @@ public class CharactorRunAction : AbilityActionUnit {
     [Header("SmoothConfig")]
     [SerializeField] float RunSpeedSmoothTime;
     [Header("Attribute Config")]
-    [SerializeField] string RunSpeedAttributeName;
+    [SerializeField] int RunSpeedAttributeID;
     public override AbilityBehaviorUnit Clone() {
         return Instantiate(this);
     }
@@ -19,7 +19,7 @@ public class CharactorRunAction : AbilityActionUnit {
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
-        var aimDir = inputQueue.PeekTail().AimDirection;
+        var aimDir = CursorAimer.Instance.AimDirection;
         var moveDir = new Vector2();
         Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
@@ -29,15 +29,14 @@ public class CharactorRunAction : AbilityActionUnit {
         animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y,RunSpeedSmoothTime);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[RunSpeedAttributeName];
-        var velocity = new Vector3(moveDir.x * walkSpeedAttribute.Float(),transformController.Velocity.y,moveDir.y * walkSpeedAttribute.Float());
+        var runSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[RunSpeedAttributeID];
+        var velocity = new Vector2(moveDir.x * runSpeedAttribute.Float(),moveDir.y * runSpeedAttribute.Float());
 
-        transformController.VelocityTo(velocity,RunSpeedSmoothTime);
+        transformController.HorizontalVelocityTo(velocity,RunSpeedSmoothTime);
         return TaskStatus.Running;
     }
 
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
-        ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
 
         //设置完平滑参数就可以退出了

@@ -1,32 +1,34 @@
-using System.Net.WebSockets;
 using UnityEngine;
-using UnityEngine.AI;
 using Utility;
 
 public class CursorAimer : Singleton<CursorAimer> {
-    public Vector3 AimDirection { get; private set; } = Vector3.forward;
+    [SerializeField] float Sensitivity = 10;
 
-    [Header("Config")]
-    [SerializeField] private float m_Sensitivity = 400;
-    [SerializeField] private bool debug = true;
-    void Start() {
+    [field: SerializeField] public Vector3 AimDirection { get; private set; } = Vector3.forward;
+    [field: SerializeField] public float Pitch { get; private set; } = 0;
+    [field: SerializeField] public float Yaw { get; private set; } = 0;
+    protected override bool _isDonDestroyOnLoad => true;
+
+    protected override void Awake() {
+        base.Awake();
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
     }
 
     void Update() {
-        UpdateAimDir();
-        if(debug)
-            Debug.DrawRay(Vector3.zero,AimDirection,Color.red);
+        UpdateAimDirection();
+#if UNITY_EDITOR
+        DebugAimDir();
+#endif
     }
 
-    void UpdateAimDir() {
-        var move_x = Input.GetAxis("Mouse X") * m_Sensitivity * Time.deltaTime;
-        var move_y = Input.GetAxis("Mouse Y") * m_Sensitivity * Time.deltaTime;
+    void UpdateAimDirection() { 
+        Yaw += Input.GetAxis("Mouse X") * Sensitivity;
+        Pitch = Mathf.Clamp(Pitch - Input.GetAxis("Mouse Y") * Sensitivity,-89f,89f);
+        AimDirection = (Quaternion.Euler(Pitch,Yaw,0) * Vector3.forward).normalized;
+    }
 
-        //应用左右
-        AimDirection = Quaternion.Euler(0,move_x,0) * AimDirection;
-        //应用上下
-        move_y = AimDirection.z < 0 ? -move_y : move_y;
-        AimDirection = Quaternion.Euler(-move_y,0,0) * AimDirection;
+    void DebugAimDir() {
+        Debug.DrawRay(Vector3.zero,AimDirection,Color.red);
     }
 }

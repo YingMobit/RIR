@@ -3,30 +3,30 @@ using System.Collections.Generic;
 
 namespace GAS {
     public class AttributeSet {
-        private Dictionary<string,Attribute> map = new();
+        private Dictionary<int,Attribute> map = new();
 
-        public Attribute GetAttribute(string attributeName) { 
-            if(map.ContainsKey(attributeName)) { 
-                return map[attributeName];
+        public Attribute GetAttribute(int attributeID) { 
+            if(map.ContainsKey(attributeID)) { 
+                return map[attributeID];
             }
             return null;
         }
 
-        public Attribute this[string name] { 
+        public Attribute this[int id] { 
             get { 
-                return GetAttribute(name);
+                return GetAttribute(id);
             }
         }
 
-        public void AddAttribute(string attributeName,Attribute attribute) { 
-            if(!map.ContainsKey(attributeName)) { 
-                map.Add(attributeName,attribute);
+        public void AddAttribute(int attributeID,Attribute attribute) { 
+            if(!map.ContainsKey(attributeID)) { 
+                map.Add(attributeID,attribute);
             }
         }
 
-        public void RemoveAttribute(string attributeName) { 
-            if(map.ContainsKey(attributeName)) { 
-                map.Remove(attributeName);
+        public void RemoveAttribute(int attributeID) { 
+            if(map.ContainsKey(attributeID)) { 
+                map.Remove(attributeID);
             }
         }
     }

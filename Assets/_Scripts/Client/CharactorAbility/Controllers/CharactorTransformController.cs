@@ -39,20 +39,16 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
         rigidbody.MovePosition(newPos);
     }
 
-    public void RotateTo(Quaternion newRot,float smoothTime) {
-        quaternionSmoothHandler.RegistTask(ROTATIONSMOOTH_TASK_ID,transform.rotation,newRot,smoothTime,(v)=> {
-            rigidbody.MoveRotation(v);
-        },(init,target,t) => { 
-            return Quaternion.Slerp(init,target,t);
-        });
-    }
-
     public void RotateTo(Vector3 newDir,float smoothTime) {
         vector3SmoothHandler.RegistTask(ROTATIONSMOOTH_TASK_ID,transform.forward,newDir.normalized,smoothTime,(v)=> {
-            rigidbody.MoveRotation(Quaternion.LookRotation(v));
+            transform.forward = v;
         },(init,target,t) => { 
             return Vector3.Slerp(init,target,t);
         });
+    }
+
+    public void FaceTo(Vector3 newDir) {
+        transform.forward = newDir.normalized;
     }
 
     public void ScaleTo(Vector3 newScale,float smoothTime) {
@@ -62,7 +58,6 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
             return Vector3.Lerp(init,target,t);
         });
     }
-
 
     public void SetRotation(Quaternion newRot) {
         rigidbody.MoveRotation(newRot);
@@ -87,9 +82,21 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
         rigidbody.linearVelocity = newSpeed;
     }
 
+    public void HorizontalVelocityTo(Vector2 newHorizontalSpeed,float smoothTime) {
+        vector2SmoothHandler.RegistTask(VELOCITYSMOOTH_TASK_ID,new Vector2(rigidbody.linearVelocity.x,rigidbody.linearVelocity.z),newHorizontalSpeed,smoothTime,(v)=> {
+            rigidbody.linearVelocity = new Vector3(v.x,rigidbody.linearVelocity.y,v.y);
+        },(init,target,t) => { 
+            return Vector2.Lerp(init,target,t);
+        });
+    }
+
+    public void SetHorizontalVelocity(Vector2 newHorizontalSpeed) {
+        rigidbody.linearVelocity = new Vector3(newHorizontalSpeed.x,rigidbody.linearVelocity.y,newHorizontalSpeed.y);
+    }
 
     [SerializeField] private new Transform transform;
     [SerializeField] private new Rigidbody rigidbody;
+    private ValueSmoothHandler<Vector2> vector2SmoothHandler;
     private ValueSmoothHandler<Vector3> vector3SmoothHandler;
     private ValueSmoothHandler<Quaternion> quaternionSmoothHandler;
 
@@ -102,11 +109,13 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
             Debug.LogError($"CharactorTransformController:{gameObject.name} transform hasn't been assigned");
         if(rigidbody == null)
             Debug.LogError($"CharactorTransformController:{gameObject.name} rigidbody hasn't been assigned");
+        vector2SmoothHandler = new();
         vector3SmoothHandler = new();
         quaternionSmoothHandler = new();
     }
 
     void Update() {
+        vector2SmoothHandler.Update();
         vector3SmoothHandler.Update();
         quaternionSmoothHandler.Update();
     }

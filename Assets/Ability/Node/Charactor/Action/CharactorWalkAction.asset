@@ -18,10 +18,8 @@ MonoBehaviour:
     Description: 
     Icon: {fileID: 0}
   Childs: []
-  WalkStateName: Walk
-  WalkAnimationLayer: 0
   AnimationParam_Dir_x: Direction_x
   AnimationParam_Dir_z: Direction_z
   AnimationParam_Walk: ShouldWalk
-  WalkSpeedSmoothTime: 0.5
-  WalkSpeedAttributeName: WalkSpeed
+  WalkSpeedSmoothTime: 0.05
+  WalkSpeedAttributeID: 4

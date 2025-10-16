@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Ability
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 0, y: 0}
+  position: {x: -456, y: -200}
   ports:
     keys:
     - EffectsPorts
@@ -63,7 +63,7 @@ MonoBehaviour:
   m_Name: Ability Trigger Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 8, y: 200}
+  position: {x: -440, y: -8}
   ports:
     keys:
     - AbilityPort
@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: Ability Effect
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 232, y: 8}
+  position: {x: -216, y: -200}
   ports:
     keys:
     - Ability
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: Ability Action Unit
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 456, y: 8}
+  position: {x: 8, y: -200}
   ports:
     keys:
     - behaviorUnitNode

@@ -132,7 +132,8 @@ namespace GAS {
         public void Update(AbilityComponentContext abilityComponentContext) {
             //尝试触发所有legalAbilities中的Ability
             foreach(var legalAbility in legalAbilities.Values) {
-                if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded
+                if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded &&
+                    (!runningAbilities.Contains(legalAbility.AbilityHeadInfo.ID) || legalAbility.Stackable)
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
                     ) {
                     runningAbilities.Add(legalAbility.AbilityHeadInfo.ID);

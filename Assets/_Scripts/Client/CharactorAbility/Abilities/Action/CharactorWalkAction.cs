@@ -12,7 +12,7 @@ public class CharactorWalkAction : AbilityActionUnit {
     [Header("SmoothConfig")]
     [SerializeField] float WalkSpeedSmoothTime;
     [Header("AttributeConfig")]
-    [SerializeField] string WalkSpeedAttributeName;
+    [SerializeField] int WalkSpeedAttributeID;
     public override AbilityBehaviorUnit Clone() {
         return Instantiate(this);
     }
@@ -20,7 +20,7 @@ public class CharactorWalkAction : AbilityActionUnit {
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
-        var aimDir = inputQueue.PeekTail().AimDirection;
+        var aimDir = CursorAimer.Instance.AimDirection;
         var moveDir = new Vector2();
         Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
@@ -30,10 +30,10 @@ public class CharactorWalkAction : AbilityActionUnit {
         animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y, WalkSpeedSmoothTime);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[WalkSpeedAttributeName];
-        var velocity = new Vector3(moveDir.x * walkSpeedAttribute.Float(),transformController.Velocity.y,moveDir.y * walkSpeedAttribute.Float());
+        var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[WalkSpeedAttributeID];
+        var velocity = new Vector2(moveDir.x * walkSpeedAttribute.Float(),moveDir.y * walkSpeedAttribute.Float());
         
-        transformController.VelocityTo(velocity,WalkSpeedSmoothTime);
+        transformController.HorizontalVelocityTo(velocity,WalkSpeedSmoothTime);
         return TaskStatus.Running;
     }
 
