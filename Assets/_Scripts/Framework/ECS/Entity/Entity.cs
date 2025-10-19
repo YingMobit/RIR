@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace ECS {
-    public struct Entity : IEquatable<Entity> {
+    public struct Entity {
         public uint EntityID { get; private set; }
         public int GameObjectID { get; private set; }
         public short Version { get; private set; }
@@ -68,11 +68,7 @@ namespace ECS {
         }
 
         public override int GetHashCode() {
-            return (int) (EntityID << 16) | (ushort)Version;
-        }
-
-        bool IEquatable<Entity>.Equals(Entity other) {
-            return this == other;
+            return (int)(EntityID << 16) | (ushort)Version;
         }
     }
 }

@@ -163,6 +163,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93e3bae11a7d70c4fb56183431491227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tagTest:
+    _tagString: TTTTTest
   PlayerPrefab: {fileID: 22655968155035815, guid: e117891dde00e9f48876191ae71fc202, type: 3}
   playerComponentType: 3
 --- !u!1 &290613282
