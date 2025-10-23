@@ -10,6 +10,11 @@ namespace InputSystemNameSpace {
         private int headIndex = 0;
         private int size = 0;
 
+        // 添加公共访问器以支持序列化
+        public int Capacity => capacity;
+        public int Size => size;
+        public int HeadIndex => headIndex;
+
         public void EnQueue(FrameInputData frameInputModel) {
             int index = -1;
             if(size < capacity) {
@@ -101,6 +106,31 @@ namespace InputSystemNameSpace {
         public void OnDestroy() { 
             Array.Clear(InputCache,0,InputCache.Length);
             InputCache = null;
+        }
+
+        /// <summary>
+        /// 获取所有有效的输入数据（用于序列化）
+        /// </summary>
+        public FrameInputData[] GetAllValidInputs() {
+            FrameInputData[] result = new FrameInputData[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = InputCache[(headIndex + i) % capacity];
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 从数组批量加载输入（用于反序列化）
+        /// </summary>
+        public void LoadFromArray(FrameInputData[] inputs) {
+            Reset();
+            if (inputs == null) return;
+            
+            foreach (var input in inputs) {
+                if (input.NetworkFrameCount >= 0) { // 过滤无效数据
+                    EnQueue(input);
+                }
+            }
         }
     }
 }

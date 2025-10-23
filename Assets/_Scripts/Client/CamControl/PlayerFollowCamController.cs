@@ -16,7 +16,7 @@ public class PlayerFollowCamController : MonoBehaviour {
     }
 
     void TurnCam() {
-        float pitch = Mathf.Clamp(CursorAimer.Instance.Pitch,-50,50);
+        float pitch = Mathf.Clamp(CursorAimer.Instance.Pitch.ToFloat(),-50,50);
         pov.m_VerticalAxis.Value = pitch;
     }
 }

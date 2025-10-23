@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Pool;
 using Component = ECS.Component;
+using Drive;
 
 namespace InputSystemNameSpace {
     public class InputSystem : ISystem {
@@ -37,10 +38,7 @@ namespace InputSystemNameSpace {
             cache.KeyCodeinputs = currentInput;
             cache.AimDirection = CursorAimer.Instance.AimDirection;
 
-            world.GetComponents(ComponentTypeEnum.InputComponent,inputComponents);
-            foreach(var input in inputComponents) {
-                (input as InputComponent).InputQueue.EnQueue(cache);
-            }
+            
         }
 
         public void OnFrameLateUpdate(World world,int localFrameCount) {
@@ -48,7 +46,7 @@ namespace InputSystemNameSpace {
             inputComponents.Clear();
         }
 
-        public void OnNetworkUpdate(World world,int networkFrameCount) {
+        public void OnNetworkUpdate(World world,int networkFrameCount,NetworkPlayerInputsMessage networkMessage) {
             this.networkFrameCount = networkFrameCount;
         }
 

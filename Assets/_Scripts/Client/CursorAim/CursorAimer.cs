@@ -1,12 +1,13 @@
+using Lockstep.Math;
 using UnityEngine;
 using Utility;
 
 public class CursorAimer : Singleton<CursorAimer> {
     [SerializeField] float Sensitivity = 10;
 
-    [field: SerializeField] public Vector3 AimDirection { get; private set; } = Vector3.forward;
-    [field: SerializeField] public float Pitch { get; private set; } = 0;
-    [field: SerializeField] public float Yaw { get; private set; } = 0;
+    [field: SerializeField] public LVector3 AimDirection { get; private set; } = LVector3.forward;
+    [field: SerializeField] public LFloat Pitch { get; private set; } = LFloat.zero;
+    [field: SerializeField] public LFloat Yaw { get; private set; } = LFloat.zero;
     protected override bool _isDonDestroyOnLoad => true;
 
     protected override void Awake() {
@@ -23,12 +24,12 @@ public class CursorAimer : Singleton<CursorAimer> {
     }
 
     void UpdateAimDirection() { 
-        Yaw += Input.GetAxis("Mouse X") * Sensitivity;
-        Pitch = Mathf.Clamp(Pitch - Input.GetAxis("Mouse Y") * Sensitivity,-89f,89f);
-        AimDirection = (Quaternion.Euler(Pitch,Yaw,0) * Vector3.forward).normalized;
+        Yaw += (Input.GetAxis("Mouse X") * Sensitivity).ToLFloat();
+        Pitch = Mathf.Clamp(Pitch.ToFloat() - Input.GetAxis("Mouse Y") * Sensitivity,-89f,89f).ToLFloat();
+        AimDirection = (Quaternion.Euler(Pitch.ToFloat(),Yaw.ToFloat(),0) * Vector3.forward).normalized.ToLVector3();
     }
 
     void DebugAimDir() {
-        Debug.DrawRay(Vector3.zero,AimDirection,Color.red);
+        Debug.DrawRay(Vector3.zero,AimDirection.ToVector3(),Color.red);
     }
 }

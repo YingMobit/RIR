@@ -1,5 +1,7 @@
 using GAS;
 using InputSystemNameSpace;
+using Lockstep.Math;
+using LockStepLMath;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CharactorFallAction",menuName ="GAS/Action/Charactor/Fall",order =0)]
@@ -18,13 +20,13 @@ public class CharactorFallAction : AbilityActionUnit {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = CursorAimer.Instance.AimDirection;
-        var moveDir = new Vector2();
-        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        var moveDir = new LVector2();
+        LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
-        var velocity = new Vector2(moveDir.x * walkSpeedAttribute.Float(),moveDir.y * walkSpeedAttribute.Float());
+        var velocity = new Vector2(moveDir.x.ToFloat() * walkSpeedAttribute.Float(),moveDir.y.ToFloat() * walkSpeedAttribute.Float());
 
         transformController.HorizontalVelocityTo(velocity,InAirSpeedSmoothTime);
         abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Set<bool>(AbilitySystem.ISFALLINGID_IN_GLOBALBLACKBORAD,true);

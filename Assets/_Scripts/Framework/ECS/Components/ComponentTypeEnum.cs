@@ -6,16 +6,18 @@ using System.Collections.Generic;
 namespace ECS {
     [Flags]
     public enum ComponentTypeEnum {
-        AbilityComponent    = 1 << 0,
-        InputComponent      = 1 << 1,
-    }
+        AbilityComponent = 1 << 0,
+        InputComponent = 1 << 1,
+        TagComponent = 1 << 2,
+}
 
 
     public static class ComponentTypeEnumExtension {
-        public const int COMPONENT_TYPE_COUNT = 2;
-        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT] {
-            typeof(AbilityComponent),
-            typeof(InputComponent)
+        public const int COMPONENT_TYPE_COUNT = 3;
+        public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{
+            typeof(AbilityComponent), // index 0
+            typeof(InputComponent), // index 1
+            typeof(TagComponent), // index 2
         };
 
         public static uint GetIndex(this ComponentTypeEnum componentType) {

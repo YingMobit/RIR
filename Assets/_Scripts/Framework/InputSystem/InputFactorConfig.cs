@@ -1,6 +1,8 @@
+using Lockstep.Math;
+
 namespace InputSystemNameSpace { 
     public class InputFactorConfig {
-        public const float HORIZONTALINPUT_LERP_FACTOR = 0.5f;
-        public const float VERTICALINPUT_LERP_FACTOR = 0.5f;
+        public static readonly LFloat HORIZONTALINPUT_LERP_FACTOR = LFloat.half;
+        public static readonly LFloat VERTICALINPUT_LERP_FACTOR = LFloat.half;
     }
 }

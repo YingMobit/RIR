@@ -1,5 +1,7 @@
 using GAS;
 using InputSystemNameSpace;
+using Lockstep.Math;
+using LockStepLMath;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CharactorRunAction",menuName = "GAS/Action/Charactor/Run",order = 0)]
@@ -20,17 +22,17 @@ public class CharactorRunAction : AbilityActionUnit {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = CursorAimer.Instance.AimDirection;
-        var moveDir = new Vector2();
-        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        var moveDir = new LVector2();
+        LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
 
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x,RunSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y,RunSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x.ToFloat(),RunSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y.ToFloat(),RunSpeedSmoothTime);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         var runSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[RunSpeedAttributeID];
-        var velocity = new Vector2(moveDir.x * runSpeedAttribute.Float(),moveDir.y * runSpeedAttribute.Float());
+        var velocity = new Vector2(moveDir.x.ToFloat() * runSpeedAttribute.Float(),moveDir.y.ToFloat() * runSpeedAttribute.Float());
 
         transformController.HorizontalVelocityTo(velocity,RunSpeedSmoothTime);
         return TaskStatus.Running;

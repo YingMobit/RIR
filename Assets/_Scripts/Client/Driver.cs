@@ -1,35 +1,47 @@
 using ECS;
-using Scheduling;
+using Drive;
 using TagSystem;
 using UnityEngine;
-using Utility;
+using System.Collections.Generic;
+using InputSystemNameSpace;
 
 [DefaultExecutionOrder(int.MinValue)]
-public class Driver : Singleton<Driver> {
-    public World world { get; private set; }
-    public GameObject Player { get; private set; }
-    protected override bool _isDonDestroyOnLoad => true;
-
-    [SerializeField] GameObject PlayerPrefab;
+public class Driver : MonoBehaviour {
     [SerializeField] ComponentTypeEnum playerComponentType;
+    [SerializeField] List<GameObject> CharactorPrefabs;
+    
+    public World world { get; private set; }
+    private int lastNetworkFrameCount = -1;
+    private NetworkManager networkManager;
+    private int saveNetworkFrameDelay = 3;
 
-    protected override void Awake() {
-        base.Awake();
+    void Awake() {
+        DontDestroyOnLoad(gameObject);
         world = new();
-        Player = Instantiate(PlayerPrefab,Vector3.up * 4,Quaternion.identity);
-        BuildEntity(Player,playerComponentType.ToMask());
+        networkManager = NetworkManager.Instance;
+        BuildCharactors();
         FixedRateScheduler.OnTick += OnUpdate;
         FixedRateScheduler.Start();
     }
 
-    public void BuildEntity(GameObject gameObject,uint componentType) {
-        world.GetEntity(gameObject,componentType);
+    void BuildCharactors() {
+        foreach (var info in NetworkManager.Instance.PlayerCharactorChooseInfo) {
+            var charactor = Instantiate(CharactorPrefabs[info.CharactorID],Vector3.up * 4 + Vector3.right * info.PlayerID,Quaternion.identity);
+            var entity = world.GetEntity(charactor,playerComponentType.ToMask());
+            world.GetComponentOnEntity(entity,ComponentTypeEnum.InputComponent,out var inputComponent);
+            (inputComponent as InputComponent).BindPlayerID(info.PlayerID);
+        }
     }
 
-    void OnUpdate(long localFrameCount,double deltaTime) {
-        OnLogicUpdate((int)localFrameCount,(float)deltaTime);
-        OnLateLogicUpdate((int)localFrameCount,(float)deltaTime);
-        OnNetworUpdate((int)localFrameCount);
+    void OnUpdate(long localLogicFrameCount,double deltaTime) {
+        Debug.Log($"LocalLogicalFrameCount: {localLogicFrameCount},renderFrameCount: {Time.frameCount}");
+        OnNetworkUpdate(localLogicFrameCount,deltaTime);
+        OnLogicUpdate((int)localLogicFrameCount,(float)deltaTime);
+        OnLateLogicUpdate((int)localLogicFrameCount,(float)deltaTime);
+    }
+
+    void OnNetworkUpdate(long localLogicFrameCount,double deltaTime) {
+        
     }
 
     void OnLogicUpdate(int localFrameCount,float deltaTime) {
@@ -38,10 +50,6 @@ public class Driver : Singleton<Driver> {
 
     void OnLateLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnLateUpdate(localFrameCount,deltaTime);
-    }
-
-    void OnNetworUpdate(int networkFrameCount) {
-        world.OnNetworkUpdate(networkFrameCount);
     }
 
     private void OnDestroy() {

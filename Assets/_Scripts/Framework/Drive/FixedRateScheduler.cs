@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
-namespace Scheduling {
+namespace Drive {
     public static class FixedRateScheduler {
         public sealed class Config {
             public double RateHz = 60.0;         // Ä¿±êÆµÂÊ

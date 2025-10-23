@@ -1,3 +1,4 @@
+using Drive;
 using ECS;
 using GAS;
 using InputSystemNameSpace;
@@ -62,7 +63,7 @@ public class AbilitySystem : ISystem {
         }
     }
     
-    public void OnNetworkUpdate(World world, int networkFrameCount){
+    public void OnNetworkUpdate(World world, int networkFrameCount,NetworkPlayerInputsMessage networkMessage) {
     
     }
 

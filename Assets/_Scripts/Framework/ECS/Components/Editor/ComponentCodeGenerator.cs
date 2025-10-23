@@ -40,7 +40,9 @@ public class {className} : ECS.Component
     public override void OnDestroy() {{
         // 清理组件
     }}
-}}
+    public override Component Clone() {{
+        return new {className}();
+    }}
 ";
 
                 File.WriteAllText(scriptPath,script);

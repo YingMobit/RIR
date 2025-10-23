@@ -1,6 +1,7 @@
 using GAS;
 using InputSystemNameSpace;
-using Unity.Physics;
+using Lockstep.Math;
+using LockStepLMath;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CharactorWalkAction",menuName = "GAS/Action/Charactor/Walk",order = 0)]
@@ -21,17 +22,17 @@ public class CharactorWalkAction : AbilityActionUnit {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = CursorAimer.Instance.AimDirection;
-        var moveDir = new Vector2();
-        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        var moveDir = new LVector2();
+        LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;
         
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x,WalkSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y, WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x.ToFloat(),WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y.ToFloat(), WalkSpeedSmoothTime);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[WalkSpeedAttributeID];
-        var velocity = new Vector2(moveDir.x * walkSpeedAttribute.Float(),moveDir.y * walkSpeedAttribute.Float());
+        var velocity = new Vector2(moveDir.x.ToFloat() * walkSpeedAttribute.Float(),moveDir.y.ToFloat() * walkSpeedAttribute.Float());
         
         transformController.HorizontalVelocityTo(velocity,WalkSpeedSmoothTime);
         return TaskStatus.Running;

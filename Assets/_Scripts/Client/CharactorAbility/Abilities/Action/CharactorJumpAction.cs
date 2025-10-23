@@ -1,5 +1,7 @@
 using GAS;
 using InputSystemNameSpace;
+using Lockstep.Math;
+using LockStepLMath;
 using Unity.Physics;
 using UnityEngine;
 
@@ -28,11 +30,11 @@ public class CharactorJumpAction : AbilityActionUnit {
             var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
             var inputDir = inputQueue.PeekTail().MoveInput;
             var aimDir = inputQueue.PeekTail().AimDirection;
-            var moveDir = new Vector2();
-            Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+            var moveDir = new LVector2();
+            LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));
             moveDir = rotation * inputDir;
             var jumpHorizontalSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
-            Vector3 horizontalVelocity = jumpHorizontalSpeedAttribute.Float() * new Vector3(moveDir.x,0,moveDir.y).normalized;
+            Vector3 horizontalVelocity = jumpHorizontalSpeedAttribute.Float() * new Vector3(moveDir.x.ToFloat(),0,moveDir.y.ToFloat()).normalized;
             transformController.VelocityTo(new Vector3(horizontalVelocity.x,transformController.Velocity.y,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
 
             YVelocityLastFrame = transformController.Velocity.y;
@@ -57,14 +59,14 @@ public class CharactorJumpAction : AbilityActionUnit {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var inputDir = inputQueue.PeekTail().MoveInput;
         var aimDir = inputQueue.PeekTail().AimDirection;
-        var moveDir = new Vector2();
-        Quaternion rotation = Quaternion.FromToRotation(Vector2.up,new Vector2(aimDir.x,aimDir.z));
+        var moveDir = new LVector2();
+        LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up, new LVector2(aimDir.x, aimDir.z));
         moveDir = rotation * inputDir;
 
         var jumpHeight = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpVerticalImpulseAttributeID];
         var jumpHorizontalImpulse = abilityRuntimeContext.AbilityComponentContext.AttributeSet[JumpHorizontalImpulseAttributeID];
         Vector3 verticalImpulse = jumpHeight.Float() * Vector3.up;
-        Vector3 horizontalImpulse = jumpHorizontalImpulse.Float() * new Vector3(moveDir.x,0,moveDir.y).normalized;
+        Vector3 horizontalImpulse = jumpHorizontalImpulse.Float() * new Vector3(moveDir.x.ToFloat(),0,moveDir.y.ToFloat()).normalized;
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         transformController.AddForce(verticalImpulse + horizontalImpulse,ForceMode.VelocityChange);
         YVelocityLastFrame = transformController.Velocity.y; 

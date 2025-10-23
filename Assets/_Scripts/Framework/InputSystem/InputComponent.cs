@@ -2,10 +2,15 @@
 
 namespace InputSystemNameSpace {
     public class InputComponent : Component {
+        public int PlayerID { get; set; }
         public InputQueue InputQueue { get; private set; } = new InputQueue();
         public FrameInputData LatestFrameInputData => InputQueue.PeekTail();
 
         public override ComponentTypeEnum ComponentType => ComponentTypeEnum.InputComponent;
+
+        public void BindPlayerID(int playerID) { 
+            PlayerID = playerID;
+        }
 
         public override Component Clone() {
             return new InputComponent() { InputQueue = this.InputQueue.Clone() };

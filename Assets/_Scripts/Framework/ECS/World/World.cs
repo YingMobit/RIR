@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using Drive;
 using ReferencePoolingSystem;
 using Unity.Entities;
 using Unity.Physics;
@@ -192,9 +193,9 @@ namespace ECS {
             activeQuriesCurrentFrame.Clear();
         }
 
-        public void OnNetworkUpdate(int networkFrameCount) {
+        public void OnNetworkUpdate(int networkFrameCount,NetworkPlayerInputsMessage networkMessage) {
             foreach(var sys in systems) { 
-                sys.OnNetworkUpdate(this,networkFrameCount);
+                sys.OnNetworkUpdate(this,networkFrameCount,networkMessage);
             }
         }
 

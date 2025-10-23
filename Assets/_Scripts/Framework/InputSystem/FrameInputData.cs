@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Lockstep.Math;
+using ProtoBuf;
+using System;
 using UnityEngine;
 
 namespace InputSystemNameSpace {
     [Serializable]
+    [ProtoContract]
     public struct FrameInputData {
-        public int KeyCodeinputs;
-        public int LocalFrameCount;
-        public int NetworkFrameCount;
-        public Vector3 AimDirection;
+        [ProtoMember(1)] public int KeyCodeinputs;
+        [ProtoMember(2)] public int LocalFrameCount;
+        [ProtoMember(3)] public int NetworkFrameCount;
+        [ProtoMember(4)] public LVector3 AimDirection;
 
         public static FrameInputData Null;
 
@@ -16,10 +19,10 @@ namespace InputSystemNameSpace {
             Null.KeyCodeinputs = 0;
             Null.LocalFrameCount = -1;
             Null.NetworkFrameCount = -1;
-            Null.AimDirection = Vector3.zero;
+            Null.AimDirection = LVector3.zero;
         }
 
-        public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,Vector3 aimDir) {
+        public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,LVector3 aimDir) {
             KeyCodeinputs = input.InputTypeToInt();
             LocalFrameCount = localFrameCount;
             NetworkFrameCount = networkFrameCount;
@@ -27,19 +30,19 @@ namespace InputSystemNameSpace {
         }
 
         #region Utility
-        public Vector2 MoveInput { get {
-                Vector2 res = Vector2.zero;
+        public LVector2 MoveInput { get {
+                LVector2 res = LVector2.zero;
                 if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveForward)) { 
-                    res += Vector2.up;
+                    res += LVector2.up;
                 }
                 if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveBackward)) { 
-                    res += Vector2.down;
+                    res += LVector2.down;
                 }
                 if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveLeft)) { 
-                    res += Vector2.left;
+                    res += LVector2.left;
                 }
                 if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveRight)) { 
-                    res += Vector2.right;
+                    res += LVector2.right;
                 }
                 return res;
             }

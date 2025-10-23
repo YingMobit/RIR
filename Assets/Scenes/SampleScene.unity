@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &67188949
+--- !u!1 &223478795
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,22 +127,50 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 67188950}
-  - component: {fileID: 67188951}
+  - component: {fileID: 223478797}
+  - component: {fileID: 223478796}
   m_Layer: 0
-  m_Name: Driver
+  m_Name: NetworkManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &67188950
+--- !u!114 &223478796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 223478795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 495daf86e0045ed41b3d256a572b4d0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverIP: 127.0.0.1
+  serverPort: 7777
+  kcpConfig:
+    DualMode: 0
+    RecvBufferSize: 1048576
+    SendBufferSize: 524288
+    Mtu: 1200
+    NoDelay: 1
+    Interval: 16
+    FastResend: 2
+    CongestionWindow: 0
+    SendWindowSize: 32
+    ReceiveWindowSize: 128
+    Timeout: 2000
+    MaxRetransmits: 20
+  driverPrefab: {fileID: 0}
+--- !u!4 &223478797
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67188949}
+  m_GameObject: {fileID: 223478795}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -151,22 +179,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &67188951
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67188949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93e3bae11a7d70c4fb56183431491227, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tagTest:
-    _tagString: TTTTTest
-  PlayerPrefab: {fileID: 22655968155035815, guid: e117891dde00e9f48876191ae71fc202, type: 3}
-  playerComponentType: 3
 --- !u!1 &290613282
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,7 +403,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.5, z: -2}
+  m_LocalPosition: {x: -0.84381783, y: 2.5000002, z: -4.966812}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -898,9 +910,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Sensitivity: 3
-  <AimDirection>k__BackingField: {x: 0, y: 0, z: 1}
-  <Pitch>k__BackingField: 0
-  <Yaw>k__BackingField: 90
+  <AimDirection>k__BackingField:
+    _x: 0
+    _y: 0
+    _z: 1000
+  <Pitch>k__BackingField:
+    _val: 0
+  <Yaw>k__BackingField:
+    _val: 0
 --- !u!4 &598200346
 Transform:
   m_ObjectHideFlags: 0
@@ -1250,13 +1267,14 @@ GameObject:
   - component: {fileID: 1393421061}
   - component: {fileID: 1393421060}
   - component: {fileID: 1393421059}
+  - component: {fileID: 1393421064}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &1393421059
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1373,6 +1391,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1393421064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393421058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a6b357953e62f4d80f40473a623a85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  t1:
+    _tagString: Ability
+  t2:
+    _tagString: Ability.Cooldown
+  t3:
+    _tagString: Ability.Cooldown.Melee
+  t4:
+    _tagString: Charactor
+  t5:
+    _tagString: Charactor.Falling
 --- !u!1 &1817491692
 GameObject:
   m_ObjectHideFlags: 0
@@ -1707,7 +1747,6 @@ SceneRoots:
   - {fileID: 598200346}
   - {fileID: 1875915303}
   - {fileID: 1817491695}
-  - {fileID: 67188950}
   - {fileID: 1393421063}
   - {fileID: 290613287}
   - {fileID: 517159478}
@@ -1715,3 +1754,4 @@ SceneRoots:
   - {fileID: 805153819}
   - {fileID: 485654411}
   - {fileID: 2056863328}
+  - {fileID: 223478797}

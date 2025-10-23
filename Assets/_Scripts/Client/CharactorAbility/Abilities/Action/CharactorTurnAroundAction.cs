@@ -1,5 +1,6 @@
 using GAS;
 using InputSystemNameSpace;
+using Lockstep.Math;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CharactorTurnAroundAction",menuName = "GAS/Action/Charactor/TurnAround",order = 0)]
@@ -15,10 +16,10 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         var dir = inputQueue.PeekTail().AimDirection;
-        dir.y = 0;
+        dir.y = LFloat.zero;
         dir.Normalize();
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        transformController.FaceTo(dir);
+        transformController.FaceTo(dir.ToVector3());
         return TaskStatus.Running;
     }
 
