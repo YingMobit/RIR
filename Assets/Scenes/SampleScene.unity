@@ -161,7 +161,7 @@ MonoBehaviour:
     CongestionWindow: 0
     SendWindowSize: 32
     ReceiveWindowSize: 128
-    Timeout: 2000
+    Timeout: 10000
     MaxRetransmits: 20
   driverPrefab: {fileID: 0}
 --- !u!4 &223478797

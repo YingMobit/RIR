@@ -25,12 +25,7 @@ public class Driver : MonoBehaviour {
     }
 
     void BuildCharactors() {
-        foreach (var info in NetworkManager.Instance.PlayerCharactorChooseInfo) {
-            var charactor = Instantiate(CharactorPrefabs[info.CharactorID],Vector3.up * 4 + Vector3.right * info.PlayerID,Quaternion.identity);
-            var entity = world.GetEntity(charactor,playerComponentType.ToMask());
-            world.GetComponentOnEntity(entity,ComponentTypeEnum.InputComponent,out var inputComponent);
-            (inputComponent as InputComponent).BindPlayerID(info.PlayerID);
-        }
+        
     }
 
     void OnUpdate(long localLogicFrameCount,double deltaTime) {

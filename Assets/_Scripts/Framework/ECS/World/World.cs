@@ -193,9 +193,9 @@ namespace ECS {
             activeQuriesCurrentFrame.Clear();
         }
 
-        public void OnNetworkUpdate(int networkFrameCount,NetworkPlayerInputsMessage networkMessage) {
+        public void OnNetworkUpdate(int networkFrameCount) {
             foreach(var sys in systems) { 
-                sys.OnNetworkUpdate(this,networkFrameCount,networkMessage);
+                sys.OnNetworkUpdate(this,networkFrameCount);
             }
         }
 

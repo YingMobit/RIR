@@ -11,6 +11,8 @@ namespace InputSystemNameSpace {
         [ProtoMember(2)] public int LocalFrameCount;
         [ProtoMember(3)] public int NetworkFrameCount;
         [ProtoMember(4)] public LVector3 AimDirection;
+        [ProtoMember(5)] public bool ServerRecivedInputThisFrame;
+        [ProtoMember(6)] public int PlayerID;
 
         public static FrameInputData Null;
 
@@ -20,13 +22,17 @@ namespace InputSystemNameSpace {
             Null.LocalFrameCount = -1;
             Null.NetworkFrameCount = -1;
             Null.AimDirection = LVector3.zero;
+            Null.ServerRecivedInputThisFrame = false;
+            Null.PlayerID = -1;
         }
 
-        public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,LVector3 aimDir) {
+        public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,LVector3 aimDir,int playerID) {
             KeyCodeinputs = input.InputTypeToInt();
             LocalFrameCount = localFrameCount;
             NetworkFrameCount = networkFrameCount;
             AimDirection = aimDir;
+            ServerRecivedInputThisFrame = false;
+            PlayerID = playerID;
         }
 
         #region Utility

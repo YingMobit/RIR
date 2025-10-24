@@ -24,9 +24,14 @@ namespace Drive {
         public static bool operator !=(NetworkMessageType a, NetworkMessageType b) => a.MessageType != b.MessageType;
     }
 
-    public struct NetworkPlayerInputsMessage { 
+    public struct NetworkPlayerInputsDownLinkMessage { 
         public int NetworkFrameCount;
         public FrameInputData[] Inputs;
+    }
+
+    public struct NetworkPlayerInputsUpLinkMessage {
+        public int PlayerID;
+        public FrameInputData Input;
     }
 
     public struct NetworkPlayerIDAllocationMessage {
@@ -36,7 +41,8 @@ namespace Drive {
     public struct NetworkCommandMessgae {
         public int CommandID;
 
-        public const int NETWORKCOMMAND_STARTGAME = 1;
+        public const int NETWORKCOMMAND_STARTGAME = 1;//进入房间开始选择角色
+        public const int NETWORKCOMMAND_ALLPLAYERREADY = 2;//所有玩家准备完毕，进入游戏世界
     }
 
     public struct NetworkCharactorChooseMessage {

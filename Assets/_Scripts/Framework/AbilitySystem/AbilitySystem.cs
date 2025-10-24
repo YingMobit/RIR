@@ -63,7 +63,7 @@ public class AbilitySystem : ISystem {
         }
     }
     
-    public void OnNetworkUpdate(World world, int networkFrameCount,NetworkPlayerInputsMessage networkMessage) {
+    public void OnNetworkUpdate(World world, int networkFrameCount) {
     
     }
 

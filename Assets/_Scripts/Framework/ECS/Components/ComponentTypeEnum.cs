@@ -8,8 +8,8 @@ namespace ECS {
     public enum ComponentTypeEnum {
         AbilityComponent = 1 << 0,
         InputComponent = 1 << 1,
-        TagComponent = 1 << 2,
-}
+        TagComponent = 1 << 2
+    }
 
 
     public static class ComponentTypeEnumExtension {
