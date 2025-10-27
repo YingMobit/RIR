@@ -1,4 +1,5 @@
 using Drive;
+using Drive.Serialization;
 using ECS;
 using System.Collections.Generic;
 using UnityEditor.Search;
@@ -38,7 +39,10 @@ namespace InputSystemNameSpace {
             cache.LocalFrameCount = localFrameCount;
             cache.KeyCodeinputs = currentInput;
             cache.AimDirection = CursorAimer.Instance.AimDirection;
-            // NetworkManager.Instance
+            NetworkManager.Instance.SendNetworkMessage(new NetworkMessage() { NetworkMessageType = NetworkMessageType.PlayerInputsMessage,
+                                                                                     DataStream = ProtobufSerializer.Serialize(new NetworkPlayerInputsUpLinkMessage() { PlayerID = NetworkManager.Instance.LocalPlayerID,
+                                                                                                                                                                            Input = cache }) });
+
             if(recivedNetworkPlayerInputsEventDatas.Count > 0) {
                 InputComponent inputComponent;
                 List<Component> components = ListPool<Component>.Get();

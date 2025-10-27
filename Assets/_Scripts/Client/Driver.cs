@@ -15,17 +15,24 @@ public class Driver : MonoBehaviour {
     private NetworkManager networkManager;
     private int saveNetworkFrameDelay = 3;
 
-    void Awake() {
+    public void StartGame(Dictionary<int,int> playerID_CharactorIDMap) {
         DontDestroyOnLoad(gameObject);
         world = new();
         networkManager = NetworkManager.Instance;
-        BuildCharactors();
+        BuildCharactors(playerID_CharactorIDMap);
         FixedRateScheduler.OnTick += OnUpdate;
         FixedRateScheduler.Start();
     }
 
-    void BuildCharactors() {
-        
+    void BuildCharactors(Dictionary<int,int> playerID_CharactorIDMap) {
+        foreach(var kvp in playerID_CharactorIDMap) {
+            int playerID = kvp.Key;
+            int charactorID = kvp.Value;
+            GameObject charactorGO = Instantiate(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID,Quaternion.identity);
+            var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
+            world.GetComponentOnEntity(entity , ComponentTypeEnum.InputComponent,out var inputComponent);
+            (inputComponent as InputComponent).BindPlayerID(playerID);
+        }
     }
 
     void OnUpdate(long localLogicFrameCount,double deltaTime) {

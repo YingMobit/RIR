@@ -2,7 +2,7 @@
 
 namespace InputSystemNameSpace {
     public class InputComponent : Component {
-        public int PlayerID { get; set; }
+        public int PlayerID { get; private set; }
         public InputQueue InputQueue { get; private set; } = new InputQueue();
         public FrameInputData LatestFrameInputData => InputQueue.PeekTail();
 

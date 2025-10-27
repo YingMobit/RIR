@@ -5,13 +5,8 @@ using Drive.Serialization;
 using UnityEngine;
 
 public class ClientInGameState : ClientState {
-    List<FrameInputData> playerInputs;
-    
     public override void EnterState(ClientFSM clientFSM, ClientFSMContext context) {
-        playerInputs = new List<FrameInputData>(new FrameInputData[context.PlayerCount]);
-        for(int i=0;i < context.PlayerCount; i++) {
-            playerInputs.Add(default);
-        }
+        // Debug.Log($"Client: {NetworkManager.Instance.LocalPlayerID} In Game!");
     }
 
     public override void UpdateState(ClientFSM clientFSM, ClientFSMContext context) {

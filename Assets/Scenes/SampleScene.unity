@@ -163,7 +163,7 @@ MonoBehaviour:
     ReceiveWindowSize: 128
     Timeout: 10000
     MaxRetransmits: 20
-  driverPrefab: {fileID: 0}
+  driverPrefab: {fileID: 8774053247310305701, guid: 320698ca61a3f4045945befaac51dfe9, type: 3}
 --- !u!4 &223478797
 Transform:
   m_ObjectHideFlags: 0
