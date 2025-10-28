@@ -4,6 +4,7 @@ using TagSystem;
 using UnityEngine;
 using System.Collections.Generic;
 using InputSystemNameSpace;
+using Cinemachine;
 
 [DefaultExecutionOrder(int.MinValue)]
 public class Driver : MonoBehaviour {
@@ -33,8 +34,8 @@ public class Driver : MonoBehaviour {
             var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
             world.GetComponentOnEntity(entity , ComponentTypeEnum.InputComponent,out var inputComponent);
             (inputComponent as InputComponent).BindPlayerID(playerID);
-            if(playerID == NetworkManager.Instance.LocalPlayerID) { 
-                
+            if(playerID != NetworkManager.Instance.LocalPlayerID) {
+                DestroyImmediate(charactorGO.transform.GetChild(1).gameObject);
             }
         }
     }

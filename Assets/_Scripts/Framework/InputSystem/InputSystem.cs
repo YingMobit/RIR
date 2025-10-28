@@ -43,20 +43,17 @@ namespace InputSystemNameSpace {
             NetworkManager.Instance.SendNetworkMessage(new NetworkMessage() { NetworkMessageType = NetworkMessageType.PlayerInputsMessage,
                                                                                      DataStream = ProtobufSerializer.Serialize(new NetworkPlayerInputsUpLinkMessage() { PlayerID = NetworkManager.Instance.LocalPlayerID,
                                                                                                                                                                             Input = cache }) });
-            // Debug.Log();
-            foreach(var data in recivedNetworkPlayerInputsEventDatas) {
-                Debug.Log(data.NetworkPlayerInputsDownLinkMessage.Inputs[NetworkManager.Instance.LocalPlayerID]);
-            }
             if(recivedNetworkPlayerInputsEventDatas.Count > 0) {
                 InputComponent inputComponent;
                 List<Component> components = ListPool<Component>.Get();
                 world.GetComponents( ComponentTypeEnum.InputComponent,components);
-                Debug.Log($"GetInputComponent in world,Count: {components.Count}");
-                while(recivedNetworkPlayerInputsEventDatas.TryDequeue(out var recivedNetworkPlayerInputsEventData)) {
-                    foreach(var component in components) {
-                        inputComponent = component as InputComponent;
-                        inputComponent.InputQueue.EnQueue(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
-                        Debug.Log(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
+                lock(recivedNetworkPlayerInputsEventDatas) {
+                    while(recivedNetworkPlayerInputsEventDatas.TryDequeue(out var recivedNetworkPlayerInputsEventData)) {
+                        foreach(var component in components) {
+                            inputComponent = component as InputComponent;
+                            inputComponent.InputQueue.EnQueue(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
+                            Debug.Log(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
+                        }
                     }
                 }
             }
@@ -77,7 +74,9 @@ namespace InputSystemNameSpace {
         }
 
         private void OnRecivedNetworkPlayerInputsEventData(IRecivedNetworkPlayerInputsEventData eventData) {
-            recivedNetworkPlayerInputsEventDatas.Enqueue((RecivedNetworkPlayerInputsEventData)eventData);
+            lock(recivedNetworkPlayerInputsEventDatas) { 
+                recivedNetworkPlayerInputsEventDatas.Enqueue((RecivedNetworkPlayerInputsEventData)eventData);
+            }
         }
     }
 }
