@@ -1,14 +1,16 @@
 ﻿using System;
 using Lockstep.Math;
+using ProtoBuf;
 
 namespace Lockstep.Math {
     [Serializable]
+    [ProtoContract]
     public struct LFloat : IEquatable<LFloat>, IComparable<LFloat> {
         public const int Precision = 1000;
         public const int HalfPrecision = Precision / 2;
         public const float PrecisionFactor = 0.001f;
 
-        public int _val;
+        [ProtoMember(1)] public int _val;
 
         public static readonly LFloat zero = new LFloat(true,0);
         public static readonly LFloat one = new LFloat(true,LFloat.Precision);

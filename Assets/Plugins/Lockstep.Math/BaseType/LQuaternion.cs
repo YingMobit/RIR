@@ -1,15 +1,18 @@
 ﻿using System;
 using Lockstep.Math;
+using ProtoBuf;
 using static Lockstep.Math.LVector3;
 
 namespace LockStepLMath {
+    [Serializable]
+    [ProtoContract]
     public struct LQuaternion {
         #region public members
 
-        public LFloat x;
-        public LFloat y;
-        public LFloat z;
-        public LFloat w;
+        [ProtoMember(1)] public LFloat x;
+        [ProtoMember(2)] public LFloat y;
+        [ProtoMember(3)] public LFloat z;
+        [ProtoMember(4)] public LFloat w;
 
         #endregion
 
@@ -32,7 +35,7 @@ namespace LockStepLMath {
         #endregion
 
         #region public properties
-
+        [ProtoMember(5)]
         public LFloat this[int index] {
             get {
                 switch (index) {
@@ -72,6 +75,7 @@ namespace LockStepLMath {
             get { return new LQuaternion(0, 0, 0, 1); }
         }
 
+        [ProtoMember(6)]
         public LVector3 eulerAngles {
             get {
                 LMatrix33 m = QuaternionToMatrix(this);
@@ -170,7 +174,43 @@ namespace LockStepLMath {
         /// <param name="toDirection"></param>
         /// <returns></returns>
         public static LQuaternion FromToRotation(LVector3 fromDirection, LVector3 toDirection){
-            throw new IndexOutOfRangeException("Not Available!");
+            LVector3 from = fromDirection.normalized;
+            LVector3 to = toDirection.normalized;
+
+            LFloat dot = LVector3.Dot(from,to);
+
+            // 特殊情况: 向量相同
+            if(dot >= LFloat.one - new LFloat(true,100)) {
+                return LQuaternion.identity;
+            }
+
+            // 特殊情况: 向量相反
+            if(dot <= -LFloat.one + new LFloat(true,100)) {
+                LVector3 axis = LVector3.Cross(LVector3.right,from);
+                if(axis.sqrMagnitude < new LFloat(true,100)) {
+                    axis = LVector3.Cross(LVector3.up,from);
+                }
+                axis = axis.normalized;
+                return LQuaternion.AngleAxis(new LFloat(180),axis);
+            }
+
+            // 一般情况: 优化的四元数计算
+            LVector3 cross = LVector3.Cross(from,to);
+
+            // 使用 w = 1 + dot 的简化公式(因为向量已归一化)
+            LFloat w = LFloat.one + dot;
+            LQuaternion q = new LQuaternion(cross.x,cross.y,cross.z,w);
+
+            // 归一化
+            LFloat sqrMagnitude = Dot(q,q);
+            LFloat invMagnitude = LFloat.one / LMath.Sqrt(sqrMagnitude);
+
+            return new LQuaternion(
+                q.x * invMagnitude,
+                q.y * invMagnitude,
+                q.z * invMagnitude,
+                q.w * invMagnitude
+            );
         }
 
         /// <summary>

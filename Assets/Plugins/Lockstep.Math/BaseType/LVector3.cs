@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 #if UNITY_5_3_OR_NEWER 
 using UnityEngine;
 #endif
@@ -6,28 +7,35 @@ using UnityEngine;
 namespace Lockstep.Math
 {
     [Serializable]
+    [ProtoContract]
     public struct LVector3 : IEquatable<LVector3>
     {
+        [ProtoMember(1)]
         public LFloat x
         {
             get { return new LFloat(true,_x); }
             set { _x = value._val ; }
         }
-
+        
+        [ProtoMember(2)]
         public LFloat y
         {
             get { return new LFloat(true,_y); }
             set { _y = value._val ; }
         }
 
+        [ProtoMember(3)]
         public LFloat z
         {
             get { return new LFloat(true,_z); }
             set { _z = value._val ; }
         }
 
+        [ProtoMember(4)]
         public int _x;
+        [ProtoMember(5)]
         public int _y;
+        [ProtoMember(6)]
         public int _z;
 
 

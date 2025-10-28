@@ -37,7 +37,7 @@ public class ClientWaitOutofRoomState : ClientState {
             }
         }
 
-        if(stopwatch.ElapsedMilliseconds >= 5000 && NetworkManager.Instance.IsHost && !started) { 
+        if(stopwatch.ElapsedMilliseconds >= 15000 && NetworkManager.Instance.IsHost && !started) { 
             started = true;
             NetworkManager.Instance.SendNetworkMessage(new NetworkMessage() {
                 NetworkMessageType = NetworkMessageType.CommandMessage,

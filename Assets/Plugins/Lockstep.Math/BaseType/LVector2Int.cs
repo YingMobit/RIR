@@ -4,9 +4,12 @@
 // MVID: 6A5F7498-719A-42F7-B77A-5934DC79A5E9
 
 using Lockstep.Math;
+using ProtoBuf;
 using System;
 
 namespace Lockstep.Math  {
+    [Serializable]
+    [ProtoContract]
     public struct LVector2Int : IEquatable<LVector2Int> {
         public class Mathf {
             /// <summary>
@@ -40,8 +43,9 @@ namespace Lockstep.Math  {
         private static readonly LVector2Int s_Down = new LVector2Int(0, -1);
         private static readonly LVector2Int s_Left = new LVector2Int(-1, 0);
         private static readonly LVector2Int s_Right = new LVector2Int(1, 0);
-        private int m_X;
-        private int m_Y;
+        
+        [ProtoMember(1)] private int m_X;
+        [ProtoMember(2)] private int m_Y;
 
         public LVector2Int(int x, int y){
             this.m_X = x;
@@ -51,6 +55,7 @@ namespace Lockstep.Math  {
         /// <summary>
         ///   <para>X component of the vector.</para>
         /// </summary>
+        [ProtoMember(3)]
         public int x {
             get { return this.m_X; }
             set { this.m_X = value; }
@@ -59,6 +64,7 @@ namespace Lockstep.Math  {
         /// <summary>
         ///   <para>Y component of the vector.</para>
         /// </summary>
+        [ProtoMember(4)]
         public int y {
             get { return this.m_Y; }
             set { this.m_Y = value; }

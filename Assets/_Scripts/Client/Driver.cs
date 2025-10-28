@@ -25,6 +25,7 @@ public class Driver : MonoBehaviour {
     }
 
     void BuildCharactors(Dictionary<int,int> playerID_CharactorIDMap) {
+        Debug.Log($"BuildCharactors,Charactor Count:{playerID_CharactorIDMap.Count}");
         foreach(var kvp in playerID_CharactorIDMap) {
             int playerID = kvp.Key;
             int charactorID = kvp.Value;
@@ -32,11 +33,13 @@ public class Driver : MonoBehaviour {
             var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
             world.GetComponentOnEntity(entity , ComponentTypeEnum.InputComponent,out var inputComponent);
             (inputComponent as InputComponent).BindPlayerID(playerID);
+            if(playerID == NetworkManager.Instance.LocalPlayerID) { 
+                
+            }
         }
     }
 
     void OnUpdate(long localLogicFrameCount,double deltaTime) {
-        Debug.Log($"LocalLogicalFrameCount: {localLogicFrameCount},renderFrameCount: {Time.frameCount}");
         OnNetworkUpdate(localLogicFrameCount,deltaTime);
         OnLogicUpdate((int)localLogicFrameCount,(float)deltaTime);
         OnLateLogicUpdate((int)localLogicFrameCount,(float)deltaTime);

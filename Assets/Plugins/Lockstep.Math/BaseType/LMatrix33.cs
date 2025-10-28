@@ -1,9 +1,12 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
 using System;
+using ProtoBuf;
 
 namespace Lockstep.Math
 {
+    [Serializable]
+    [ProtoContract]
     public struct LMatrix33 : IEquatable<LMatrix33>
     {
         public static readonly LMatrix33
@@ -13,15 +16,15 @@ namespace Lockstep.Math
             new LVector3(true,0, LFloat.Precision, 0), new LVector3(true,0, 0, LFloat.Precision));
 
         // mRowCol  列优先存储
-        public int m00;
-        public int m10;
-        public int m20;
-        public int m01;
-        public int m11;
-        public int m21;
-        public int m02;
-        public int m12;
-        public int m22;
+        [ProtoMember(1)] public int m00;
+        [ProtoMember(2)] public int m10;
+        [ProtoMember(3)] public int m20;
+        [ProtoMember(4)] public int m01;
+        [ProtoMember(5)] public int m11;
+        [ProtoMember(6)] public int m21;
+        [ProtoMember(7)] public int m02;
+        [ProtoMember(8)] public int m12;
+        [ProtoMember(9)] public int m22;
 
         public LMatrix33(LVector3 column0, LVector3 column1, LVector3 column2)
         {

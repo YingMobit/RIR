@@ -6,11 +6,14 @@
 
 using System;
 using Lockstep.Math;
+using ProtoBuf;
 
 namespace Lockstep.Math {
     /// <summary>
     ///   <para>Representation of 3D vectors and points using integers.</para>
     /// </summary>
+    [ProtoContract]
+    [Serializable]
     public struct LVector3Int : IEquatable<LVector3Int> {
         public class Mathf {
             /// <summary>
@@ -43,9 +46,9 @@ namespace Lockstep.Math {
         private static readonly LVector3Int s_Down = new LVector3Int(0, -1, 0);
         private static readonly LVector3Int s_Left = new LVector3Int(-1, 0, 0);
         private static readonly LVector3Int s_Right = new LVector3Int(1, 0, 0);
-        private int m_X;
-        private int m_Y;
-        private int m_Z;
+        [ProtoMember(1)] private int m_X;
+        [ProtoMember(2)] private int m_Y;
+        [ProtoMember(3)] private int m_Z;
 
         public LVector3Int(int x, int y, int z){
             this.m_X = x;
@@ -56,6 +59,7 @@ namespace Lockstep.Math {
         /// <summary>
         ///   <para>X component of the vector.</para>
         /// </summary>
+        [ProtoMember(4)]
         public int x {
             get { return this.m_X; }
             set { this.m_X = value; }
@@ -64,6 +68,7 @@ namespace Lockstep.Math {
         /// <summary>
         ///   <para>Y component of the vector.</para>
         /// </summary>
+        [ProtoMember(5)]
         public int y {
             get { return this.m_Y; }
             set { this.m_Y = value; }
@@ -72,6 +77,7 @@ namespace Lockstep.Math {
         /// <summary>
         ///   <para>Z component of the vector.</para>
         /// </summary>
+        [ProtoMember(6)]
         public int z {
             get { return this.m_Z; }
             set { this.m_Z = value; }

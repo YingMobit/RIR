@@ -53,6 +53,10 @@ namespace InputSystemNameSpace {
                 return res;
             }
         }
+
+        public override string ToString() {
+            return $"FrameInputData PlayerID:{PlayerID} LocalFrame:{LocalFrameCount} NetworkFrame:{NetworkFrameCount} KeyCodeInputs:{KeyCodeinputs} AimDir:{AimDirection} RecivedByServerThisFrame:{ServerRecivedInputThisFrame}";
+        }
         #endregion
     }
 }

@@ -1,13 +1,16 @@
 using Lockstep.Math;
+using ProtoBuf;
+using System;
 using static Lockstep.Math.LMath;
 
 namespace Lockstep.Math
 {
-   
+    [Serializable]
+    [ProtoContract]
     public struct LAxis2D
     {
-        public LVector3 x;
-        public LVector3 y;
+        [ProtoMember(1)] public LVector3 x;
+        [ProtoMember(2)] public LVector3 y;
         
         public static readonly LAxis2D identity = new LAxis2D(LVector3.right, LVector3.up);
         public LAxis2D(LVector3 x, LVector3 y)

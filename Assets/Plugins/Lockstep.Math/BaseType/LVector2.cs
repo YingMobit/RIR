@@ -1,21 +1,25 @@
 ﻿using System;
 using Lockstep.Math;
+using ProtoBuf;
 
 namespace Lockstep.Math {
     [Serializable]
+    [ProtoContract]
     public struct LVector2 {
+        [ProtoMember(1)]
         public LFloat x {
             get { return new LFloat(true,_x); }
             set { _x = value._val; }
         }
 
+        [ProtoMember(2)]
         public LFloat y {
             get { return new LFloat(true,_y); }
             set { _y = value._val; }
         }
 
-        public int _x;
-        public int _y;
+        [ProtoMember(3)] public int _x;
+        [ProtoMember(4)] public int _y;
         public static readonly LVector2 zero = new LVector2(true,0, 0);
         public static readonly LVector2 one = new LVector2(true,LFloat.Precision, LFloat.Precision);
         public static readonly LVector2 half = new LVector2(true,LFloat.Precision / 2, LFloat.Precision / 2);

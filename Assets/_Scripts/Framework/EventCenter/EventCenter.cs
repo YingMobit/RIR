@@ -10,7 +10,7 @@ public class EventCenter {
         if(EventPool.ContainsKey(_type)) {
             EventPool[_type] = Delegate.Combine(EventPool[_type],_callback);
         } else {
-            EventPool.Add(_type,null);
+            EventPool.Add(_type,_callback);
         }
     }
 

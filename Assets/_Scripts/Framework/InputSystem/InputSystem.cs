@@ -26,7 +26,8 @@ namespace InputSystemNameSpace {
         public void OnInit(World world) {
             // 初始化
             inputComponents = ListPool<Component>.Get();
-            GlobalEventCenter.Instance.Listen<IRecivedNetworkPlayerInputsEventData>(OnRecivedNetworkPLayerInputsEventData);
+            GlobalEventCenter.Instance.Listen<IRecivedNetworkPlayerInputsEventData>(OnRecivedNetworkPlayerInputsEventData);
+            recivedNetworkPlayerInputsEventDatas = new ();
         }
 
         public void OnFrameUpdate(World world,int localFrameCount,float deltaTime) {
@@ -42,15 +43,20 @@ namespace InputSystemNameSpace {
             NetworkManager.Instance.SendNetworkMessage(new NetworkMessage() { NetworkMessageType = NetworkMessageType.PlayerInputsMessage,
                                                                                      DataStream = ProtobufSerializer.Serialize(new NetworkPlayerInputsUpLinkMessage() { PlayerID = NetworkManager.Instance.LocalPlayerID,
                                                                                                                                                                             Input = cache }) });
-
+            // Debug.Log();
+            foreach(var data in recivedNetworkPlayerInputsEventDatas) {
+                Debug.Log(data.NetworkPlayerInputsDownLinkMessage.Inputs[NetworkManager.Instance.LocalPlayerID]);
+            }
             if(recivedNetworkPlayerInputsEventDatas.Count > 0) {
                 InputComponent inputComponent;
                 List<Component> components = ListPool<Component>.Get();
                 world.GetComponents( ComponentTypeEnum.InputComponent,components);
+                Debug.Log($"GetInputComponent in world,Count: {components.Count}");
                 while(recivedNetworkPlayerInputsEventDatas.TryDequeue(out var recivedNetworkPlayerInputsEventData)) {
                     foreach(var component in components) {
                         inputComponent = component as InputComponent;
                         inputComponent.InputQueue.EnQueue(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
+                        Debug.Log(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
                     }
                 }
             }
@@ -66,11 +72,11 @@ namespace InputSystemNameSpace {
         }
 
         public void OnDestroy(World world) {
-            GlobalEventCenter.Instance.CancelListen<IRecivedNetworkPlayerInputsEventData>(OnRecivedNetworkPLayerInputsEventData);
+            GlobalEventCenter.Instance.CancelListen<IRecivedNetworkPlayerInputsEventData>(OnRecivedNetworkPlayerInputsEventData);
             ListPool<Component>.Release(inputComponents);
         }
 
-        private void OnRecivedNetworkPLayerInputsEventData(IRecivedNetworkPlayerInputsEventData eventData) {
+        private void OnRecivedNetworkPlayerInputsEventData(IRecivedNetworkPlayerInputsEventData eventData) {
             recivedNetworkPlayerInputsEventDatas.Enqueue((RecivedNetworkPlayerInputsEventData)eventData);
         }
     }
