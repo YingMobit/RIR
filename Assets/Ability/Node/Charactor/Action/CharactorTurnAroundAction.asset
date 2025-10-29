@@ -18,4 +18,4 @@ MonoBehaviour:
     Description: 
     Icon: {fileID: 0}
   Childs: []
-  TurnSmoothTime: 0.1
+  TurnSmoothTime: 0.05

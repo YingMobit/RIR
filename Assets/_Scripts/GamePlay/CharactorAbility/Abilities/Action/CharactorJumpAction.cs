@@ -35,7 +35,7 @@ public class CharactorJumpAction : AbilityActionUnit {
             moveDir = rotation * inputDir;
             var jumpHorizontalSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
             Vector3 horizontalVelocity = jumpHorizontalSpeedAttribute.Float() * new Vector3(moveDir.x.ToFloat(),0,moveDir.y.ToFloat()).normalized;
-            transformController.VelocityTo(new Vector3(horizontalVelocity.x,transformController.Velocity.y,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
+            transformController.HorizontalVelocityTo(new (horizontalVelocity.x,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
 
             YVelocityLastFrame = transformController.Velocity.y;
             return TaskStatus.Running;

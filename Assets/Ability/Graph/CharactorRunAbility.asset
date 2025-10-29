@@ -100,6 +100,7 @@ MonoBehaviour:
     Name: Run
     Description: "\u73A9\u5BB6\u5954\u8DD1"
     Icon: {fileID: 0}
+  Stackable: 0
   EffectsPorts: {fileID: 0}
   TriggerPort: {fileID: 0}
 --- !u!114 &11400000
@@ -236,7 +237,7 @@ MonoBehaviour:
       _typeConstraint: 2
       _dynamic: 0
   AbilityPort: {fileID: 0}
-  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: 236bdfcc9ad2cdd4b9c382eaaf30903c, type: 2}
+  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: 10ff37054b8b7b04e920e9963aa6c45b, type: 2}
 --- !u!114 &7277128544488989645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,4 +269,4 @@ MonoBehaviour:
       _typeConstraint: 2
       _dynamic: 0
   AbilityPort: {fileID: 0}
-  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: 10ff37054b8b7b04e920e9963aa6c45b, type: 2}
+  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: 236bdfcc9ad2cdd4b9c382eaaf30903c, type: 2}

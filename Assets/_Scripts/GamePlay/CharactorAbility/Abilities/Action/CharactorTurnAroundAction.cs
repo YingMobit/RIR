@@ -19,7 +19,7 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
         dir.y = LFloat.zero;
         dir.Normalize();
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        transformController.FaceTo(dir.ToVector3());
+        transformController.RotateTo(dir.ToVector3(),TurnSmoothTime);
         return TaskStatus.Running;
     }
 

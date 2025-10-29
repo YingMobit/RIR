@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6ebec8ee0e2caa469c22403c60c2ee6, type: 3}
   m_Name: NormalBullet
   m_EditorClassIdentifier: 
-  BulletSpeed: 5
+  BulletSpeed: 30
   HitRadius: 1
   HitMask:
     serializedVersion: 2

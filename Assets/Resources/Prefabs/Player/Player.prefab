@@ -54,6 +54,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f3c05a1db03563c44ac216aefff445b2, type: 2}
   - {fileID: 11400000, guid: 05893f7759b5f844aa0bb367867aa99b, type: 2}
   - {fileID: 11400000, guid: 1219627b78d61054ea740a1ea4991460, type: 2}
+  - {fileID: 11400000, guid: 90f8db41318b9454b92d2ad44d4b61b9, type: 2}
   ControllerConfig:
     keys: 0000000001000000
     values:
@@ -551,7 +552,8 @@ PrefabInstance:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6642460446042212964, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0e8c64f688f3d864eae4265f40b3e483, type: 3}

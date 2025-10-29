@@ -24,6 +24,7 @@ namespace Drive {
         private List<NetworkMessage> networkMessages;
         private Thread kcpClientUpdateThread;
         private bool isConnected = false;
+        private Queue<NetworkMessage> messagesToSend = new();
 
         protected override void Awake() {
             base.Awake();
@@ -50,6 +51,13 @@ namespace Drive {
                         lock(networkMessages) {
                             clientFSM.Update();
                             networkMessages.Clear();
+                        }
+
+                        lock(messagesToSend) {
+                            while(messagesToSend.Count > 0) {
+                                var message = messagesToSend.Dequeue();
+                                kcpClient.Send(ProtobufSerializer.Serialize(message),KcpChannel.Reliable);
+                            }
                         }
                     }
 
@@ -91,7 +99,9 @@ namespace Drive {
         }
 
         public void SendNetworkMessage(NetworkMessage message) { 
-            kcpClient.Send(ProtobufSerializer.PackNetworkMessage(message),KcpChannel.Reliable);
+            lock(messagesToSend) {
+                messagesToSend.Enqueue(message);
+            }
         }
 
         private void OnRecivedPlayerIDAllocationEventData(IRecivedPlayerIDAllocationEventData eventData) { 

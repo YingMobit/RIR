@@ -30,8 +30,6 @@ public class EventCenter {
             if(_dele != null && _dele is Action<EventType> _action && _action != null) {
                 _action.Invoke(_data);
             }
-        } else {
-            Debug.LogError($"Event: {_type} has not been published");
         }
     }
 }

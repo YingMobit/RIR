@@ -48,6 +48,7 @@ MonoBehaviour:
     Name: TurnAround
     Description: "\u89D2\u8272\u65CB\u8F6C"
     Icon: {fileID: 0}
+  Stackable: 0
   EffectsPorts: {fileID: 0}
   TriggerPort: {fileID: 0}
 --- !u!114 &-1098375594227226051
@@ -81,7 +82,7 @@ MonoBehaviour:
       _typeConstraint: 2
       _dynamic: 0
   AbilityPort: {fileID: 0}
-  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: de97112488fd38f4ba7f63923e03d362, type: 2}
+  <TriggerUnit>k__BackingField: {fileID: 11400000, guid: eeda1541ccd4ce74090a9624edd40a2b, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
