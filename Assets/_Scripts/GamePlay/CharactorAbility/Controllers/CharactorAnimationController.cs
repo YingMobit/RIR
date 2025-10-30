@@ -1,16 +1,12 @@
 using UnityEngine;
 using GAS;
+using ReferencePoolingSystem;
 
-public class CharactorAnimationController : MonoBehaviour, IAnimationController {
+public class CharactorAnimationController : IAnimationController , IReference<CharactorAnimationController> {
     public ControllerTypeEnum Type => ControllerTypeEnum.Animation;
 
-    [SerializeField] Animator animator;
+    Animator animator;
     ValueSmoothHandler<float> floatAnimationParamSmoothHandler;
-    void Awake() {
-        if(animator == null)
-            Debug.LogError($"CharactorAnimationController:{gameObject.name}: animator hasn't been assigned!");
-        floatAnimationParamSmoothHandler = new();
-    }
 
     public void SetBool(string name,bool value) {
         animator.SetBool(name,value);
@@ -28,7 +24,40 @@ public class CharactorAnimationController : MonoBehaviour, IAnimationController 
         });
     }
 
-    void Update() { 
+    public void Update() { 
         floatAnimationParamSmoothHandler.Update();
+    }
+
+    int IReference.IndexInRefrencePool { get; set; }
+    public uint ReferenceType => ReferenceTypes.CHARACTORANIMATIONCONTROLLER;
+    public GameObject GameObject => gameObject;
+    private GameObject gameObject;
+
+    public void BindGameObject(GameObject gameObject) {
+        this.gameObject = gameObject;
+        animator = gameObject.GetComponentInChildren<Animator>();
+    }
+
+
+    public void LateUpdate() {
+        
+    }
+
+    public void OnRecycle() {
+        gameObject = null;
+        floatAnimationParamSmoothHandler.Reset();
+    }
+
+    public IReference Clone() {
+        var res = new CharactorAnimationController();
+        res.floatAnimationParamSmoothHandler = new ValueSmoothHandler<float>();
+        return res;
+    }
+
+    public void Dispose() {
+        OnRecycle();
+        gameObject = null;
+        animator = null;
+        floatAnimationParamSmoothHandler = null;
     }
 }

@@ -110,7 +110,7 @@ namespace Drive {
 
         public void StartGame() { 
             var go = Instantiate(driverPrefab);
-            go.GetComponent<Driver>().StartGame(clientFSMContext.PlayerID_CharactorIDMap);
+            LocalClientDriver.Instance.StartGame(clientFSMContext.PlayerID_CharactorIDMap);
         }
 
         private void Update() {

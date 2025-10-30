@@ -30,4 +30,8 @@ public class ValueSmoothHandler<TValue> where TValue : struct , IEquatable<TValu
         removeList.Clear();
         ListPool<ValueSmoothTask<TValue>>.Release(removeList);
     }
+
+    public void Reset() { 
+        taskMap.Clear();
+    }
 }

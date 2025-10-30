@@ -1,25 +1,23 @@
 using ECS;
 using Drive;
-using TagSystem;
 using UnityEngine;
 using System.Collections.Generic;
 using InputSystemNameSpace;
-using Cinemachine;
+using Utility;
+using GAS;
+using ReferencePoolingSystem;
 
 [DefaultExecutionOrder(int.MinValue)]
-public class Driver : MonoBehaviour {
+public class LocalClientDriver : Singleton<LocalClientDriver> {
     [SerializeField] ComponentTypeEnum playerComponentType;
     [SerializeField] List<GameObject> CharactorPrefabs;
-    
+    HashSet<IController> controllers = new();
+
     public World world { get; private set; }
-    private int lastNetworkFrameCount = -1;
-    private NetworkManager networkManager;
-    private int saveNetworkFrameDelay = 3;
 
     public void StartGame(Dictionary<int,int> playerID_CharactorIDMap) {
         DontDestroyOnLoad(gameObject);
         world = new();
-        networkManager = NetworkManager.Instance;
         BuildCharactors(playerID_CharactorIDMap);
         FixedRateScheduler.OnTick += OnUpdate;
         FixedRateScheduler.Start();
@@ -30,7 +28,7 @@ public class Driver : MonoBehaviour {
         foreach(var kvp in playerID_CharactorIDMap) {
             int playerID = kvp.Key;
             int charactorID = kvp.Value;
-            GameObject charactorGO = Instantiate(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID,Quaternion.identity);
+            GameObject charactorGO = CreateGameObject(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID);
             var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
             world.GetComponentOnEntity(entity , ComponentTypeEnum.InputComponent,out var inputComponent);
             (inputComponent as InputComponent).BindPlayerID(playerID);
@@ -58,7 +56,37 @@ public class Driver : MonoBehaviour {
         world.OnLateUpdate(localFrameCount,deltaTime);
     }
 
+    private void Update() {
+        foreach(var controller in controllers) {
+            controller.Update();
+        }
+    }
+
+    private void LateUpdate() {
+        foreach(var controller in controllers) {
+            controller.LateUpdate();
+        }
+    }
+
     private void OnDestroy() {
         FixedRateScheduler.OnTick -= OnUpdate;
+    }
+
+    public GameObject CreateGameObject(GameObject prefab,Vector3 position) {
+        var res = Instantiate(prefab,position,Quaternion.identity);
+        var contextBuilder = res.GetComponent<AbilityComponentContextBuilder>();
+        var animationController = world.ReferencePoolingCenter.GetReference<CharactorAnimationController>();
+        animationController.BindGameObject(res);
+        var transformController = world.ReferencePoolingCenter.GetReference<CharactorTransformController>();
+        transformController.BindGameObject(res);
+        contextBuilder.RegistController(ControllerTypeEnum.Animation,animationController);
+        contextBuilder.RegistController(ControllerTypeEnum.Transform,transformController);
+        controllers.Add(animationController);
+        controllers.Add(transformController);
+        return res;
+    }
+
+    public void ReleaseGameObject(GameObject gameobject) { 
+        
     }
 }

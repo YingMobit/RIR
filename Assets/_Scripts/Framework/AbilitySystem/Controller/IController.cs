@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ReferencePoolingSystem;
+using System;
+using UnityEngine;
 
 namespace GAS {
     /// <summary>
@@ -6,5 +8,9 @@ namespace GAS {
     /// </summary>
     public interface IController {
         public ControllerTypeEnum Type { get; }
+        public GameObject GameObject { get; }
+        public void BindGameObject(GameObject gameObject);
+        public void Update();
+        public void LateUpdate();
     }
 }

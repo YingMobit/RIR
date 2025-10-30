@@ -7,10 +7,10 @@ namespace GAS {
     [RequireComponent(typeof(AttributeSetBuilder))]
     public class AbilityComponentContextBuilder : MonoBehaviour {
         [SerializeField] List<AbilityGraph> AbilityGraphs;
-        [SerializeField,OdinSerialize] SerializableDictionary<ControllerTypeEnum,Component> ControllerConfig;
 
         public AbilityComponentContext Context { get; private set; }
         private Dictionary<int,Ability> abilities = new ();
+        private Dictionary<ControllerTypeEnum,IController> controllers = new();
         private BlackBoard globalBlackBoard;
         private AttributeSet attributeSet;
 
@@ -22,15 +22,11 @@ namespace GAS {
             }
             globalBlackBoard = PoolCenter.Instance.GetInstance<BlackBoard>(PoolableObjectTypeCollection.BlackBoard);
             attributeSet = GetComponent<AttributeSetBuilder>().attributeSet;
-            var ControllerDict = new Dictionary<ControllerTypeEnum,IController>();
-            foreach(var pair in ControllerConfig.Dictionary) { 
-                if(pair.Value is IController controller) { 
-                    ControllerDict.Add(pair.Key,controller);
-                } else { 
-                    Debug.LogError($"Controller Config Error: {pair.Key} is not a IController");
-                }
-            }
-            Context = new(abilities,globalBlackBoard,ControllerDict,attributeSet);
+            Context = new(abilities,globalBlackBoard,controllers,attributeSet);
+        }
+
+        public void RegistController(ControllerTypeEnum controllerTypeEnum,IController controller) {
+            controllers[controllerTypeEnum] = controller;
         }
     }
 }

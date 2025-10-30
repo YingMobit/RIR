@@ -44,12 +44,16 @@ namespace ReferencePoolingSystem {
     public class ReferenceTypes { 
         public const uint COMPONENT_SET = 0;
         public const uint QUERY = 1;
+        public const uint CHARACTORTRANSFORMCONTROLLER = 2;
+        public const uint CHARACTORANIMATIONCONTROLLER = 3;
 
-        public const int TYPE_COUNT = 2;
+        public const int TYPE_COUNT = 4;
 
         private static Type[] types = new Type[TYPE_COUNT] {
             typeof(ECS.ComponentSet), // index 0
             typeof(ECS.Query), // index 1
+            typeof(CharactorTransformController),
+            typeof(CharactorAnimationController),
         };
         private static Type tempType;
 

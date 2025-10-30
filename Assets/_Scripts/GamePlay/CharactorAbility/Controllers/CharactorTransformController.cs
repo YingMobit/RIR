@@ -1,7 +1,8 @@
 using GAS;
+using ReferencePoolingSystem;
 using UnityEngine;
 
-public class CharactorTransformController : MonoBehaviour, ITransformController {
+public class CharactorTransformController : ITransformController , IReference<CharactorTransformController> {
     public Vector3 Position => transform.position;
 
     public Quaternion Rotation => transform.rotation;
@@ -94,8 +95,14 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
         rigidbody.linearVelocity = new Vector3(newHorizontalSpeed.x,rigidbody.linearVelocity.y,newHorizontalSpeed.y);
     }
 
-    [SerializeField] private new Transform transform;
-    [SerializeField] private new Rigidbody rigidbody;
+    public GameObject GameObject { get => gameObject; }
+    public uint ReferenceType => ReferenceTypes.CHARACTORTRANSFORMCONTROLLER;
+    int IReference.IndexInRefrencePool { get; set; }
+
+
+    private GameObject gameObject;
+    private Transform transform;
+    private Rigidbody rigidbody;
     private ValueSmoothHandler<Vector2> vector2SmoothHandler;
     private ValueSmoothHandler<Vector3> vector3SmoothHandler;
     private ValueSmoothHandler<Quaternion> quaternionSmoothHandler;
@@ -104,19 +111,44 @@ public class CharactorTransformController : MonoBehaviour, ITransformController 
     private const int POSITIONSMOOTH_TASK_ID = 2;
     private const int SCALESMOOTH_TASK_ID = 3;
     private const int VELOCITYSMOOTH_TASK_ID = 4;
-    void Awake() {
-        if(transform == null)
-            Debug.LogError($"CharactorTransformController:{gameObject.name} transform hasn't been assigned");
-        if(rigidbody == null)
-            Debug.LogError($"CharactorTransformController:{gameObject.name} rigidbody hasn't been assigned");
-        vector2SmoothHandler = new();
-        vector3SmoothHandler = new();
-        quaternionSmoothHandler = new();
+
+    public void BindGameObject(GameObject gameObject) {
+        this.gameObject = gameObject;
+        transform = gameObject.transform;
+        rigidbody = gameObject.GetComponent<Rigidbody>();
     }
 
-    void Update() {
+    public void Update() {
         vector2SmoothHandler.Update();
         vector3SmoothHandler.Update();
         quaternionSmoothHandler.Update();
+    }
+
+    public void LateUpdate() {
+        
+    }
+
+    public void OnRecycle() {
+        vector2SmoothHandler.Reset();
+        vector3SmoothHandler.Reset();
+        quaternionSmoothHandler.Reset();
+        gameObject = null;
+        transform = null;
+        rigidbody = null;
+    }
+
+    public IReference Clone() {
+        var res = new CharactorTransformController();
+        res.vector2SmoothHandler = new ValueSmoothHandler<Vector2>();
+        res.vector3SmoothHandler = new ValueSmoothHandler<Vector3>();
+        res.quaternionSmoothHandler = new ValueSmoothHandler<Quaternion>();
+        return res as IReference;
+    }
+
+    public void Dispose() {
+        OnRecycle();
+        vector2SmoothHandler = null;
+        vector3SmoothHandler = null;
+        quaternionSmoothHandler = null;
     }
 }

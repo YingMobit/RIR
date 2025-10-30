@@ -37,6 +37,7 @@ namespace InputSystemNameSpace {
                     currentInput |= pair.InputTypeEnum.InputTypeToInt();
                 }
             }
+            cache.PlayerID = NetworkManager.Instance.LocalPlayerID;
             cache.LocalFrameCount = localFrameCount;
             cache.KeyCodeinputs = currentInput;
             cache.AimDirection = CursorAimer.Instance.AimDirection;

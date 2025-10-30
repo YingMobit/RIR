@@ -34,7 +34,6 @@ public class CharactorFallAction : AbilityActionUnit {
     }
 
     public override TaskStatus OnExit(AbilityRuntimeContext abilityRuntimeContext,bool allEffectFinished) {
-        Debug.Log("Fall Action Exit");
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
         animationController.SetBool(AnimationParam_FallDown,false);
         abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Set<bool>(AbilitySystem.ISFALLINGID_IN_GLOBALBLACKBORAD,false);
