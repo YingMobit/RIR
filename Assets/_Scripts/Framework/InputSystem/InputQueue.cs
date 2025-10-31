@@ -42,10 +42,13 @@ namespace InputSystemNameSpace {
             return InputCache[index];
         }
 
-        public FrameInputData PeekHead() {
-            if(size == 0)
-                return FrameInputData.Null;
-            return InputCache[headIndex];
+        public bool TryPeekHead(out FrameInputData frameInputData) {
+            if(size == 0) {
+                frameInputData = FrameInputData.Null;
+                return false;
+            }
+            frameInputData = InputCache[headIndex];
+            return true;
         }
 
         public FrameInputData[] PeekHead(int count) {
@@ -61,10 +64,13 @@ namespace InputSystemNameSpace {
             return res;
         }
 
-        public FrameInputData PeekTail() {
-            if(size == 0)
-                return FrameInputData.Null;
-            return InputCache[(headIndex + size - 1) % capacity];
+        public bool TryPeekTail(out FrameInputData frameInputData) {
+            if(size == 0) { 
+                frameInputData= FrameInputData.Null;
+                return false;
+            }
+            frameInputData = InputCache[(headIndex + size - 1) % capacity];
+            return true;
         }
 
         public FrameInputData[] PeekTail(int count) {
@@ -81,6 +87,18 @@ namespace InputSystemNameSpace {
                 res[index++] = InputCache[(startIdnex + i) % capacity];
             }
             return res;
+        }
+
+        public FrameInputData[] GetInputDataFromLocalFrameCount(int localFrameCount) {
+            if(!TryPeekHead(out var headFrameInputData)) return null;
+            var headFrameCount = headFrameInputData.LocalizedLocalLogicFrameCount;
+            if(!TryPeekHead(out var tailFrameInputData)) return null;
+            var tailFrameCount = tailFrameInputData.AuthorityLocalLogicFrameCount;
+            if(localFrameCount < headFrameCount)
+                return null;
+            if(localFrameCount > tailFrameCount)
+                return PeekTail(tailFrameCount - headFrameCount + 1);
+            return PeekTail(tailFrameCount - localFrameCount + 1);
         }
 
         public InputQueue(int capacity = DEFAULT_CAPACITY) {
@@ -127,7 +145,7 @@ namespace InputSystemNameSpace {
             if (inputs == null) return;
             
             foreach (var input in inputs) {
-                if (input.NetworkFrameCount >= 0) { // 过滤无效数据
+                if (input.AuthorityNetworkFrameCount >= 0) { // 过滤无效数据
                     EnQueue(input);
                 }
             }

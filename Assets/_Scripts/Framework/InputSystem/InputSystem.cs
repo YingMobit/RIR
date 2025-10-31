@@ -10,7 +10,7 @@ using Component = ECS.Component;
 namespace InputSystemNameSpace {
     public class InputSystem : ISystem {
         List<Component> inputComponents;
-        FrameInputData cache;
+        FrameInputData cache;//本地当前帧输入缓存
         Queue<RecivedNetworkPlayerInputsEventData> recivedNetworkPlayerInputsEventDatas;
 
         private InputMappingConfig configCache;
@@ -38,26 +38,15 @@ namespace InputSystemNameSpace {
                 }
             }
             cache.PlayerID = NetworkManager.Instance.LocalPlayerID;
-            cache.LocalFrameCount = localFrameCount;
+            cache.AuthorityLocalLogicFrameCount = localFrameCount;
             cache.KeyCodeinputs = currentInput;
             cache.AimDirection = CursorAimer.Instance.AimDirection;
             NetworkManager.Instance.SendNetworkMessage(new NetworkMessage() { NetworkMessageType = NetworkMessageType.PlayerInputsMessage,
                                                                                      DataStream = ProtobufSerializer.Serialize(new NetworkPlayerInputsUpLinkMessage() { PlayerID = NetworkManager.Instance.LocalPlayerID,
                                                                                                                                                                             Input = cache }) });
-            if(recivedNetworkPlayerInputsEventDatas.Count > 0) {
-                InputComponent inputComponent;
-                List<Component> components = ListPool<Component>.Get();
-                world.GetComponents( ComponentTypeEnum.InputComponent,components);
-                lock(recivedNetworkPlayerInputsEventDatas) {
-                    while(recivedNetworkPlayerInputsEventDatas.TryDequeue(out var recivedNetworkPlayerInputsEventData)) {
-                        foreach(var component in components) {
-                            inputComponent = component as InputComponent;
-                            inputComponent.InputQueue.EnQueue(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
-                            Debug.Log(recivedNetworkPlayerInputsEventData.NetworkPlayerInputsDownLinkMessage.Inputs[inputComponent.PlayerID]);
-                        }
-                    }
-                }
-            }
+            
+            //预测回滚
+
         }
 
         public void OnFrameLateUpdate(World world,int localFrameCount) {

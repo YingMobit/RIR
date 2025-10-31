@@ -18,8 +18,9 @@ public class CharactorFallAction : AbilityActionUnit {
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        var inputDir = inputQueue.PeekTail().MoveInput;
-        var aimDir = inputQueue.PeekTail().AimDirection;
+        inputQueue.TryPeekTail(out var frameInputData);
+        var inputDir = frameInputData.MoveInput;
+        var aimDir = frameInputData.AimDirection;
         var moveDir = new LVector2();
         LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));
         moveDir = rotation * inputDir;

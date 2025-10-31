@@ -31,8 +31,8 @@ public class AbilitySystem : ISystem {
         for(int i=0;i < query.Entities.Count; i++) {
             inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
             abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
-            abilityComponentContextHandler.Context.GlobalBlacboard.Set<InputQueue>(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.InputQueue);
-            abilityComponent =  query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
+            abilityComponentContextHandler.Context.GlobalBlacboard.Set<InputQueue>(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.UnconfirmedInputDataBuffer);
+            abilityComponent = query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
             if(!abilityComponent.Inited)
                 abilityComponent.Init(abilityComponentContextHandler.Context);
             abilityComponent.Update(abilityComponentContextHandler.Context);

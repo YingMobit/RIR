@@ -1,10 +1,11 @@
 ﻿using ECS;
+using UnityEngine;
+using Component = ECS.Component;
 
 namespace InputSystemNameSpace {
     public class InputComponent : Component {
         public int PlayerID { get; private set; }
-        public InputQueue InputQueue { get; private set; } = new InputQueue();
-        public FrameInputData LatestFrameInputData => InputQueue.PeekTail();
+        public InputQueue UnconfirmedInputDataBuffer { get; private set; } = new InputQueue();
 
         public override ComponentTypeEnum ComponentType => ComponentTypeEnum.InputComponent;
 
@@ -13,7 +14,7 @@ namespace InputSystemNameSpace {
         }
 
         public override Component Clone() {
-            return new InputComponent() { InputQueue = this.InputQueue.Clone() };
+            return new InputComponent() { UnconfirmedInputDataBuffer = this.UnconfirmedInputDataBuffer.Clone() };
         }
 
         public override void OnAttach(Entity entity) {
@@ -21,11 +22,30 @@ namespace InputSystemNameSpace {
         }
 
         public override void OnDestroy() {
-            InputQueue.OnDestroy();
+            UnconfirmedInputDataBuffer.OnDestroy();
         }
 
         public override void Reset(Entity entity) {
-            InputQueue.Reset();
+            UnconfirmedInputDataBuffer.Reset();
+        }
+
+        public bool ConfirmeInputData(FrameInputData authoritativeInputData) {
+            while(UnconfirmedInputDataBuffer.TryPeekHead(out var tobeComfirme)) {
+                if(tobeComfirme.LocalizedLocalLogicFrameCount == authoritativeInputData.LocalizedLocalLogicFrameCount) {
+                    if(tobeComfirme.MoveInput == authoritativeInputData.MoveInput) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else if(tobeComfirme.LocalizedLocalLogicFrameCount > authoritativeInputData.LocalizedLocalLogicFrameCount) {
+                    Debug.LogError($"this authoritativeInputData has been confirmed,localframe of oldestUnconfirmedInputData:{tobeComfirme.LocalizedLocalLogicFrameCount},locaframe of authoritativeInputData:{authoritativeInputData.LocalizedLocalLogicFrameCount}");
+                    return true;
+                } else {
+                    Debug.LogWarning("jumped authoritativeInputData,localframe of oldestUnconfirmedInputData:{tobeComfirme.LocalizedLocalLogicFrameCount},locaframe of authoritativeInputData:{authoritativeInputData.LocalizedLocalLogicFrameCount}");
+                }
+            }
+            Debug.LogError("No unconfirmed input data available");
+            return true;
         }
     }
 }

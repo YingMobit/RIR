@@ -15,7 +15,8 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        var dir = inputQueue.PeekTail().AimDirection;
+        inputQueue.TryPeekTail(out var frameInputData);
+        var dir = frameInputData.AimDirection;
         dir.y = LFloat.zero;
         dir.Normalize();
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;

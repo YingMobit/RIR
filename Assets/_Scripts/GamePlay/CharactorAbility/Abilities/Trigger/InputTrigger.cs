@@ -14,7 +14,7 @@ public class InputTrigger : AbilityTriggerUnit {
 
     public override TaskStatus TryTrigger(AbilityComponentContext abilityComponentContext) {
         var input = abilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        var inputData = input.PeekTail();
+        input.TryPeekTail(out var inputData);
         if(inputData.KeyCodeinputs.HasAnyInputType(inputType)) {
             return TaskStatus.Suceeded;
         }

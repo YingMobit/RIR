@@ -8,10 +8,10 @@ namespace InputSystemNameSpace {
     [ProtoContract]
     public struct FrameInputData {
         [ProtoMember(1)] public int KeyCodeinputs;
-        [ProtoMember(2)] public int LocalFrameCount;
-        [ProtoMember(3)] public int NetworkFrameCount;
-        [ProtoMember(4)] public LVector3 AimDirection;
-        [ProtoMember(5)] public bool ServerRecivedInputThisFrame;
+        [ProtoMember(2)] public int AuthorityLocalLogicFrameCount; //由本地客户端生成的权威逻辑帧号
+        [ProtoMember(3)] public int AuthorityNetworkFrameCount; //远端客户端获取到输入之后将本值赋值为同一个网络包的本地客户端权威逻辑帧号
+        [ProtoMember(4)] public int LocalizedLocalLogicFrameCount; //服务器给出的权威网络帧号
+        [ProtoMember(5)] public LVector3 AimDirection;
         [ProtoMember(6)] public int PlayerID;
 
         public static FrameInputData Null;
@@ -19,20 +19,19 @@ namespace InputSystemNameSpace {
         static FrameInputData() {
             Null = new();
             Null.KeyCodeinputs = 0;
-            Null.LocalFrameCount = -1;
-            Null.NetworkFrameCount = -1;
+            Null.AuthorityLocalLogicFrameCount = -1;
+            Null.AuthorityNetworkFrameCount = -1;
             Null.AimDirection = LVector3.zero;
-            Null.ServerRecivedInputThisFrame = false;
             Null.PlayerID = -1;
         }
 
         public FrameInputData(InputTypeEnum input,int localFrameCount,int networkFrameCount,LVector3 aimDir,int playerID) {
             KeyCodeinputs = input.InputTypeToInt();
-            LocalFrameCount = localFrameCount;
-            NetworkFrameCount = networkFrameCount;
+            AuthorityLocalLogicFrameCount = localFrameCount;
+            AuthorityNetworkFrameCount = networkFrameCount;
             AimDirection = aimDir;
-            ServerRecivedInputThisFrame = false;
             PlayerID = playerID;
+            LocalizedLocalLogicFrameCount = -1;
         }
 
         #region Utility
@@ -55,7 +54,7 @@ namespace InputSystemNameSpace {
         }
 
         public override string ToString() {
-            return $"FrameInputData PlayerID:{PlayerID} LocalFrame:{LocalFrameCount} NetworkFrame:{NetworkFrameCount} KeyCodeInputs:{KeyCodeinputs} AimDir:{AimDirection} RecivedByServerThisFrame:{ServerRecivedInputThisFrame}";
+            return $"FrameInputData PlayerID:{PlayerID} LocalFrame:{AuthorityLocalLogicFrameCount} NetworkFrame:{AuthorityNetworkFrameCount} KeyCodeInputs:{KeyCodeinputs} AimDir:{AimDirection}";
         }
         #endregion
     }
