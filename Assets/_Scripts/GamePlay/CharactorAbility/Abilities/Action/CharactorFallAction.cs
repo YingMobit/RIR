@@ -3,6 +3,7 @@ using InputSystemNameSpace;
 using Lockstep.Math;
 using LockStepLMath;
 using UnityEngine;
+using Utility;
 
 [CreateAssetMenu(fileName = "CharactorFallAction",menuName ="GAS/Action/Charactor/Fall",order =0)]
 public class CharactorFallAction : AbilityActionUnit {
@@ -17,8 +18,8 @@ public class CharactorFallAction : AbilityActionUnit {
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        inputQueue.TryPeekTail(out var frameInputData);
+        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<DeQueue<FrameInputData>>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
+        inputQueue.TryPeekBack(out var frameInputData);
         var inputDir = frameInputData.MoveInput;
         var aimDir = frameInputData.AimDirection;
         var moveDir = new LVector2();

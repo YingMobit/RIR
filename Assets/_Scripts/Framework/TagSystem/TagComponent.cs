@@ -4,9 +4,9 @@ using TagSystem;
 public class TagComponent : Component {
     private TagSet tagSet = new TagSet();
     public override ComponentTypeEnum ComponentType => ComponentTypeEnum.TagComponent;
-    public override void OnAttach(Entity entity) { }
+    public override void OnAttach(World world,Entity entity) { }
 
-    public override void Reset(Entity entity) {
+    public override void Reset(World world, Entity entity) {
         tagSet.ClearAllTag();
     }
 

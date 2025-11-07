@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Drive;
+using InputSystemNameSpace;
 using ReferencePoolingSystem;
 using Unity.Entities;
 using Unity.Physics;
@@ -19,6 +21,7 @@ namespace ECS {
         private List<Query> activeQuriesCurrentFrame;
 
         private List<ISystem> systems;
+        private InputSystem inputSystem;
 
         #region API
         public int GetEntityCount() => (int)entityManager.TotalEntityCount;
@@ -86,7 +89,7 @@ namespace ECS {
                 GetComponentOnEntity(entity,componentType,out component);
                 return true;
             }
-            component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
+            component = componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
             uint componentTypeIndex = componentType.GetIndex();
             entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
             componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
@@ -97,7 +100,7 @@ namespace ECS {
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType) {
             if(entity.HasComponent(componentType))
                 return true;
-            var component = componentPoolManager.GetComponentPool(componentType).GetInstance(entity,out uint index);
+            var component = componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
             uint componentTypeIndex = componentType.GetIndex();
             entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
             componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
@@ -144,7 +147,7 @@ namespace ECS {
                 return false;
             }
 
-            componentPoolManager.GetComponentPool(componentType).ReleaseInstance(component,entity);
+            componentPoolManager.GetComponentPool(componentType).ReleaseInstance(this,component,entity);
             componentSearchSparseArrays[componentTypeIndex].RemoveIndex(entity.EntityID);
             entitySearchSparseArrays[componentTypeIndex].RemoveIndex(component.ComponentID);
             entityManager.RemoveComponentMask(entity.EntityID,componentType.ToMask());
@@ -173,6 +176,15 @@ namespace ECS {
         }
         #endregion
 
+        public TSystem GetSystemByType<TSystem>() where TSystem : ISystem { 
+            Type type = typeof(TSystem);
+            foreach(var sys in systems) { 
+                if(sys.GetType() == type) { 
+                    return (TSystem)sys;
+                }
+            }
+            return default;
+        }
         #endregion
 
         #region Life Time
@@ -196,6 +208,22 @@ namespace ECS {
         public void OnNetworkUpdate(int networkFrameCount) {
             foreach(var sys in systems) { 
                 sys.OnNetworkUpdate(this,networkFrameCount);
+            }
+        }
+
+        public void OnRollingBack(int errorStartFrameCount,int currentSimulateFrameCount,float deltaTime) {
+            foreach(var sys in systems) {
+                if(sys.GetType() == typeof(InputSystem)) {
+                    (sys as InputSystem).OnRollingBackState(this);
+                } else {
+                    sys.OnFrameUpdate(this,currentSimulateFrameCount,deltaTime);
+                }
+            }
+
+            foreach(var sys in systems) {
+                if(sys.GetType() != typeof(InputSystem)) { 
+                    sys.OnFrameLateUpdate(this,currentSimulateFrameCount);
+                }
             }
         }
 
@@ -250,6 +278,9 @@ namespace ECS {
             foreach(var type in SystemTypeCollection.SystemTypes) { 
                 system = (ISystem)System.Activator.CreateInstance(type);
                 systems.Add(system);
+                if(system.GetType() == typeof(InputSystem)) { 
+                    inputSystem = system as InputSystem;
+                }
             }
 
             systems.Sort((a,b) =>  a.Order < b.Order? -1: 1);

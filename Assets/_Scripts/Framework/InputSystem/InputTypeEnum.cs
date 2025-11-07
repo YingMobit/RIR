@@ -21,6 +21,7 @@ namespace InputSystemNameSpace {
     }
 
     public static class InputTypeEnumExtension { 
+        private static readonly InputTypeEnum PredictableInputTypes = InputTypeEnum.MoveForward | InputTypeEnum.MoveBackward | InputTypeEnum.MoveLeft | InputTypeEnum.MoveRight | InputTypeEnum.Jump;
         public static InputTypeEnum IntToInputType(this int value) {
             return (InputTypeEnum)value;
         }
@@ -35,6 +36,22 @@ namespace InputSystemNameSpace {
 
         public static bool HasAnyInputType(this int type,InputTypeEnum expectedInput) {
             return (type & (int)expectedInput) != 0;
+        }
+
+        public static InputTypeEnum MakePredict(this InputTypeEnum value) {
+            var copy = value;
+            copy &= PredictableInputTypes;
+            return copy;
+        }
+
+        public static int MakePredict(this int value) { 
+            var copy = value;
+            copy &= (int)PredictableInputTypes;
+            return copy;
+        }
+
+        public static int GetUnPredictedInput(this int value) {
+            return value & (int)~PredictableInputTypes;
         }
     }
 }

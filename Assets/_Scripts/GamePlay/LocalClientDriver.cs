@@ -50,10 +50,21 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
 
     void OnLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnUpdate(localFrameCount,deltaTime);
+        Physics.Simulate(deltaTime);
     }
 
     void OnLateLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnLateUpdate(localFrameCount,deltaTime);
+
+        //检查预测
+        if(!world.GetSystemByType<InputSystem>().IsPredictCorrect(world,out var errorStartFrameCount)) {
+            //回滚
+            world.GetSystemByType<RollBackSystem>().RollBack(world,errorStartFrameCount,localFrameCount);
+            //重新模拟
+            for(int i=0;i < localFrameCount - errorStartFrameCount + 1; i++) {
+                world.OnRollingBack(errorStartFrameCount,errorStartFrameCount + i,deltaTime);
+            }
+        }
     }
 
     private void Update() {

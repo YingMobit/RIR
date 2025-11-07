@@ -93,7 +93,7 @@ namespace ECS {
         /// <summary>
         /// 申请一个组件实例并绑定实体。返回该实例，输出槽位索引。
         /// </summary>
-        public Component GetInstance(Entity entity,out uint index) {
+        public Component GetInstance(World world, Entity entity,out uint index) {
             if(freeCount == 0) {
                 ExpandPool();
             }
@@ -106,14 +106,14 @@ namespace ECS {
             activeCount++;
 
             var comp = components[(int)index];
-            comp.OnAttach(entity);
+            comp.OnAttach(world,entity);
             return comp;
         }
 
         /// <summary>
         /// 归还组件实例。若组件不属于该池将记录错误并返回。
         /// </summary>
-        public void ReleaseInstance(Component component,Entity entity) {
+        public void ReleaseInstance(World world,Component component,Entity entity) {
             uint index = component.ComponentID;
             if(index == 0 || index >= (uint)components.Count) {
                 Debug.LogError($"index out of range:{index}");
@@ -141,7 +141,7 @@ namespace ECS {
             activeCount--;
 
             // reset and push to free stack
-            component.Reset(entity);
+            component.Reset(world,entity);
             freeComponentIndexStack[freeCount++] = index;
         }
 

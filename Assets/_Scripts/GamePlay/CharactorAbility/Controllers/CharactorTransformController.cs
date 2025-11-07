@@ -41,6 +41,8 @@ public class CharactorTransformController : ITransformController , IReference<Ch
     }
 
     public void RotateTo(Vector3 newDir,float smoothTime) {
+        if(newDir == Vector3.zero)
+            return;
         vector3SmoothHandler.RegistTask(ROTATIONSMOOTH_TASK_ID,transform.forward,newDir.normalized,smoothTime,(v)=> {
             transform.forward = v;
         },(init,target,t) => { 
@@ -49,6 +51,8 @@ public class CharactorTransformController : ITransformController , IReference<Ch
     }
 
     public void FaceTo(Vector3 newDir) {
+        if(newDir == Vector3.zero)
+            return;
         transform.forward = newDir.normalized;
     }
 

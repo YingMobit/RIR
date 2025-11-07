@@ -2,6 +2,7 @@ using GAS;
 using InputSystemNameSpace;
 using Lockstep.Math;
 using UnityEngine;
+using Utility;
 
 [CreateAssetMenu(fileName = "CharactorTurnAroundAction",menuName = "GAS/Action/Charactor/TurnAround",order = 0)]
 public class CharactorTurnAroundAction : AbilityActionUnit {
@@ -14,8 +15,8 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        inputQueue.TryPeekTail(out var frameInputData);
+        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<DeQueue<FrameInputData>>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
+        inputQueue.TryPeekBack(out var frameInputData);
         var dir = frameInputData.AimDirection;
         dir.y = LFloat.zero;
         dir.Normalize();

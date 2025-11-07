@@ -3,6 +3,10 @@ using Lockstep.Math;
 using ProtoBuf;
 using static Lockstep.Math.LVector3;
 
+#if UNITY_5_3_OR_NEWER
+using UnityEngine;
+#endif
+
 namespace LockStepLMath {
     [Serializable]
     [ProtoContract]
@@ -620,6 +624,53 @@ namespace LockStepLMath {
         public static bool operator !=(LQuaternion lhs, LQuaternion rhs){
             return !(lhs == rhs);
         }
+
+        #endregion
+
+        #region Unity Quaternion Conversion (添加在 public functions 区域末尾)
+
+#if UNITY_5_3_OR_NEWER
+        /// <summary>
+        /// 从 Unity Quaternion 转换为 LQuaternion
+        /// </summary>
+        /// <param name="quaternion">Unity 的四元数</param>
+        /// <returns>LQuaternion</returns>
+        public static LQuaternion FromUnityQuaternion(Quaternion quaternion) {
+            return new LQuaternion(
+                (LFloat)quaternion.x,
+                (LFloat)quaternion.y,
+                (LFloat)quaternion.z,
+                (LFloat)quaternion.w
+            );
+        }
+
+        /// <summary>
+        /// 转换为 Unity Quaternion
+        /// </summary>
+        /// <returns>Unity 的四元数</returns>
+        public Quaternion ToUnityQuaternion() {
+            return new Quaternion(
+                x.ToFloat(),
+                y.ToFloat(),
+                z.ToFloat(),
+                w.ToFloat()
+            );
+        }
+
+        /// <summary>
+        /// 隐式转换：LQuaternion -> Unity Quaternion
+        /// </summary>
+        public static implicit operator Quaternion(LQuaternion lq) {
+            return lq.ToUnityQuaternion();
+        }
+
+        /// <summary>
+        /// 隐式转换：Unity Quaternion -> LQuaternion
+        /// </summary>
+        public static implicit operator LQuaternion(Quaternion q) {
+            return FromUnityQuaternion(q);
+        }
+#endif
 
         #endregion
     }

@@ -5,6 +5,7 @@ using InputSystemNameSpace;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using Utility;
 using Component = ECS.Component;
 
 public class AbilitySystem : ISystem {
@@ -31,7 +32,7 @@ public class AbilitySystem : ISystem {
         for(int i=0;i < query.Entities.Count; i++) {
             inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
             abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
-            abilityComponentContextHandler.Context.GlobalBlacboard.Set<InputQueue>(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.UnconfirmedInputDataBuffer);
+            abilityComponentContextHandler.Context.GlobalBlacboard.Set(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.CachedInputData);
             abilityComponent = query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
             if(!abilityComponent.Inited)
                 abilityComponent.Init(abilityComponentContextHandler.Context);

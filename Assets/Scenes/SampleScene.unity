@@ -164,6 +164,7 @@ MonoBehaviour:
     Timeout: 10000
     MaxRetransmits: 20
   driverPrefab: {fileID: 8774053247310305701, guid: 320698ca61a3f4045945befaac51dfe9, type: 3}
+  StartGameNextFrame: 0
 --- !u!4 &223478797
 Transform:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@ using ECS;
 using System.Collections.Generic;
 using TagSystem;
 using UnityEngine;
+using static RollBackComponent;
 using Component = ECS.Component;
 
 namespace GAS {
@@ -9,8 +10,6 @@ namespace GAS {
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>
     public class AbilityComponent : Component {
-        public AttributeSet AttributeSet;
-
         Dictionary<int,Ability> legalAbilities = new();//所有当前已经注册的Ability
         Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks = new();//所有当前正在运行的Ability对应的Task
         HashSet<int> runningAbilities = new();//所有当前正在运行的Ability
@@ -258,11 +257,11 @@ namespace GAS {
 
         #region Component Override
         public override ComponentTypeEnum ComponentType => ComponentTypeEnum.AbilityComponent;
-        public override void OnAttach(Entity entity) {
-            
+        public override void OnAttach(World world,Entity entity) {
+
         }
 
-        public override void Reset(Entity entity) {
+        public override void Reset(World world,Entity entity) {
             //这个组件不应该被回收
             throw new System.NotImplementedException();
         }
@@ -294,6 +293,16 @@ namespace GAS {
             tasksToRelease = null;
             tasksToRercover = null;
             legalAbilities = null;
+        }
+        #endregion
+
+        #region RollBack
+        public AbilityComponentSnapData SnapShot() {
+            return default;
+        }
+
+        public void RollBack(AbilityComponentSnapData snapData) {
+            //TODO: 实现技能组件的回滚
         }
         #endregion
     }

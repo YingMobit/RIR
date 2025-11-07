@@ -4,6 +4,7 @@ using Lockstep.Math;
 using LockStepLMath;
 using Unity.Physics;
 using UnityEngine;
+using Utility;
 
 [CreateAssetMenu(fileName = "CharactorJumpAction",menuName = "GAS/Action/Charactor/Jump",order = 0)]
 public class CharactorJumpAction : AbilityActionUnit {
@@ -27,8 +28,8 @@ public class CharactorJumpAction : AbilityActionUnit {
         if(YVelocityLastFrame >=0 && transformController.Velocity.y < 0) {
             return TaskStatus.Suceeded;
         } else { 
-            var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-            inputQueue.TryPeekTail(out var frameInputData);
+            var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<DeQueue<FrameInputData>>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
+            inputQueue.TryPeekBack(out var frameInputData);
             var inputDir = frameInputData.MoveInput;
             var aimDir = frameInputData.AimDirection;
             var moveDir = new LVector2();
@@ -57,8 +58,8 @@ public class CharactorJumpAction : AbilityActionUnit {
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
         animationController.SetBool(AnimationParam_JumpUp,true);
 
-        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<InputQueue>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
-        inputQueue.TryPeekTail(out var frameInputData);
+        var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<DeQueue<FrameInputData>>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
+        inputQueue.TryPeekBack(out var frameInputData);
         var inputDir = frameInputData.MoveInput;
         var aimDir = frameInputData.AimDirection;
         var moveDir = new LVector2();

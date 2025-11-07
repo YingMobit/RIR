@@ -26,23 +26,26 @@ namespace ECS {
                 string scriptPath = $"{folderPath}/{className}.cs";
 
                 string script = $@"using ECS;
-using UnityEngine;
 
-public class {className} : ECS.Component
+public class {className} : Component
 {{
     public override ComponentTypeEnum ComponentType => ComponentTypeEnum.{className};
-    public override void OnAttach(Entity entity) {{
+    public override void OnAttach(World world,Entity entity) {{
         // 初始化组件
     }}
-    public override void Reset(Entity entity) {{
+
+    public override void Reset(World world,Entity entity) {{
         // 重置组件状态
     }}
+
     public override void OnDestroy() {{
         // 清理组件
     }}
+
     public override Component Clone() {{
         return new {className}();
     }}
+}}
 ";
 
                 File.WriteAllText(scriptPath,script);

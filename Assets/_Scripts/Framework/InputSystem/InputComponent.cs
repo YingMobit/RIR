@@ -1,51 +1,148 @@
-﻿using ECS;
+﻿using Drive;
+using ECS;
+using Lockstep.Math;
+using System.Collections.Generic;
 using UnityEngine;
+using Utility;
 using Component = ECS.Component;
 
 namespace InputSystemNameSpace {
     public class InputComponent : Component {
         public int PlayerID { get; private set; }
-        public InputQueue UnconfirmedInputDataBuffer { get; private set; } = new InputQueue();
+        public DeQueue<FrameInputData> CachedInputData = new(60);
+        private DeQueue<FrameInputData> UnconfirmedInputDataBuffer = new();
+        private DeQueue<FrameInputData> InferredInputCache = new();//回滚时使用的根据最新权威输入数据得到的最可能正确的输入缓存
+        
+        bool attachUnPredictedInputNeeded = false;
+        int unPredictedInput = 0;
 
+        private FrameInputData defaultFrameInputData = new FrameInputData() {
+            AimDirection = LVector3.forward,
+            KeyCodeinputs = 0
+        };
+
+        #region Componenrt Override
         public override ComponentTypeEnum ComponentType => ComponentTypeEnum.InputComponent;
+        public override Component Clone() {
+            return new InputComponent() { UnconfirmedInputDataBuffer = this.UnconfirmedInputDataBuffer.Clone() };
+        }
+
+        public override void OnAttach(World world,Entity entity) {
+
+        }
+
+        public override void OnDestroy() {
+            UnconfirmedInputDataBuffer.Clear();
+        }
+
+        public override void Reset(World world,Entity entity) {
+            UnconfirmedInputDataBuffer.Clear();
+        }
+        #endregion
+
+        #region API
+        public void LogicUpdate(FrameInputData localPlayerFrameInputData,int authorityLocalLogicFrameCount) {
+            FrameInputData predict;
+            if(PlayerID == NetworkManager.Instance.LocalPlayerID) {
+                predict = localPlayerFrameInputData;
+            } else {
+                if(CachedInputData.TryPeekBack(out var lastFrameInputData)) {
+                    predict = lastFrameInputData.MakePredict(authorityLocalLogicFrameCount);
+                } else {
+                    Debug.Log($"[InputComponent]Player: {PlayerID} has no InputData to predict,use defualt instead");
+                    defaultFrameInputData.PlayerID = PlayerID;
+                    predict = defaultFrameInputData.MakePredict(authorityLocalLogicFrameCount);
+                }
+            }
+
+            if(attachUnPredictedInputNeeded) {
+                predict.KeyCodeinputs |= unPredictedInput;
+                attachUnPredictedInputNeeded = false;
+            }
+
+            CachedInputData.PushBack(predict);
+            UnconfirmedInputDataBuffer.PushBack(predict);
+
+            Debug.Log($"LocalLogicFrame: {authorityLocalLogicFrameCount},Player: {PlayerID} InputComponent has: {UnconfirmedInputDataBuffer.Count} InputData tobe Conform," +
+                $"Start Frame: {UnconfirmedInputDataBuffer.PeekFront().LocalizedLocalLogicFrameCount} To Frame: {UnconfirmedInputDataBuffer.PeekBack().LocalizedLocalLogicFrameCount}");
+        }
 
         public void BindPlayerID(int playerID) { 
             PlayerID = playerID;
         }
 
-        public override Component Clone() {
-            return new InputComponent() { UnconfirmedInputDataBuffer = this.UnconfirmedInputDataBuffer.Clone() };
-        }
+        /// <summary>
+        /// 确认预测输入，如有错误将返回false，并返回最早错误帧数，同时重新计算预测帧输入
+        /// </summary>
+        /// <param name="authoritativeInputData"></param>
+        /// <param name="errorStartFrameCount"></param>
+        /// <returns></returns>
+        public bool IsPredictCorrect(IEnumerable<FrameInputData> authoritiveInputDatas,out int errorStartFrameCount) {
+            Debug.Log($"Player: {PlayerID} Checking PredictState");
 
-        public override void OnAttach(Entity entity) {
-            
-        }
+            attachUnPredictedInputNeeded = true;
+            unPredictedInput = 0;
+            foreach(var authoritiveInputData in authoritiveInputDatas) { 
+                unPredictedInput |= authoritiveInputData.KeyCodeinputs.GetUnPredictedInput();
+            }
 
-        public override void OnDestroy() {
-            UnconfirmedInputDataBuffer.OnDestroy();
-        }
-
-        public override void Reset(Entity entity) {
-            UnconfirmedInputDataBuffer.Reset();
-        }
-
-        public bool ConfirmeInputData(FrameInputData authoritativeInputData) {
-            while(UnconfirmedInputDataBuffer.TryPeekHead(out var tobeComfirme)) {
-                if(tobeComfirme.LocalizedLocalLogicFrameCount == authoritativeInputData.LocalizedLocalLogicFrameCount) {
-                    if(tobeComfirme.MoveInput == authoritativeInputData.MoveInput) {
-                        return true;
-                    } else {
-                        return false;
+            InferredInputCache.Clear();
+            int errorFrameCount = -1;
+            bool error = false;
+            int predictedDataCount = UnconfirmedInputDataBuffer.Count;
+            foreach(var authoritiveData in authoritiveInputDatas) {
+                if(UnconfirmedInputDataBuffer.TryPeekFront(out var predictData)) {
+                    if(!predictData.IsRightPredict(authoritiveData)) {
+                        Debug.LogWarning($"InCorrect Predict Detected,Prediect InputData:{predictData},Authoritive InputData:{authoritiveData}");
+                        if(!error) {
+                            errorFrameCount = predictData.LocalizedLocalLogicFrameCount;
+                            error = true;
+                        }
                     }
-                } else if(tobeComfirme.LocalizedLocalLogicFrameCount > authoritativeInputData.LocalizedLocalLogicFrameCount) {
-                    Debug.LogError($"this authoritativeInputData has been confirmed,localframe of oldestUnconfirmedInputData:{tobeComfirme.LocalizedLocalLogicFrameCount},locaframe of authoritativeInputData:{authoritativeInputData.LocalizedLocalLogicFrameCount}");
-                    return true;
+                    UnconfirmedInputDataBuffer.PopFront();
+                    //这里没有将已确认的输入数据的网络帧号更新为权威网络帧号，因为太几把麻烦了,用到了再说
+                    var copy = authoritiveData;
+                    copy.KeyCodeinputs |= predictData.KeyCodeinputs.GetUnPredictedInput();//由于权威数据的非预测输入部分会延时模拟，这里需要将之前的权威数据的非预测部份附加到这里，防止回滚导致非预测部分数据丢失
+                    InferredInputCache.PushBack(copy);
                 } else {
-                    Debug.LogWarning("jumped authoritativeInputData,localframe of oldestUnconfirmedInputData:{tobeComfirme.LocalizedLocalLogicFrameCount},locaframe of authoritativeInputData:{authoritativeInputData.LocalizedLocalLogicFrameCount}");
+                    Debug.LogError($"There should be inputdata tobe comfirmed,but nothing here,PlayerID: {PlayerID},authoritive input data: {authoritiveData}");
                 }
             }
-            Debug.LogError("No unconfirmed input data available");
-            return true;
+
+            if(!error) {
+                foreach(var localPredictData in UnconfirmedInputDataBuffer) {
+                    InferredInputCache.PushBack(localPredictData);
+                }
+            } else {
+                int unConfirmedInputDataCount = UnconfirmedInputDataBuffer.Count;
+                UnconfirmedInputDataBuffer.Clear();
+                var newestInputData = InferredInputCache.PeekBack();
+                for(int i = 0; i < unConfirmedInputDataCount; i++) {
+                    var predict = newestInputData.MakePredict(
+                        newestInputData.LocalizedLocalLogicFrameCount + i + 1
+                    );
+                    InferredInputCache.PushBack(predict);
+                    UnconfirmedInputDataBuffer.PushBack(predict);
+                }
+            }
+            
+
+            errorStartFrameCount = errorFrameCount;
+            if(error)
+                Debug.LogWarning($"Player: {PlayerID} Predict State Error Start From Frame: {errorStartFrameCount}");
+            return !error;
         }
+
+
+        public void SimulateInputWhenRollingBackState() { 
+            CachedInputData.PushBack(InferredInputCache.PopFront());
+        }
+
+        public void RollBack(int errorStartFrameCount,int currentFrameCount) { 
+            int errorFrameCount = currentFrameCount - errorStartFrameCount + 1;
+            InferredInputCache.PopFrontN(InferredInputCache.Count - errorFrameCount);
+            CachedInputData.PopBackN(InferredInputCache.Count);
+        }
+        #endregion
     }
 }

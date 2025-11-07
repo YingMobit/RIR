@@ -13,7 +13,8 @@ public class ClientInGameState : ClientState {
         foreach(var message in context.networkMessage) {
             if(message.NetworkMessageType == NetworkMessageType.PlayerInputsMessage) { 
                 var playerInputsMessage = ProtobufSerializer.Deserialize<NetworkPlayerInputsDownLinkMessage>(message.DataStream);
-                GlobalEventCenter.Instance.Invoke<IRecivedNetworkPlayerInputsEventData>(new RecivedNetworkPlayerInputsEventData(playerInputsMessage));   
+                if(playerInputsMessage.Inputs[0].ServerReceived)
+                    GlobalEventCenter.Instance.Invoke<IRecivedNetworkPlayerInputsEventData>(new RecivedNetworkPlayerInputsEventData(playerInputsMessage));   
             }
         }
             

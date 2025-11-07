@@ -28,7 +28,6 @@ namespace ECS {
                     Directory.CreateDirectory(folderPath);
 
                 string script = $@"using ECS;
-using UnityEngine;
 
 public class {className} : ISystem {{
     public int Order => 0;
