@@ -19,5 +19,5 @@ MonoBehaviour:
     Icon: {fileID: 0}
   Childs: []
   AnimationParam_FallDown: ShouldFall
-  InAirSpeedAttributeName: InAirSpeed
-  InAirSpeedSmoothTime: 0.5
+  InAirSpeedAttributeID: 4
+  InAirSpeedSmoothSpeed: 10

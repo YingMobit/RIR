@@ -6,6 +6,7 @@ using InputSystemNameSpace;
 using Utility;
 using GAS;
 using ReferencePoolingSystem;
+using UnityEngine.Analytics;
 
 [DefaultExecutionOrder(int.MinValue)]
 public class LocalClientDriver : Singleton<LocalClientDriver> {
@@ -24,7 +25,6 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     }
 
     void BuildCharactors(Dictionary<int,int> playerID_CharactorIDMap) {
-        Debug.Log($"BuildCharactors,Charactor Count:{playerID_CharactorIDMap.Count}");
         foreach(var kvp in playerID_CharactorIDMap) {
             int playerID = kvp.Key;
             int charactorID = kvp.Value;
@@ -50,6 +50,9 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
 
     void OnLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnUpdate(localFrameCount,deltaTime);
+        foreach(var controller in controllers) {
+            controller.LogicUpdate();
+        }
         Physics.Simulate(deltaTime);
     }
 
@@ -90,6 +93,7 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
         animationController.BindGameObject(res);
         var transformController = world.ReferencePoolingCenter.GetReference<CharactorTransformController>();
         transformController.BindGameObject(res);
+        transformController.SetPosition(new(position.x,0,position.y));
         contextBuilder.RegistController(ControllerTypeEnum.Animation,animationController);
         contextBuilder.RegistController(ControllerTypeEnum.Transform,transformController);
         controllers.Add(animationController);

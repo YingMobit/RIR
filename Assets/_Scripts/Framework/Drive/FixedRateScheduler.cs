@@ -13,7 +13,7 @@ namespace Drive {
 
         public static event Action<long,double> OnTick; // (tickId, dt)
 
-        static Config _cfg = new();
+        public static Config _cfg = new();
         static double _dt;
         static double _nextTickTime;
         static long _tickId;

@@ -12,5 +12,6 @@ namespace GAS {
         public void BindGameObject(GameObject gameObject);
         public void Update();
         public void LateUpdate();
+        public void LogicUpdate();
     }
 }

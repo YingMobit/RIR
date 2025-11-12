@@ -11,7 +11,7 @@ public class CharactorJumpAction : AbilityActionUnit {
     [Header("Animation Params")]
     [SerializeField] string AnimationParam_JumpUp;
     [Header("Sommth Config")]
-    [SerializeField] float JumpHorizontalSpeedSmoothTime = 0.1f;
+    [SerializeField] int JumpHorizontalSpeedSmoothFrameCount = 10;
     [Header("Attribute Config")]
     [SerializeField] int JumpVerticalImpulseAttributeID;
     [SerializeField] int JumpHorizontalImpulseAttributeID;
@@ -37,7 +37,7 @@ public class CharactorJumpAction : AbilityActionUnit {
             moveDir = rotation * inputDir;
             var jumpHorizontalSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
             Vector3 horizontalVelocity = jumpHorizontalSpeedAttribute.Float() * new Vector3(moveDir.x.ToFloat(),0,moveDir.y.ToFloat()).normalized;
-            transformController.HorizontalVelocityTo(new (horizontalVelocity.x,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
+            //transformController.HorizontalVelocityToSmoothly(new (horizontalVelocity.x,horizontalVelocity.z),JumpHorizontalSpeedSmoothTime);
 
             YVelocityLastFrame = transformController.Velocity.y;
             return TaskStatus.Running;
@@ -71,7 +71,7 @@ public class CharactorJumpAction : AbilityActionUnit {
         Vector3 verticalImpulse = jumpHeight.Float() * Vector3.up;
         Vector3 horizontalImpulse = jumpHorizontalImpulse.Float() * new Vector3(moveDir.x.ToFloat(),0,moveDir.y.ToFloat()).normalized;
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        transformController.AddForce(verticalImpulse + horizontalImpulse,ForceMode.VelocityChange);
+        //transformController.AddForce(verticalImpulse + horizontalImpulse,ForceMode.VelocityChange);
         YVelocityLastFrame = transformController.Velocity.y; 
     }
 }

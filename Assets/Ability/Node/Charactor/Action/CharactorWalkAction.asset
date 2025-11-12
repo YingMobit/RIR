@@ -21,5 +21,5 @@ MonoBehaviour:
   AnimationParam_Dir_x: Direction_x
   AnimationParam_Dir_z: Direction_z
   AnimationParam_Walk: ShouldWalk
-  WalkSpeedSmoothTime: 0.05
+  PositionSmoothFrameCount: 5
   WalkSpeedAttributeID: 4

@@ -7,7 +7,7 @@ using Utility;
 [CreateAssetMenu(fileName = "CharactorTurnAroundAction",menuName = "GAS/Action/Charactor/TurnAround",order = 0)]
 public class CharactorTurnAroundAction : AbilityActionUnit {
     [Header("Turn Param")]
-    [SerializeField] float TurnSmoothTime;
+    [SerializeField] int TurnSmoothFrameCount;
     
     
     public override AbilityBehaviorUnit Clone() {
@@ -21,7 +21,7 @@ public class CharactorTurnAroundAction : AbilityActionUnit {
         dir.y = LFloat.zero;
         dir.Normalize();
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
-        transformController.RotateTo(dir.ToVector3(),TurnSmoothTime);
+        transformController.RotateToSmoothly(dir.ToVector3(),TurnSmoothFrameCount);
         return TaskStatus.Running;
     }
 

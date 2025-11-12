@@ -11,6 +11,7 @@ using Component = ECS.Component;
 public class AbilitySystem : ISystem {
     public const int INPUTID_IN_GLOBALBLACKBORAD = 0;
     public const int ISFALLINGID_IN_GLOBALBLACKBORAD = 1;
+    public const int DELTATIMEID_IN_GLOBALBLACKBORAD = 2;
 
 
     public int Order => 1;
@@ -36,9 +37,8 @@ public class AbilitySystem : ISystem {
             abilityComponent = query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
             if(!abilityComponent.Inited)
                 abilityComponent.Init(abilityComponentContextHandler.Context);
+            abilityComponentContextHandler.Context.GlobalBlacboard.Set(DELTATIMEID_IN_GLOBALBLACKBORAD,deltaTime);
             abilityComponent.Update(abilityComponentContextHandler.Context);
-
-
         }
 
         world.GetComponents(ComponentTypeEnum.AbilityComponent,abilityComponentWithoutInput,entities);

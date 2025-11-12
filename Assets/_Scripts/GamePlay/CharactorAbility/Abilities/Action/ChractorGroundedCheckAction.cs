@@ -10,7 +10,7 @@ public class CharactorGoundedCheckAction : AbilityActionUnit {
     }
 
     public override TaskStatus OnExcute(AbilityRuntimeContext abilityRuntimeContext) {
-        if(Physics.Raycast((abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController).Position,Vector3.down,checkDistance,groundLayer)) {
+        if(Physics.Raycast((abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController).LogicPosition,Vector3.down,checkDistance,groundLayer)) {
             return TaskStatus.Suceeded;
         } else {
             return TaskStatus.Failed;

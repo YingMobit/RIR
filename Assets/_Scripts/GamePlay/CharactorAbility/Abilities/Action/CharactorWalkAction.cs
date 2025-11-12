@@ -12,7 +12,7 @@ public class CharactorWalkAction : AbilityActionUnit {
     [SerializeField] string AnimationParam_Dir_z;
     [SerializeField] string AnimationParam_Walk;
     [Header("SmoothConfig")]
-    [SerializeField] float WalkSpeedSmoothTime;
+    [SerializeField] int PositionSmoothFrameCount;
     [Header("AttributeConfig")]
     [SerializeField] int WalkSpeedAttributeID;
     public override AbilityBehaviorUnit Clone() {
@@ -29,14 +29,16 @@ public class CharactorWalkAction : AbilityActionUnit {
         moveDir = rotation * inputDir;
         
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x.ToFloat(),WalkSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y.ToFloat(), WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,inputDir.x.ToFloat(),PositionSmoothFrameCount);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,inputDir.y.ToFloat(), PositionSmoothFrameCount);
 
         ITransformController transformController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Transform] as ITransformController;
         var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[WalkSpeedAttributeID];
         var velocity = new Vector2(moveDir.x.ToFloat() * walkSpeedAttribute.Float(),moveDir.y.ToFloat() * walkSpeedAttribute.Float());
-        
-        transformController.HorizontalVelocityTo(velocity,WalkSpeedSmoothTime);
+        var deltaTime = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<float>(AbilitySystem.DELTATIMEID_IN_GLOBALBLACKBORAD);
+        var newPos = transformController.LogicPosition + new Vector3(velocity.x,0,velocity.y) * deltaTime;
+
+        transformController.MoveToSmoothly(newPos,PositionSmoothFrameCount);
         return TaskStatus.Running;
     }
 
@@ -45,8 +47,8 @@ public class CharactorWalkAction : AbilityActionUnit {
         IAnimationController animationController = abilityRuntimeContext.AbilityComponentContext.Controllers[ControllerTypeEnum.Animation] as IAnimationController;
         
         //设置完平滑参数就可以退出了
-        animationController.SetFloatSmooth(AnimationParam_Dir_x,0,WalkSpeedSmoothTime);
-        animationController.SetFloatSmooth(AnimationParam_Dir_z,0,WalkSpeedSmoothTime);
+        animationController.SetFloatSmooth(AnimationParam_Dir_x,0,PositionSmoothFrameCount);
+        animationController.SetFloatSmooth(AnimationParam_Dir_z,0,PositionSmoothFrameCount);
         animationController.SetBool(AnimationParam_Walk,false);
         return TaskStatus.Suceeded;
     }

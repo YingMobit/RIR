@@ -49,7 +49,7 @@ namespace InputSystemNameSpace {
                 if(CachedInputData.TryPeekBack(out var lastFrameInputData)) {
                     predict = lastFrameInputData.MakePredict(authorityLocalLogicFrameCount);
                 } else {
-                    Debug.Log($"[InputComponent]Player: {PlayerID} has no InputData to predict,use defualt instead");
+                    //Debug.Log($"[InputComponent]Player: {PlayerID} has no InputData to predict,use defualt instead");
                     defaultFrameInputData.PlayerID = PlayerID;
                     predict = defaultFrameInputData.MakePredict(authorityLocalLogicFrameCount);
                 }
@@ -63,8 +63,8 @@ namespace InputSystemNameSpace {
             CachedInputData.PushBack(predict);
             UnconfirmedInputDataBuffer.PushBack(predict);
 
-            Debug.Log($"LocalLogicFrame: {authorityLocalLogicFrameCount},Player: {PlayerID} InputComponent has: {UnconfirmedInputDataBuffer.Count} InputData tobe Conform," +
-                $"Start Frame: {UnconfirmedInputDataBuffer.PeekFront().LocalizedLocalLogicFrameCount} To Frame: {UnconfirmedInputDataBuffer.PeekBack().LocalizedLocalLogicFrameCount}");
+            //Debug.Log($"LocalLogicFrame: {authorityLocalLogicFrameCount},Player: {PlayerID} InputComponent has: {UnconfirmedInputDataBuffer.Count} InputData tobe Conform," +
+                //$"Start Frame: {UnconfirmedInputDataBuffer.PeekFront().LocalizedLocalLogicFrameCount} To Frame: {UnconfirmedInputDataBuffer.PeekBack().LocalizedLocalLogicFrameCount}");
         }
 
         public void BindPlayerID(int playerID) { 
@@ -78,7 +78,7 @@ namespace InputSystemNameSpace {
         /// <param name="errorStartFrameCount"></param>
         /// <returns></returns>
         public bool IsPredictCorrect(IEnumerable<FrameInputData> authoritiveInputDatas,out int errorStartFrameCount) {
-            Debug.Log($"Player: {PlayerID} Checking PredictState");
+            //Debug.Log($"Player: {PlayerID} Checking PredictState");
 
             attachUnPredictedInputNeeded = true;
             unPredictedInput = 0;
@@ -92,6 +92,9 @@ namespace InputSystemNameSpace {
             int predictedDataCount = UnconfirmedInputDataBuffer.Count;
             foreach(var authoritiveData in authoritiveInputDatas) {
                 if(UnconfirmedInputDataBuffer.TryPeekFront(out var predictData)) {
+                    if(predictData.LocalizedLocalLogicFrameCount != authoritiveData.LocalizedLocalLogicFrameCount) { 
+                        Debug.LogError($"InputData FrameCount Mismatch Detected,PlayerID: {PlayerID},\nPrediect InputData:{predictData},\nAuthoritive InputData:{authoritiveData}");
+                    }
                     if(!predictData.IsRightPredict(authoritiveData)) {
                         Debug.LogWarning($"InCorrect Predict Detected,Prediect InputData:{predictData},Authoritive InputData:{authoritiveData}");
                         if(!error) {

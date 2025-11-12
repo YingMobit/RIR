@@ -6,7 +6,7 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
     public ControllerTypeEnum Type => ControllerTypeEnum.Animation;
 
     Animator animator;
-    ValueSmoothHandler<float> floatAnimationParamSmoothHandler;
+    AttributeSmoothHandler<float> floatAnimationParamSmoothHandler;
 
     public void SetBool(string name,bool value) {
         animator.SetBool(name,value);
@@ -16,16 +16,23 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
         animator.SetFloat(name,value);
     }
 
-    public void SetFloatSmooth(string name,float value,float smoothTime) {
-        floatAnimationParamSmoothHandler.RegistTask(name.GetHashCode(),animator.GetFloat(name),value,smoothTime,(v)=> {
-            animator.SetFloat(name,v);
-        },(init,target,t) => { 
-            return Mathf.Lerp(init,target,t);
-        });
+    public void SetFloatSmooth(string name, float value, int smoothFrames) {
+        int taskID = name.GetHashCode();
+
+        floatAnimationParamSmoothHandler.RegistTask(
+            taskID,
+            value,
+            smoothFrames,
+            (v) => {
+                animator.SetFloat(name,v);
+            },
+            (init,target,t) => Mathf.Lerp(init,target,t),
+            (a,b) => Mathf.Approximately(a,b)
+        );
     }
 
     public void Update() { 
-        floatAnimationParamSmoothHandler.Update();
+        floatAnimationParamSmoothHandler.Update(Time.deltaTime);
     }
 
     int IReference.IndexInRefrencePool { get; set; }
@@ -38,8 +45,11 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
         animator = gameObject.GetComponentInChildren<Animator>();
     }
 
-
     public void LateUpdate() {
+        
+    }
+    
+    public void LogicUpdate() {
         
     }
 
@@ -50,7 +60,7 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
 
     public IReference Clone() {
         var res = new CharactorAnimationController();
-        res.floatAnimationParamSmoothHandler = new ValueSmoothHandler<float>();
+        res.floatAnimationParamSmoothHandler = new AttributeSmoothHandler<float>();
         return res;
     }
 

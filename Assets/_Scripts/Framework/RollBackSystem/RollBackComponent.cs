@@ -1,3 +1,4 @@
+using Drive;
 using ECS;
 using GAS;
 using InputSystemNameSpace;
@@ -12,16 +13,13 @@ public class RollBackComponent : Component {
     private struct SnapData {
         public int LocalizedLogicFrameCount;
         public TranformSnapData TranformSnapData;
-        public RigidbodySnapData RigidbodySnapData;
         public AbilityComponentSnapData AbilityComponentSnapData;
 
         public SnapData(int localizedLogicFrameCount,
                         TranformSnapData tranformSnapData,
-                        RigidbodySnapData rigidbodySnapData,
                         AbilityComponentSnapData abilityComponentSnapData) {
             LocalizedLogicFrameCount = localizedLogicFrameCount;
             TranformSnapData = tranformSnapData;
-            RigidbodySnapData = rigidbodySnapData;
             AbilityComponentSnapData = abilityComponentSnapData;
         }
     }
@@ -54,7 +52,6 @@ public class RollBackComponent : Component {
     public struct AbilityComponentSnapData {
         
     }
-
     #endregion
 
     const int SNAPSHOTCACHESIZE = 60;
@@ -62,36 +59,31 @@ public class RollBackComponent : Component {
 
     #region Bind
     GameObject gameObject;
-    Rigidbody rigidbody;
-    Transform transform;
+    ITransformController transform; 
     AbilityComponent abilityComponent;
     InputComponent inputComponent;
     #endregion
 
     #region Component Overrides
     public override ComponentTypeEnum ComponentType => ComponentTypeEnum.RollBackComponent;
-    public override void OnAttach(World world,Entity entity) {
-        // 初始化组件
+    
+    public override void OnAttach(World world, Entity entity) {
         gameObject = world.GetGameObject(entity);
-        rigidbody = gameObject.GetComponent<Rigidbody>();
-        transform = gameObject.transform;
-        world.GetComponentOnEntity(entity,ComponentTypeEnum.AbilityComponent,out var abilityComp);
+        transform = gameObject.GetComponent<AbilityComponentContextBuilder>().Context.Controllers[ControllerTypeEnum.Transform] as ITransformController;
+        world.GetComponentOnEntity(entity, ComponentTypeEnum.AbilityComponent, out var abilityComp);
         abilityComponent = abilityComp as AbilityComponent;
-        world.GetComponentOnEntity(entity,ComponentTypeEnum.InputComponent,out var inputComp);
+        world.GetComponentOnEntity(entity, ComponentTypeEnum.InputComponent, out var inputComp);
         inputComponent = inputComp as InputComponent;
         SnapShot(0);
     }
 
-    public override void Reset(World world,Entity entity) {
-        // 重置组件状态
+    public override void Reset(World world, Entity entity) {
         gameObject = null;
-        rigidbody = null;
         transform = null;
         abilityComponent = null;
     }
 
     public override void OnDestroy() {
-        // 清理组件
     }
 
     public override Component Clone() {
@@ -102,44 +94,36 @@ public class RollBackComponent : Component {
     #region API
     public void SnapShot(int logicFrameCount) { 
         var tranformSnapData = new TranformSnapData(
-            transform.position.ToLVector3(),
-            transform.rotation,
-            transform.localScale.ToLVector3()
+            transform.LogicPosition.ToLVector3(),
+            transform.LogicRotation,
+            transform.LogicScale.ToLVector3()
         );
-        var rigidbodySnapData = new RigidbodySnapData(
-            rigidbody.linearVelocity.ToLVector3(),
-            rigidbody.angularVelocity.ToLVector3()
-        );
-        var abilityComponentSnapData = new AbilityComponentSnapData(
-            
-        );
+        var abilityComponentSnapData = new AbilityComponentSnapData();
         var snapData = new SnapData(
             logicFrameCount,
             tranformSnapData,
-            rigidbodySnapData,
             abilityComponentSnapData
         );
 
         cachedSnapShots.PushBack(snapData);
     }
 
-    /// <summary>
-    /// 回滚到距离当前帧最近的正确帧并清除所有错误帧快照
-    /// </summary>
-    /// <param name="errorStartLocalizedLogicFrameCount"></param>
-    /// <param name="currentLocalizedLogicFrameCount"></param>
-    public void RollBackState(int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) { 
-        Debug.Log($"[RollBackComponent] RollBack from Frame {errorStartLocalizedLogicFrameCount} to Frame {currentLocalizedLogicFrameCount}");
+    public void RollBackState(int errorStartLocalizedLogicFrameCount, int currentLocalizedLogicFrameCount) { 
         int count = currentLocalizedLogicFrameCount - errorStartLocalizedLogicFrameCount + 1;
         cachedSnapShots.PopBackN(count);
         var lastCorrectSnapData = cachedSnapShots.PeekBack();
-        transform.position = lastCorrectSnapData.TranformSnapData.Position.ToVector3();
-        transform.rotation = lastCorrectSnapData.TranformSnapData.Rotation;
-        transform.localScale = lastCorrectSnapData.TranformSnapData.Scale.ToVector3();
-        rigidbody.linearVelocity = lastCorrectSnapData.RigidbodySnapData.Velocity.ToVector3();
-        rigidbody.angularVelocity = lastCorrectSnapData.RigidbodySnapData.AngularVelocity.ToVector3();
+        Debug.Log($"[RollBackComponent] RollBack from Frame {errorStartLocalizedLogicFrameCount} to Frame {currentLocalizedLogicFrameCount}\n" +
+            $"Frame:{errorStartLocalizedLogicFrameCount}SnapShot:{{position:{lastCorrectSnapData.TranformSnapData.Position}\n" +
+            $"rotation:{lastCorrectSnapData.TranformSnapData.Rotation}\n" +
+            $"scale:{lastCorrectSnapData.TranformSnapData.Scale}}}\n");
+        
+        int trackBackFrameCount = (int)(count * (1f / Time.deltaTime) / (float)FixedRateScheduler._cfg.RateHz) / 2;
+        transform.MoveToSmoothly(lastCorrectSnapData.TranformSnapData.Position.ToVector3(),trackBackFrameCount);
+        transform.RotateToSmoothly(lastCorrectSnapData.TranformSnapData.Rotation,trackBackFrameCount);
+        transform.ScaleToSmoothly(lastCorrectSnapData.TranformSnapData.Scale.ToVector3(),trackBackFrameCount);
+
         abilityComponent.RollBack(lastCorrectSnapData.AbilityComponentSnapData);
-        inputComponent.RollBack(errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+        inputComponent.RollBack(errorStartLocalizedLogicFrameCount, currentLocalizedLogicFrameCount);
     }
     #endregion
 }

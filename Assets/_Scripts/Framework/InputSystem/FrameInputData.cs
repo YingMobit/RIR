@@ -68,13 +68,13 @@ namespace InputSystemNameSpace {
         }
 
         public override string ToString() {
-            return $"FrameInputData PlayerID:{PlayerID} " +
-                $"AuthorityLocalLogicFrameCount:{AuthorityLocalLogicFrameCount} " +
-                $"AuthorityNetworkFrame:{AuthorityNetworkFrameCount} " +
-                $"LocalizedLocalLogicFrameCount:{LocalizedLocalLogicFrameCount} " +
-                $"ServerReceived:{ServerReceived} " +
-                $"KeyCodeInputs:{KeyCodeinputs} " +
-                $"AimDir:{AimDirection}";
+            return $"FrameInputData PlayerID:{PlayerID} \n" +
+                $"AuthorityLocalLogicFrameCount:{AuthorityLocalLogicFrameCount} \n" +
+                $"AuthorityNetworkFrame:{AuthorityNetworkFrameCount} \n" +
+                $"LocalizedLocalLogicFrameCount:{LocalizedLocalLogicFrameCount} \n" +
+                $"ServerReceived:{ServerReceived} \n" +
+                $"KeyCodeInputs:{KeyCodeinputs} \n" +
+                $"AimDir:{AimDirection}\n";
         }
         #endregion
     }

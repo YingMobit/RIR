@@ -12,7 +12,7 @@ public class CharactorFallAction : AbilityActionUnit {
     [Header("Attribute Config")]
     [SerializeField] int InAirSpeedAttributeID;
     [Header("Smooth Config")]
-    [SerializeField] float InAirSpeedSmoothTime;
+    [SerializeField] float InAirSpeedSmoothSpeed;
     public override AbilityBehaviorUnit Clone() {
         return Instantiate(this);
     }
@@ -30,7 +30,7 @@ public class CharactorFallAction : AbilityActionUnit {
         var walkSpeedAttribute = abilityRuntimeContext.AbilityComponentContext.AttributeSet[InAirSpeedAttributeID];
         var velocity = new Vector2(moveDir.x.ToFloat() * walkSpeedAttribute.Float(),moveDir.y.ToFloat() * walkSpeedAttribute.Float());
 
-        transformController.HorizontalVelocityTo(velocity,InAirSpeedSmoothTime);
+        //transformController.HorizontalVelocityToSmoothly(velocity,InAirSpeedSmoothTime);
         abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Set<bool>(AbilitySystem.ISFALLINGID_IN_GLOBALBLACKBORAD,true);
         return TaskStatus.Running;
     }

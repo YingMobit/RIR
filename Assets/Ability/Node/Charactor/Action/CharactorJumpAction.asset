@@ -19,7 +19,7 @@ MonoBehaviour:
     Icon: {fileID: 0}
   Childs: []
   AnimationParam_JumpUp: ShouldJumpUp
-  JumpHorizontalSpeedSmoothTime: 0.5
+  JumpHorizontalSpeedSmoothFrameCount: 5
   JumpVerticalImpulseAttributeID: 1
   JumpHorizontalImpulseAttributeID: 2
   InAirSpeedAttributeID: 0
