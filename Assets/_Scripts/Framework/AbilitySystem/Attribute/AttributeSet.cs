@@ -1,8 +1,9 @@
+using PoolingSystem.ReferencePool;
 using Sirenix.Utilities;
 using System.Collections.Generic;
 
 namespace GAS {
-    public class AttributeSet {
+    public class AttributeSet : IReference<AttributeSet> {
         private Dictionary<int,Attribute> map = new();
 
         public Attribute GetAttribute(int attributeID) { 
@@ -29,5 +30,25 @@ namespace GAS {
                 map.Remove(attributeID);
             }
         }
+
+        #region IReference
+        public uint ReferenceType => ReferenceTypes.ATTRIBUTESET;
+
+        int IReference.IndexInRefrencePool { get ; set ; }
+
+        public void OnRecycle() {
+            map.Clear();
+        }
+
+        public IReference GetNewInstance() {
+            return new AttributeSet();
+        }
+
+        public void Dispose() {
+            OnRecycle();
+            map = null;
+        }
+        #endregion
+
     }
 }

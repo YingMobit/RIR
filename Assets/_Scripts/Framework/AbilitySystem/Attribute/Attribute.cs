@@ -1,10 +1,11 @@
+using PoolingSystem.ReferencePool;
 using Sirenix.OdinInspector;
 using System;
 using UnityEngine;
 
 namespace GAS {
     [Serializable]
-    public class Attribute {
+    public class Attribute : IReference<Attribute> {
         AttributeData attributeData;
         public float BaseValue => attributeData.BaseValue;
         public float MaxValue => attributeData.MaxValue;
@@ -80,6 +81,29 @@ namespace GAS {
             }
         }
 
+
+        #region IReference
+        public uint ReferenceType => ReferenceTypes.ATTRIBUTE;
+        int IReference.IndexInRefrencePool { get ; set ; }
+
+        public void OnRecycle() {
+            attributeData.BaseValue = 0;
+            attributeData.MaxValue = 0;
+            attributeData.MinValue = 0;
+            OnValueChanged = null;
+            OnMaxValueChanged = null;
+            OnMinValueChanged = null;
+        }
+
+        public IReference GetNewInstance() {
+            return new Attribute(new AttributeData());
+        }
+
+        public void Dispose() {
+            OnRecycle();
+        }
+        #endregion
+        public Attribute() { }
         public Attribute(AttributeData data) { 
             attributeData = data;
         }

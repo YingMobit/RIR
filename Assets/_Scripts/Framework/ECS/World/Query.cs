@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ReferencePoolingSystem;
+using PoolingSystem.ReferencePool;
 using UnityEngine.Pool;
 
 namespace ECS {
@@ -61,7 +60,7 @@ namespace ECS {
             ComponentSet set;
             Component temp;
             for(int i=0;i < fitCount; i++) {
-                set = world.ReferencePoolingCenter.GetReference<ComponentSet>();
+                set = ReferencePoolingCenter.Instance.GetReference<ComponentSet>();
                 componentSets.Add(set);
                 set.AddComponent(pivotType,pivotComponents[i]);
                 for(int j = 0;j < componentTypes.Length ; j++) {
@@ -95,7 +94,7 @@ namespace ECS {
         int IReference.IndexInRefrencePool { get; set; }
         public void OnRecycle() {
             foreach(var set in componentSets) {
-                world.ReferencePoolingCenter.ReleaseReference(set);
+                ReferencePoolingCenter.Instance.ReleaseReference(set);
             }
             componentSets.Clear();
             entities.Clear();
@@ -110,7 +109,7 @@ namespace ECS {
             entities = null;
         }
 
-        public IReference Clone() {
+        public IReference GetNewInstance() {
             return new Query();
         }
     }

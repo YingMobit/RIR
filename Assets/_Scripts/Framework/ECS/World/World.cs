@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Drive;
 using InputSystemNameSpace;
-using ReferencePoolingSystem;
+using PoolingSystem.ReferencePool;
 using Unity.Entities;
 using Unity.Physics;
 using UnityEngine;
@@ -17,7 +17,6 @@ namespace ECS {
         private EntityManager entityManager;
         private SparseArray[] entitySearchSparseArrays;
         private SparseArray[] componentSearchSparseArrays;
-        public ReferencePoolingCenter ReferencePoolingCenter { get; private set; }
         private List<Query> activeQuriesCurrentFrame;
 
         private List<ISystem> systems;
@@ -76,7 +75,7 @@ namespace ECS {
         }
 
         public Query Query() {
-            var query = ReferencePoolingCenter.GetReference<Query>();
+            var query = ReferencePoolingCenter.Instance.GetReference<Query>();
             query.BindWorld(this);
             activeQuriesCurrentFrame.Add(query);
             return query;
@@ -200,7 +199,7 @@ namespace ECS {
             }
 
             foreach(var query in activeQuriesCurrentFrame) {
-                ReferencePoolingCenter.ReleaseReference(query);
+                ReferencePoolingCenter.Instance.ReleaseReference(query);
             }
             activeQuriesCurrentFrame.Clear();
         }
@@ -246,12 +245,10 @@ namespace ECS {
             entitySearchSparseArrays = null;
             componentSearchSparseArrays = null;
             foreach(var query in activeQuriesCurrentFrame) {
-                ReferencePoolingCenter.ReleaseReference(query);
+                ReferencePoolingCenter.Instance.ReleaseReference(query);
             }
             activeQuriesCurrentFrame.Clear();
             activeQuriesCurrentFrame = null;
-            ReferencePoolingCenter.OnDestroy();
-            ReferencePoolingCenter = null;
         }
         #endregion
 
@@ -262,7 +259,6 @@ namespace ECS {
             entitySearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
             componentSearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
             activeQuriesCurrentFrame = new List<Query>();
-            ReferencePoolingCenter = new ReferencePoolingCenter();
 
             for(int i = 0; i < ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT; i++) {
                 entitySearchSparseArrays[i] = new SparseArray();

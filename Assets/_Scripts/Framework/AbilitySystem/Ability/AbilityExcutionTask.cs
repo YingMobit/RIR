@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using PoolingSystem.ReferencePool;
 
 namespace GAS {
-    public class AbilityExcutionTask : IPoolable {
+    public class AbilityExcutionTask : IReference<AbilityExcutionTask> {
         public AbilityRuntimeContext runtimeContext { get; private set; }
         public Ability Ability => runtimeContext.Ability;
         private AbilityEffect currentEffect => Ability.Effects[runtimeContext.currentEffectIndex];
@@ -84,40 +82,24 @@ namespace GAS {
             runtimeContext = abilityRuntimeContext;
         }
 
-        #region IPoolable
-        public int PoolableType => PoolableObjectTypeCollection.AbilityExcutionTask;
-        
+
+        #region IRefrence
+        public uint ReferenceType => ReferenceTypes.ABILITYEXCUTIONTASK;
+
+        int IReference.IndexInRefrencePool { get; set; }
+
+        public void OnRecycle() {
+            runtimeContext = null;
+        }
+
+        public IReference GetNewInstance() {
+            return new AbilityExcutionTask();
+        }
+
         public void Dispose() {
-            runtimeContext = null;
-        }
-        
-        /// <summary>
-        /// 暴露给工厂的重置接口
-        /// </summary>
-        public void Reset() {
-            runtimeContext = null;
+            OnRecycle();
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void RegistePool() {
-            PoolCenter.Instance.RegistPool(PoolableObjectTypeCollection.AbilityExcutionTask,new AbilityExcutionTaskFactory());
-        }
         #endregion
-    }
-
-    public class AbilityExcutionTaskFactory : IPoolableObjectFactory<AbilityExcutionTask> {
-        public bool CollectionCheck => true;
-
-        public int DefualtCapacity => 5;
-
-        public int MaxCount => 50;
-
-        public AbilityExcutionTask CreateInstance() { return new(); }
-
-        public void DestroyInstance(AbilityExcutionTask obj) { obj.Dispose(); }
-
-        public void DisableInstance(AbilityExcutionTask obj) { obj.Reset(); }
-
-        public void EnableInstance(AbilityExcutionTask obj) { }
     }
 }

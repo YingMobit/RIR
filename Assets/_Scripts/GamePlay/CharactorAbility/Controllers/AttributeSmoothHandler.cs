@@ -17,6 +17,7 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
     /// <param name="lerpMethod">插值方法</param>
     public void RegistTask(
         int taskID,
+        TValue visualValue,
         TValue logicValue,
         int smoothFrames,
         Action<TValue> applyVisualValue,
@@ -28,7 +29,7 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
         } else {
             // 创建新任务
             var newTask = new AttributeSmoothTask<TValue>();
-            newTask.RegistTask(taskID, logicValue, smoothFrames, applyVisualValue, lerpMethod,equal);
+            newTask.RegistTask(taskID,visualValue, logicValue, smoothFrames, applyVisualValue, lerpMethod,equal);
             _taskMap[taskID] = newTask;
         }
     }

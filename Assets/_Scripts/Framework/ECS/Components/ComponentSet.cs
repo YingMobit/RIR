@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ReferencePoolingSystem;
+using PoolingSystem.ReferencePool;
 using UnityEngine;
 
 namespace ECS {
@@ -42,7 +42,7 @@ namespace ECS {
             components = null;
         }
 
-        public IReference Clone() {
+        public IReference GetNewInstance() {
             return new ComponentSet();
         }
 

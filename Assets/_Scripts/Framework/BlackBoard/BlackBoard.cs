@@ -1,10 +1,11 @@
+using PoolingSystem.ReferencePool;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class BlackBoard : IPoolable {
+public class BlackBoard : IReference<BlackBoard> {
     #region Struct Define
     private struct UnmanagedValueHead {
         public int TypeID;
@@ -18,16 +19,27 @@ public class BlackBoard : IPoolable {
         }
     }
     #endregion
-    #region Poolable Implementation
-    public int PoolableType => PoolableObjectTypeCollection.BlackBoard;
+    #region IReference
+
+    public uint ReferenceType => ReferenceTypes.BLACKBOARD;
+
+    int IReference.IndexInRefrencePool { get; set; }
+    public void OnRecycle() {
+        ManagedFields.Clear();
+        UnmanagedFields.Clear();
+        repository.Clear();
+        currentRepositorySize = 0;
+    }
+
+    public IReference GetNewInstance() {
+        return new BlackBoard();
+    }
+
     public void Dispose() {
+        OnRecycle();
         ManagedFields = null;
         UnmanagedFields = null;
         repository = null;
-    }
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void RegistePool() {
-        PoolCenter.Instance.RegistPool(PoolableObjectTypeCollection.BlackBoard,new BlackBoradFactory());
     }
     #endregion 
 
@@ -37,13 +49,6 @@ public class BlackBoard : IPoolable {
     List<byte> repository=new(256);
     int currentRepositorySize = 0;
     static int currentTypeID = 0;
-
-    public void Reset() { 
-        ManagedFields.Clear();
-        UnmanagedFields.Clear();
-        repository.Clear();
-        currentRepositorySize = 0;
-    }
 
     public void Set<ManagedFieldType>(int id,ManagedFieldType newValue,object _ = null) where ManagedFieldType : class {
         if(ManagedFields.ContainsKey(id)) {
@@ -140,26 +145,4 @@ public class BlackBoard : IPoolable {
         value = MemoryMarshal.Read<UnmanagedValueType>(data);
         return value;
     }
-}
-
-public class BlackBoradFactory : IPoolableObjectFactory<BlackBoard> {
-    public bool CollectionCheck => false;
-
-    public int DefualtCapacity => 10;
-
-    public int MaxCount => 50;
-
-    public BlackBoard CreateInstance() {
-        return new();
-    }
-
-    public void DestroyInstance(BlackBoard obj) {
-        obj.Dispose();
-    }
-
-    public void DisableInstance(BlackBoard obj) {
-        obj.Reset();
-    }
-
-    public void EnableInstance(BlackBoard obj) { }
 }

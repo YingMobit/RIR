@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Utility;
 
-namespace ReferencePoolingSystem {
-    public class ReferencePoolingCenter {
+namespace PoolingSystem.ReferencePool {
+    public class ReferencePoolingCenter : Singleton<ReferencePoolingCenter> {
+        protected override bool _isDonDestroyOnLoad => true;
         private ReferencePool[] referencePools = new ReferencePool[ReferenceTypes.TYPE_COUNT];
 
         public TReference GetReference<TReference>() where TReference : IReference<TReference>, new() {
@@ -38,32 +38,6 @@ namespace ReferencePoolingSystem {
             }
             Array.Clear(referencePools, 0, referencePools.Length);
             referencePools = null;
-        }
-    }
-
-    public class ReferenceTypes { 
-        public const uint COMPONENT_SET = 0;
-        public const uint QUERY = 1;
-        public const uint CHARACTORTRANSFORMCONTROLLER = 2;
-        public const uint CHARACTORANIMATIONCONTROLLER = 3;
-
-        public const int TYPE_COUNT = 4;
-
-        private static Type[] types = new Type[TYPE_COUNT] {
-            typeof(ECS.ComponentSet), // index 0
-            typeof(ECS.Query), // index 1
-            typeof(CharactorTransformController),
-            typeof(CharactorAnimationController),
-        };
-        private static Type tempType;
-
-        public static int GetReferenceTypeIndex<TReference>() where TReference : IReference<TReference> , new() {
-            tempType = typeof(TReference);
-            for(int i=0;i < TYPE_COUNT; i++) {
-                if(types[i] == tempType)
-                    return i;
-            }
-            return -1;
         }
     }
 }

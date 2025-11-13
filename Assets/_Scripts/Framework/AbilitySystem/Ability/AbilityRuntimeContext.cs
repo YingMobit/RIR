@@ -1,3 +1,4 @@
+using PoolingSystem.ReferencePool;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,13 +7,13 @@ namespace GAS {
     /// <summary>
     /// Ability运行时需要的所有信息，包括AbilityComponentContext和各Unit运行时数据缓存
     /// </summary>
-    public class AbilityRuntimeContext : IPoolable {
-        public int AbilityID { get; private set; }
-        public Ability Ability => AbilityComponentContext.Abilities[AbilityID];
-        public AbilityComponentContext AbilityComponentContext { get; private set; }
-        public AbilityComponent AbilityComponent { get; private set; }
+    public class AbilityRuntimeContext : IReference<AbilityRuntimeContext> {
         public bool Interuptable;
         private Dictionary<int,BlackBoard> LocalBlackBoards = new();
+        public int AbilityID { get; private set; }
+        public AbilityComponentContext AbilityComponentContext { get; private set; }
+        public AbilityComponent AbilityComponent { get; private set; }
+        public Ability Ability => AbilityComponentContext.Abilities[AbilityID];
         public short currentEffectIndex { get; private set; } = -1;
 
         public bool MoveNext() {
@@ -27,16 +28,14 @@ namespace GAS {
             if(LocalBlackBoards.ContainsKey(runtimeToken)) { 
                 return LocalBlackBoards[runtimeToken];
             }
-            var blackBoard = PoolCenter.Instance.GetInstance<BlackBoard>(PoolableObjectTypeCollection.BlackBoard);
+            var blackBoard = ReferencePoolingCenter.Instance.GetReference<BlackBoard>();
             LocalBlackBoards.Add(runtimeToken, blackBoard);
             return blackBoard;
         }
-
         public void Init() { 
             currentEffectIndex = 0;
             Interuptable = true;
         }
-
         public bool BindAbility(int abilityID) {
             if(AbilityComponentContext.Abilities.ContainsKey(abilityID)) {
                 AbilityID = abilityID;
@@ -44,57 +43,40 @@ namespace GAS {
             } 
             return false;
         }
-
         public void BindComponentContext(AbilityComponentContext abilityComponentContext) {
             AbilityComponentContext = abilityComponentContext;
         }
-
         public void BindAbilityComponent(AbilityComponent abilityComponent) {
             AbilityComponent = abilityComponent;
         }
 
         #region IPoolable
-        public int PoolableType => PoolableObjectTypeCollection.AbilityRuntimeContext;
+
+        uint IReference.ReferenceType => ReferenceTypes.ABILITYRUNTIMECONTEXT;
+
+        int IReference.IndexInRefrencePool { get; set; }
+
+        public void OnRecycle() {
+            AbilityID = -1;
+            foreach(var pair in LocalBlackBoards) { 
+                ReferencePoolingCenter.Instance.ReleaseReference(pair.Value);
+            }
+            LocalBlackBoards.Clear();
+            AbilityComponentContext = null;
+            AbilityComponent = null;
+            currentEffectIndex = -1;
+        }
+
+        public IReference GetNewInstance() {
+            return new AbilityRuntimeContext();
+        }
 
         public void Dispose() {
-            AbilityComponentContext = null;
+            OnRecycle();
             LocalBlackBoards = null;
-            currentEffectIndex = 0;
-            AbilityID = -1;
         }
 
-        public void Reset() {
-            LocalBlackBoards = new Dictionary<int, BlackBoard>();
-            currentEffectIndex = 0;
-            AbilityID = -1;
-        }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void RegistePool() {
-            PoolCenter.Instance.RegistPool(PoolableObjectTypeCollection.AbilityRuntimeContext,new AbilityRuntimeContextFactory());
-        }
         #endregion
-    }
-
-    public class AbilityRuntimeContextFactory : IPoolableObjectFactory<AbilityRuntimeContext> {
-        public bool CollectionCheck => true;
-
-        public int DefualtCapacity => 10;
-
-        public int MaxCount => 50;
-
-        public AbilityRuntimeContext CreateInstance() {
-            return new();
-        }
-
-        public void DestroyInstance(AbilityRuntimeContext obj) {
-            obj.Dispose();
-        }
-
-        public void DisableInstance(AbilityRuntimeContext obj) {
-            obj.Reset();
-        }
-
-        public void EnableInstance(AbilityRuntimeContext obj) { }
     }
 }

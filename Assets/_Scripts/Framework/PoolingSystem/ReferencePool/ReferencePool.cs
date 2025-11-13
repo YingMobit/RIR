@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ReferencePoolingSystem {
+namespace PoolingSystem.ReferencePool {
     public class ReferencePool {
         private List<IReference> references;
         private Stack<int> freeReferenceIndexs;
@@ -54,7 +54,7 @@ namespace ReferencePoolingSystem {
         private void ExpandPool() {
             references.Capacity += DEFAULT_REFERENCE_COUNT;
             for(int i = 0; i < DEFAULT_REFERENCE_COUNT; i++) {
-                var reference = ReferenceTemplate.Clone();
+                var reference = ReferenceTemplate.GetNewInstance();
                 reference.IndexInRefrencePool = totalReferenceCount;
                 references.Add(reference);
                 freeReferenceIndexs.Push(totalReferenceCount);

@@ -1,4 +1,5 @@
 using ECS;
+using PoolingSystem.ReferencePool;
 using System.Collections.Generic;
 using TagSystem;
 using UnityEngine;
@@ -79,7 +80,7 @@ namespace GAS {
             List<AbilityRuntimeContext> pictures = new();
             foreach(var task in interuptedTasks) {
                 pictures.Add(task.runtimeContext);
-                PoolCenter.Instance.ReleaseInstance(task);
+                ReferencePoolingCenter.Instance.ReleaseReference(task);
             }
 
             return new(pictures);
@@ -100,7 +101,7 @@ namespace GAS {
                 runningTasks[abilitID].Remove(task);
                 task.OnInterrupted(interuptionContext);
                 pictures.Add(task.runtimeContext);
-                PoolCenter.Instance.ReleaseInstance(task);
+                ReferencePoolingCenter.Instance.ReleaseReference(task);
             }
 
             runningAbilities.Remove(abilitID);
@@ -214,7 +215,7 @@ namespace GAS {
             //完成本帧的Task回收
             foreach(var deadTask in tasksToRelease) {
                 tasksExiting.Remove(deadTask);
-                PoolCenter.Instance.ReleaseInstance(deadTask);
+                ReferencePoolingCenter.Instance.ReleaseReference(deadTask);
             }
             tasksToRelease.Clear();
         }
@@ -222,8 +223,8 @@ namespace GAS {
 
         #region Tool Function
         private void RegistTask(int abilityID,AbilityComponentContext abilityComponentContext) {
-            var newTask = PoolCenter.Instance.GetInstance<AbilityExcutionTask>(PoolableObjectTypeCollection.AbilityExcutionTask);
-            var runtimeContext = PoolCenter.Instance.GetInstance<AbilityRuntimeContext>(PoolableObjectTypeCollection.AbilityRuntimeContext);
+            var newTask = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
+            var runtimeContext = ReferencePoolingCenter.Instance.GetReference<AbilityRuntimeContext>();
             runtimeContext.BindComponentContext(abilityComponentContext);
             runtimeContext.BindAbility(abilityID);
             runtimeContext.BindAbilityComponent(this);
@@ -241,7 +242,7 @@ namespace GAS {
         }
 
         private void RegistTask(AbilityRuntimeContext runtimeContext,AbilityComponentContext componentContext) {
-            var newTask = PoolCenter.Instance.GetInstance<AbilityExcutionTask>(PoolableObjectTypeCollection.AbilityExcutionTask);
+            var newTask = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
             runtimeContext.BindComponentContext(componentContext);
             newTask.BindRuntimeContext(runtimeContext);
             HashSet<AbilityExcutionTask> taskSet;

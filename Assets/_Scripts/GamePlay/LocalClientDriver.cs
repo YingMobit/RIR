@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using InputSystemNameSpace;
 using Utility;
 using GAS;
-using ReferencePoolingSystem;
-using UnityEngine.Analytics;
+using PoolingSystem.ReferencePool;
 
 [DefaultExecutionOrder(int.MinValue)]
 public class LocalClientDriver : Singleton<LocalClientDriver> {
@@ -89,9 +88,9 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     public GameObject CreateGameObject(GameObject prefab,Vector3 position) {
         var res = Instantiate(prefab,position,Quaternion.identity);
         var contextBuilder = res.GetComponent<AbilityComponentContextBuilder>();
-        var animationController = world.ReferencePoolingCenter.GetReference<CharactorAnimationController>();
+        var animationController = ReferencePoolingCenter.Instance.GetReference<CharactorAnimationController>();
         animationController.BindGameObject(res);
-        var transformController = world.ReferencePoolingCenter.GetReference<CharactorTransformController>();
+        var transformController = ReferencePoolingCenter.Instance.GetReference<CharactorTransformController>();
         transformController.BindGameObject(res);
         transformController.SetPosition(new(position.x,0,position.y));
         contextBuilder.RegistController(ControllerTypeEnum.Animation,animationController);

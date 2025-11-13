@@ -1,4 +1,5 @@
 using GAS.Editor.AbilityEditor;
+using PoolingSystem.ReferencePool;
 using Sirenix.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,9 +21,10 @@ namespace GAS {
                 ability = config.Build();
                 abilities.Add(ability.AbilityHeadInfo.ID, ability);
             }
-            globalBlackBoard = PoolCenter.Instance.GetInstance<BlackBoard>(PoolableObjectTypeCollection.BlackBoard);
+            globalBlackBoard = ReferencePoolingCenter.Instance.GetReference<BlackBoard>();
             attributeSet = GetComponent<AttributeSetBuilder>().attributeSet;
-            Context = new(abilities,globalBlackBoard,controllers,attributeSet);
+            Context = ReferencePoolingCenter.Instance.GetReference<AbilityComponentContext>();
+            Context.BindContext(abilities,globalBlackBoard,controllers,attributeSet);
         }
 
         public void RegistController(ControllerTypeEnum controllerTypeEnum,IController controller) {

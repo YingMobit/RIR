@@ -1,6 +1,7 @@
-using UnityEngine;
 using GAS;
-using ReferencePoolingSystem;
+using PoolingSystem.ReferencePool;
+using Unity.Entities.UniversalDelegates;
+using UnityEngine;
 
 public class CharactorAnimationController : IAnimationController , IReference<CharactorAnimationController> {
     public ControllerTypeEnum Type => ControllerTypeEnum.Animation;
@@ -21,12 +22,14 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
 
         floatAnimationParamSmoothHandler.RegistTask(
             taskID,
+            animator.GetFloat(name),
             value,
             smoothFrames,
             (v) => {
+                Debug.Log($"[CharactorAnimationController]:Set AnimationParame:{name},value:{v}");
                 animator.SetFloat(name,v);
             },
-            (init,target,t) => Mathf.Lerp(init,target,t),
+            (init,target,t) => { Debug.Log($"[CharactorAnimationController]:Lerp AnimationParame:{name},t: {t},init: {init},taget: {target},value: {Mathf.Lerp(init,target,t)}"); return Mathf.Lerp(init,target,t); },
             (a,b) => Mathf.Approximately(a,b)
         );
     }
@@ -58,7 +61,7 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
         floatAnimationParamSmoothHandler.Reset();
     }
 
-    public IReference Clone() {
+    public IReference GetNewInstance() {
         var res = new CharactorAnimationController();
         res.floatAnimationParamSmoothHandler = new AttributeSmoothHandler<float>();
         return res;

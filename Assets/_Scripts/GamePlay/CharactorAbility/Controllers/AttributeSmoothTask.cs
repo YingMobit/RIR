@@ -37,16 +37,14 @@ public class AttributeSmoothTask<TValue> where TValue : struct, IEquatable<TValu
     /// <param name="lerpMethod">²åÖµ·½·¨</param>
     public void RegistTask(
         int taskID,
+        TValue visualValue,
         TValue logicValue,
         int smoothFrames,
         Action<TValue> applyVisualValue,
         Func<TValue,TValue,float,TValue> lerpMethod,
         Func<TValue,TValue,bool> equal) {
         
-        if (!_isInitialized) {
-            _visualValue = logicValue;
-            _isInitialized = true;
-        }
+        _visualValue = visualValue;
 
         TaskID = taskID;
         _smoothFrames = Math.Max(1, smoothFrames);

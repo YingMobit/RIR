@@ -1,5 +1,5 @@
 using GAS;
-using ReferencePoolingSystem;
+using PoolingSystem.ReferencePool;
 using UnityEngine;
 using Utility;
 
@@ -39,6 +39,7 @@ public class CharactorTransformController : ITransformController, IReference<Cha
         _logicPosition = newPos;
         _vector3SmoothHandler.RegistTask(
                         POSITION_TASK_ID,
+                        CurrentPosition,
                         _logicPosition,
                         smoothFrameCount,
                         (visualPos) => transform.position = visualPos,
@@ -55,6 +56,7 @@ public class CharactorTransformController : ITransformController, IReference<Cha
 
         _quaternionSmoothHandler.RegistTask(
             ROTATION_TASK_ID,
+            CurrentRotation,
             _logicRotation,
             smoothFrameCount,
             (visualRot) => transform.rotation = visualRot,
@@ -67,6 +69,7 @@ public class CharactorTransformController : ITransformController, IReference<Cha
         _logicRotation = newRot;
         _quaternionSmoothHandler.RegistTask(
             ROTATION_TASK_ID,
+            CurrentRotation,
             _logicRotation,
             smoothFrameCount,
             (visualRot) => transform.rotation = visualRot,
@@ -87,6 +90,7 @@ public class CharactorTransformController : ITransformController, IReference<Cha
 
         _vector3SmoothHandler.RegistTask(
             SCALE_TASK_ID,
+            CurrentScale,
             _logicScale,
             smoothFrameCount,
             (visualScale) => transform.localScale = visualScale,
@@ -195,7 +199,7 @@ public class CharactorTransformController : ITransformController, IReference<Cha
         GizmosDrawer.Instance.UnregisterGizmosDrawer(DrawGizmos);
     }
 
-    public IReference Clone() {
+    public IReference GetNewInstance() {
         var res = new CharactorTransformController();
         res._vector3SmoothHandler = new AttributeSmoothHandler<Vector3>();
         res._quaternionSmoothHandler = new AttributeSmoothHandler<Quaternion>();
