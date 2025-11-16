@@ -23,7 +23,7 @@ namespace InputSystemNameSpace {
 
         #region Componenrt Override
         public override ComponentTypeEnum ComponentType => ComponentTypeEnum.InputComponent;
-        public override Component Clone() {
+        public override Component GetNewInstance() {
             return new InputComponent() { UnconfirmedInputDataBuffer = this.UnconfirmedInputDataBuffer.Clone() };
         }
 

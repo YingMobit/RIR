@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 
 namespace ECS {
-    //½«Ï¡ÊèÊý×éµÄ½á¹¹¸ÄÎª´æ´¢EntityID
+    //ï¿½ï¿½Ï¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä½á¹¹ï¿½ï¿½Îªï¿½æ´¢EntityID
     public class World {
         private GameObjectRegistration registration;
         private ComponentPoolManager componentPoolManager;
@@ -27,7 +27,7 @@ namespace ECS {
         public int GetActiveEntityCount() => (int)entityManager.ActiveEntityCount;
         public int GetComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).TotalComponentCount;
         public int GetActiveComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).ActiveComponentCount;
-        
+
         public Entity GetEntity(GameObject gameObject,uint componentTypeMask) {
             Entity newEntity = entityManager.GetEntity(registration.GetID(gameObject));
             if(componentTypeMask != 0)
@@ -36,7 +36,7 @@ namespace ECS {
         }
 
         /// <summary>
-        /// ·µ»Øµ±Ç°×îÐÂµÄÊµÌå¸±±¾£¨¸ù¾ÝÄÚ²¿´æ´¢£©¡£ÓÃÓÚÍâ²¿ÔÚµ÷ÓÃ Add/Remove ºóË¢ÐÂ±¾µØ»º´æµÄ Entity ½á¹¹Ìå¡£
+        /// ï¿½ï¿½ï¿½Øµï¿½Ç°ï¿½ï¿½ï¿½Âµï¿½Êµï¿½å¸±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Úµï¿½ï¿½ï¿½ Add/Remove ï¿½ï¿½Ë¢ï¿½Â±ï¿½ï¿½Ø»ï¿½ï¿½ï¿½ï¿½ Entity ï¿½á¹¹ï¿½å¡£
         /// </summary>
         public Entity GetLatestEntity(uint entityID) => entityManager.GetEntityCopy(entityID);
 
@@ -44,7 +44,7 @@ namespace ECS {
             return entityManager.GetEntityCopy(entity.EntityID);
         }
 
-        public GameObject GetGameObject(Entity entity) { 
+        public GameObject GetGameObject(Entity entity) {
             return registration.GetGameObject(entity.GameObjectID);
         }
 
@@ -74,6 +74,20 @@ namespace ECS {
             component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(componentSearchSparseArrays[componentType.GetIndex()].GetIndex(entity.EntityID));
         }
 
+        public void GetAllComponentsOnEntity(Entity entity,List<Component> components) {
+            components.Clear();
+            var componentTypes = entity.Archetype.MaskToEnums();
+            if(components.Capacity < componentTypes.Length) {
+                components.Capacity = componentTypes.Length;
+            }
+            foreach(var type in componentTypes) {
+                GetComponentOnEntity(entity,type,out var component);
+                if(component != null) {
+                    components.Add(component);
+                }
+            }
+        }
+
         public Query Query() {
             var query = ReferencePoolingCenter.Instance.GetReference<Query>();
             query.BindWorld(this);
@@ -82,7 +96,7 @@ namespace ECS {
         }
         #endregion
 
-        #region AddComponent (Öµ´«µÝÊµÏÖ£¬Í¨¹ý EntityManager ¼ä½ÓÐÞ¸ÄÕæÊµÊµÌå)
+        #region AddComponent (Öµï¿½ï¿½ï¿½ï¿½Êµï¿½Ö£ï¿½Í¨ï¿½ï¿½ EntityManager ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½ÊµÊµï¿½ï¿½)
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType,out Component component) {
             if(entity.HasComponent(componentType)) {
                 GetComponentOnEntity(entity,componentType,out component);
@@ -122,7 +136,7 @@ namespace ECS {
         }
         #endregion
 
-        #region RemoveComponent (Öµ´«µÝÊµÏÖ)
+        #region RemoveComponent (Öµï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½)
         public bool RemoveComponent(Entity entity,ComponentTypeEnum componentType) {
             if(!entity.HasComponent(componentType)) {
                 Debug.LogError($"Entity:{entity.EntityID} doesn't has this type of Component:{componentType}");
@@ -175,10 +189,10 @@ namespace ECS {
         }
         #endregion
 
-        public TSystem GetSystemByType<TSystem>() where TSystem : ISystem { 
+        public TSystem GetSystemByType<TSystem>() where TSystem : ISystem {
             Type type = typeof(TSystem);
-            foreach(var sys in systems) { 
-                if(sys.GetType() == type) { 
+            foreach(var sys in systems) {
+                if(sys.GetType() == type) {
                     return (TSystem)sys;
                 }
             }
@@ -188,13 +202,13 @@ namespace ECS {
 
         #region Life Time
         public void OnUpdate(int localFrameCount,float deltaTime) {
-            foreach(var sys in systems) { 
+            foreach(var sys in systems) {
                 sys.OnFrameUpdate(this,localFrameCount,deltaTime);
             }
         }
 
         public void OnLateUpdate(int localFrameCount,float deltaTime) {
-            foreach(var sys in systems) { 
+            foreach(var sys in systems) {
                 sys.OnFrameLateUpdate(this,localFrameCount);
             }
 
@@ -205,7 +219,7 @@ namespace ECS {
         }
 
         public void OnNetworkUpdate(int networkFrameCount) {
-            foreach(var sys in systems) { 
+            foreach(var sys in systems) {
                 sys.OnNetworkUpdate(this,networkFrameCount);
             }
         }
@@ -220,14 +234,14 @@ namespace ECS {
             }
 
             foreach(var sys in systems) {
-                if(sys.GetType() != typeof(InputSystem)) { 
+                if(sys.GetType() != typeof(InputSystem)) {
                     sys.OnFrameLateUpdate(this,currentSimulateFrameCount);
                 }
             }
         }
 
         public void OnDestroy() {
-            foreach(var sys in systems) { 
+            foreach(var sys in systems) {
                 sys.OnDestroy(this);
             }
             systems.Clear();
@@ -236,10 +250,10 @@ namespace ECS {
             entityManager.OnDestroy();
             componentPoolManager.OnDestroy();
             registration.OnDestroy();
-            foreach(var sparseArray in entitySearchSparseArrays) { 
+            foreach(var sparseArray in entitySearchSparseArrays) {
                 sparseArray.OnDestroy();
             }
-            foreach(var sparseArray in componentSearchSparseArrays) { 
+            foreach(var sparseArray in componentSearchSparseArrays) {
                 sparseArray.OnDestroy();
             }
             entitySearchSparseArrays = null;
@@ -268,19 +282,19 @@ namespace ECS {
             LoadAllSystems();
         }
 
-        void LoadAllSystems() { 
+        void LoadAllSystems() {
             systems = new List<ISystem>();
             ISystem system;
-            foreach(var type in SystemTypeCollection.SystemTypes) { 
+            foreach(var type in SystemTypeCollection.SystemTypes) {
                 system = (ISystem)System.Activator.CreateInstance(type);
                 systems.Add(system);
-                if(system.GetType() == typeof(InputSystem)) { 
+                if(system.GetType() == typeof(InputSystem)) {
                     inputSystem = system as InputSystem;
                 }
             }
 
-            systems.Sort((a,b) =>  a.Order < b.Order? -1: 1);
-            foreach(var _system in systems) { 
+            systems.Sort((a,b) => a.Order < b.Order ? -1 : 1);
+            foreach(var _system in systems) {
                 _system.OnInit(this);
             }
         }

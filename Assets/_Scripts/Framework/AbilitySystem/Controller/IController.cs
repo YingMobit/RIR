@@ -7,7 +7,6 @@ namespace GAS {
     public interface IController {
         public ControllerTypeEnum Type { get; }
         public GameObject GameObject { get; }
-        public void BindGameObject(GameObject gameObject);
         public void Update();
         public void LateUpdate();
         public void LogicUpdate();

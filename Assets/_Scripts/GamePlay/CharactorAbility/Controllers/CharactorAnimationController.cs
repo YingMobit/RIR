@@ -1,11 +1,12 @@
 using GAS;
 using PoolingSystem.ReferencePool;
-using Unity.Entities.UniversalDelegates;
 using UnityEngine;
+using Component = ECS.Component;
 
-public class CharactorAnimationController : IAnimationController , IReference<CharactorAnimationController> {
+public class CharactorAnimationController : Component, IAnimationController{
     public ControllerTypeEnum Type => ControllerTypeEnum.Animation;
 
+    #region IAnimationController
     Animator animator;
     AttributeSmoothHandler<float> floatAnimationParamSmoothHandler;
 
@@ -17,7 +18,7 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
         animator.SetFloat(name,value);
     }
 
-    public void SetFloatSmooth(string name, float value, int smoothFrames) {
+    public void SetFloatSmooth(string name,float value,int smoothFrames) {
         int taskID = name.GetHashCode();
 
         floatAnimationParamSmoothHandler.RegistTask(
@@ -34,43 +35,45 @@ public class CharactorAnimationController : IAnimationController , IReference<Ch
         );
     }
 
-    public void Update() { 
+    public void Update() {
         floatAnimationParamSmoothHandler.Update(Time.deltaTime);
     }
 
-    int IReference.IndexInRefrencePool { get; set; }
-    public uint ReferenceType => ReferenceTypes.CHARACTORANIMATIONCONTROLLER;
-    public GameObject GameObject => gameObject;
-    private GameObject gameObject;
+    public void LateUpdate() {
 
-    public void BindGameObject(GameObject gameObject) {
-        this.gameObject = gameObject;
+    }
+
+    public void LogicUpdate() {
+
+    }
+    #endregion
+
+    #region Component
+    public override ECS.ComponentTypeEnum ComponentType => ECS.ComponentTypeEnum.CharactorAnimationControllerComponent;
+    private GameObject gameObject;
+    public GameObject GameObject => gameObject;
+
+    public override void OnAttach(ECS.World world,ECS.Entity entity) {
+        gameObject = world.GetGameObject(entity);
         animator = gameObject.GetComponentInChildren<Animator>();
     }
 
-    public void LateUpdate() {
-        
-    }
-    
-    public void LogicUpdate() {
-        
-    }
-
-    public void OnRecycle() {
+    public override void Reset(ECS.World world,ECS.Entity entity) {
         gameObject = null;
         floatAnimationParamSmoothHandler.Reset();
     }
 
-    public IReference GetNewInstance() {
+    public override Component GetNewInstance() {
         var res = new CharactorAnimationController();
         res.floatAnimationParamSmoothHandler = new AttributeSmoothHandler<float>();
         return res;
     }
 
-    public void Dispose() {
-        OnRecycle();
+    public override void OnDestroy() {
+        floatAnimationParamSmoothHandler.Reset();
         gameObject = null;
         animator = null;
         floatAnimationParamSmoothHandler = null;
     }
+    #endregion
 }

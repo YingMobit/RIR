@@ -15,7 +15,7 @@ public class TagComponent : Component {
         tagSet = null;
     }
 
-    public override Component Clone() {
+    public override Component GetNewInstance() {
         return new TagComponent();
     }
 

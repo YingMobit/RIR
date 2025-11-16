@@ -4,7 +4,7 @@
         public abstract ComponentTypeEnum ComponentType { get; }
         public abstract void OnAttach(World world,Entity entity);
         public abstract void Reset(World world,Entity entity);
-        public abstract Component Clone();
+        public abstract Component GetNewInstance();
         public abstract void OnDestroy();
 
         internal Component SetComponentID(uint id) {

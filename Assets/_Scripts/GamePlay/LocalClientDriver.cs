@@ -1,11 +1,14 @@
-using ECS;
-using Drive;
-using UnityEngine;
 using System.Collections.Generic;
-using InputSystemNameSpace;
-using Utility;
+using Drive;
+using ECS;
 using GAS;
+using InputSystemNameSpace;
+using PoolingSystem.GameObjectPool;
 using PoolingSystem.ReferencePool;
+using RollBackSystem;
+using UnityEngine;
+using UnityEngine.Pool;
+using Utility;
 
 [DefaultExecutionOrder(int.MinValue)]
 public class LocalClientDriver : Singleton<LocalClientDriver> {
@@ -24,17 +27,26 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     }
 
     void BuildCharactors(Dictionary<int,int> playerID_CharactorIDMap) {
+        var compList = ListPool<ECS.Component>.Get();
         foreach(var kvp in playerID_CharactorIDMap) {
             int playerID = kvp.Key;
             int charactorID = kvp.Value;
-            GameObject charactorGO = CreateGameObject(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID);
+            GameObject charactorGO = GameObjectPoolCenter.Instance.GetInstance(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID,Quaternion.identity);
             var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
-            world.GetComponentOnEntity(entity , ComponentTypeEnum.InputComponent,out var inputComponent);
-            (inputComponent as InputComponent).BindPlayerID(playerID);
+            world.GetAllComponentsOnEntity(entity, compList);
+            foreach(var comp in compList) { 
+                if(comp is InputComponent input) { 
+                    input.BindPlayerID(playerID);
+                } else if(comp is IController controller) { 
+                    controllers.Add(controller);
+                }
+            }
             if(playerID != NetworkManager.Instance.LocalPlayerID) {
                 DestroyImmediate(charactorGO.transform.GetChild(1).gameObject);
             }
+            compList.Clear();
         }
+        ListPool<ECS.Component>.Release(compList);
     }
 
     void OnUpdate(long localLogicFrameCount,double deltaTime) {
@@ -44,7 +56,7 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     }
 
     void OnNetworkUpdate(long localLogicFrameCount,double deltaTime) {
-        
+
     }
 
     void OnLogicUpdate(int localFrameCount,float deltaTime) {
@@ -58,12 +70,12 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     void OnLateLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnLateUpdate(localFrameCount,deltaTime);
 
-        //¼ì²éÔ¤²â
+        //ï¿½ï¿½ï¿½Ô¤ï¿½ï¿??
         if(!world.GetSystemByType<InputSystem>().IsPredictCorrect(world,out var errorStartFrameCount)) {
-            //»Ø¹ö
-            world.GetSystemByType<RollBackSystem>().RollBack(world,errorStartFrameCount,localFrameCount);
-            //ÖØÐÂÄ£Äâ
-            for(int i=0;i < localFrameCount - errorStartFrameCount + 1; i++) {
+            //ï¿½Ø¹ï¿½
+            world.GetSystemByType<RollBackSystem.RollBackSystem>().RollBack(world,errorStartFrameCount,localFrameCount);
+            //ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½
+            for(int i = 0; i < localFrameCount - errorStartFrameCount + 1; i++) {
                 world.OnRollingBack(errorStartFrameCount,errorStartFrameCount + i,deltaTime);
             }
         }
@@ -85,22 +97,7 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
         FixedRateScheduler.OnTick -= OnUpdate;
     }
 
-    public GameObject CreateGameObject(GameObject prefab,Vector3 position) {
-        var res = Instantiate(prefab,position,Quaternion.identity);
-        var contextBuilder = res.GetComponent<AbilityComponentContextBuilder>();
-        var animationController = ReferencePoolingCenter.Instance.GetReference<CharactorAnimationController>();
-        animationController.BindGameObject(res);
-        var transformController = ReferencePoolingCenter.Instance.GetReference<CharactorTransformController>();
-        transformController.BindGameObject(res);
-        transformController.SetPosition(new(position.x,0,position.y));
-        contextBuilder.RegistController(ControllerTypeEnum.Animation,animationController);
-        contextBuilder.RegistController(ControllerTypeEnum.Transform,transformController);
-        controllers.Add(animationController);
-        controllers.Add(transformController);
-        return res;
-    }
+    public void ReleaseGameObject(GameObject gameobject) {
 
-    public void ReleaseGameObject(GameObject gameobject) { 
-        
     }
 }

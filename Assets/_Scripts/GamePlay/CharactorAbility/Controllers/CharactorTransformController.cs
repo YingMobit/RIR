@@ -1,13 +1,16 @@
+using ECS;
 using GAS;
 using PoolingSystem.ReferencePool;
 using UnityEngine;
 using Utility;
+using Component = ECS.Component;
 
-public class CharactorTransformController : ITransformController, IReference<CharactorTransformController> {
+public class CharactorTransformController : Component, ITransformController {
     #region ITransformController 
     private GameObject gameObject;
     private Transform transform;
     private Rigidbody rigidbody;
+    public GameObject GameObject => gameObject;
 
     // Æ½»¬¹ÜÀíÆ÷
     private AttributeSmoothHandler<Vector3> _vector3SmoothHandler;
@@ -155,19 +158,6 @@ public class CharactorTransformController : ITransformController, IReference<Cha
     }
     #endregion
 
-    public void BindGameObject(GameObject gameObject) {
-        this.gameObject = gameObject;
-        transform = gameObject.transform;
-        rigidbody = gameObject.GetComponent<Rigidbody>();
-
-        // ³õÊ¼»¯Âß¼­×´Ì¬
-        _logicPosition = transform.position;
-        _logicRotation = transform.rotation;
-        _logicScale = transform.localScale;
-
-        GizmosDrawer.Instance.RegisterGizmosDrawer(DrawGizmos);
-    }
-
     public void Update() {
         float deltaTime = Time.deltaTime;
         _vector3SmoothHandler.Update(deltaTime);
@@ -184,34 +174,50 @@ public class CharactorTransformController : ITransformController, IReference<Cha
     }
     #endregion
 
-    #region IReference
-    public GameObject GameObject { get => gameObject; }
-    public uint ReferenceType => ReferenceTypes.CHARACTORTRANSFORMCONTROLLER;
-    int IReference.IndexInRefrencePool { get; set; }
+    #region Component
+    public override ComponentTypeEnum ComponentType => ComponentTypeEnum.CharactorTransformControllerComponent;
 
-    public void OnRecycle() {
+    public override void OnAttach(World world,Entity entity) {
+        gameObject = world.GetGameObject(entity);
+        transform = gameObject.transform;
+        rigidbody = gameObject.GetComponent<Rigidbody>();
+
+        // ³õÊ¼»¯Âß¼­×´Ì¬
+        _logicPosition = transform.position;
+        _logicRotation = transform.rotation;
+        _logicScale = transform.localScale;
+
+        GizmosDrawer.Instance.RegisterGizmosDrawer(DrawGizmos);
+    }
+
+    public override void Reset(World world,Entity entity) {
         _vector3SmoothHandler.Reset();
         _quaternionSmoothHandler.Reset();
         _floatSmoothHandler.Reset();
         gameObject = null;
         transform = null;
         rigidbody = null;
-        GizmosDrawer.Instance.UnregisterGizmosDrawer(DrawGizmos);
     }
 
-    public IReference GetNewInstance() {
+    public override Component GetNewInstance() {
         var res = new CharactorTransformController();
         res._vector3SmoothHandler = new AttributeSmoothHandler<Vector3>();
         res._quaternionSmoothHandler = new AttributeSmoothHandler<Quaternion>();
         res._floatSmoothHandler = new AttributeSmoothHandler<float>();
-        return res as IReference;
+        return res;
     }
 
-    public void Dispose() {
-        OnRecycle();
+    public override void OnDestroy() {
+        _vector3SmoothHandler.Reset();
+        _quaternionSmoothHandler.Reset();
+        _floatSmoothHandler.Reset();
+        gameObject = null;
+        transform = null;
+        rigidbody = null;
         _vector3SmoothHandler = null;
         _quaternionSmoothHandler = null;
         _floatSmoothHandler = null;
+        GizmosDrawer.Instance.UnregisterGizmosSelectedDrawer(DrawGizmos);
     }
     #endregion
 

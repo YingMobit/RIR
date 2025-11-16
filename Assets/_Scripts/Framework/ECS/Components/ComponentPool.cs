@@ -55,7 +55,7 @@ namespace ECS {
             // fill free stack with 1..capacity-1
             freeCount = 0;
             for(uint i = 1; i < DEFAULT_BUCKET_CAPACITY; i++) {
-                var inst = componentTemplate.Clone().SetComponentID(i);
+                var inst = componentTemplate.GetNewInstance().SetComponentID(i);
                 components.Add(inst);
                 freeComponentIndexStack[freeCount++] = i;
             }
@@ -78,7 +78,7 @@ namespace ECS {
 
             // init new mapping entries and push new free indices
             for(uint i = oldCount; i < (uint)newSize; i++) {
-                var inst = componentTemplate.Clone().SetComponentID(i);
+                var inst = componentTemplate.GetNewInstance().SetComponentID(i);
                 components.Add(inst);
                 indexOfActiveComponentInStack[i] = -1;
                 // push into free stack

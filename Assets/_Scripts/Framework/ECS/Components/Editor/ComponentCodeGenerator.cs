@@ -42,7 +42,7 @@ public class {className} : Component
         // 清理组件
     }}
 
-    public override Component Clone() {{
+    public override Component GetNewInstance() {{
         return new {className}();
     }}
 }}

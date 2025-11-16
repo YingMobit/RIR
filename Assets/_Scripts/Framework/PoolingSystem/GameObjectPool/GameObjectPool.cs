@@ -21,7 +21,7 @@ namespace PoolingSystem.GameObjectPool {
             }
         }
 
-        public GameObject GetInstance(Quaternion quaternion,Transform transform = null,Action<GameObject> beforSetActive = null) {
+        public GameObject GetInstance(Vector3 worldPosition,Quaternion quaternion,Transform transform = null,Action<GameObject> beforSetActive = null) {
             GameObject instance;
             if (availableInstances.Count == 0) {
                 instance = GameObject.Instantiate(prefab,root.transform);
@@ -35,6 +35,7 @@ namespace PoolingSystem.GameObjectPool {
             if(transform != null) {
                 instance.transform.SetParent(transform);
             }
+            instance.transform.position = worldPosition;
             instance.transform.rotation = quaternion;
             beforSetActive?.Invoke(instance);
             instance.SetActive(true);

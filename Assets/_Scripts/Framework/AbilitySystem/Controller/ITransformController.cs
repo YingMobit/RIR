@@ -11,7 +11,6 @@ namespace GAS {
         public Quaternion LogicRotation { get; }
         public Vector3 CurrentScale { get; }
         public Vector3 LogicScale { get; }
-
         public Vector3 Velocity { get; }
 
         public void MoveToSmoothly(Vector3 newPos,int smoothFrameCount);

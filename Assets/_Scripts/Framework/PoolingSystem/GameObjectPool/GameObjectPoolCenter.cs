@@ -11,7 +11,7 @@ namespace PoolingSystem.GameObjectPool {
         private List<GameObjectPool> pools = new();
         private Dictionary<int,int> PrefabID_PoolIDMap = new();
 
-        public GameObject GetInstance(GameObject prefab,Quaternion quaternion,Transform parent = null,Action<GameObject> beforSetActive = null) { 
+        public GameObject GetInstance(GameObject prefab,Vector3 worldPosition,Quaternion quaternion,Transform parent = null,Action<GameObject> beforSetActive = null) { 
             int prefabID = prefab.GetInstanceID();
             GameObjectPool pool;
             if(!PrefabID_PoolIDMap.ContainsKey(prefabID)) {
@@ -25,7 +25,7 @@ namespace PoolingSystem.GameObjectPool {
             } else { 
                 pool = pools[PrefabID_PoolIDMap[prefabID]];
             }
-            return pool.GetInstance(quaternion,parent,beforSetActive);        
+            return pool.GetInstance(worldPosition,quaternion,parent,beforSetActive);        
         }
 
         public void ReleaseInstance(GameObject instance) { 

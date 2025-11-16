@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using ECS;
 using PoolingSystem.ReferencePool;
-using System.Collections.Generic;
+using RollBackSystem;
 using TagSystem;
 using UnityEngine;
-using static RollBackComponent;
+using static RollBackSystem.RollBackComponent;
 using Component = ECS.Component;
 
 namespace GAS {
@@ -267,7 +268,7 @@ namespace GAS {
             throw new System.NotImplementedException();
         }
 
-        public override Component Clone() {
+        public override Component GetNewInstance() {
             return new AbilityComponent();
         }
 
@@ -294,16 +295,6 @@ namespace GAS {
             tasksToRelease = null;
             tasksToRercover = null;
             legalAbilities = null;
-        }
-        #endregion
-
-        #region RollBack
-        public AbilityComponentSnapData SnapShot() {
-            return default;
-        }
-
-        public void RollBack(AbilityComponentSnapData snapData) {
-            //TODO: 实现技能组件的回滚
         }
         #endregion
     }
