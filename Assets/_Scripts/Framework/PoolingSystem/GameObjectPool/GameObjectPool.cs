@@ -16,7 +16,8 @@ namespace PoolingSystem.GameObjectPool {
             this.poolID = poolID;
             this.root = root;
             for (int i = 0; i < initialCapacity; i++) {
-                var instance = GameObject.Instantiate(prefab);
+                var instance = GameObject.Instantiate(prefab,root.transform);
+                instance.SetActive(false);  
                 availableInstances.AddLast(instance);
             }
         }

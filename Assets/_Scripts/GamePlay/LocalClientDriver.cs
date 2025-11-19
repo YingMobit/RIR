@@ -27,11 +27,12 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     }
 
     void BuildCharactors(Dictionary<int,int> playerID_CharactorIDMap) {
+        Debug.Log("BuildPlayer,PlayerCount");
         var compList = ListPool<ECS.Component>.Get();
         foreach(var kvp in playerID_CharactorIDMap) {
             int playerID = kvp.Key;
             int charactorID = kvp.Value;
-            GameObject charactorGO = GameObjectPoolCenter.Instance.GetInstance(CharactorPrefabs[charactorID],Vector3.up * 4 + Vector3.right * playerID,Quaternion.identity);
+            GameObject charactorGO = GameObjectPoolCenter.Instance.GetInstance(CharactorPrefabs[charactorID],Vector3.right * playerID,Quaternion.identity);
             var entity = world.GetEntity(charactorGO,playerComponentType.ToMask());
             world.GetAllComponentsOnEntity(entity, compList);
             foreach(var comp in compList) { 
@@ -39,6 +40,9 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
                     input.BindPlayerID(playerID);
                 } else if(comp is IController controller) { 
                     controllers.Add(controller);
+                    if(controller is CharactorTransformController transformController) {
+                        transformController.SetLogicPosition(Vector3.right * playerID);
+                    }
                 }
             }
             if(playerID != NetworkManager.Instance.LocalPlayerID) {
@@ -74,6 +78,7 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
         if(!world.GetSystemByType<InputSystem>().IsPredictCorrect(world,out var errorStartFrameCount)) {
             //�ع�
             world.GetSystemByType<RollBackSystem.RollBackSystem>().RollBack(world,errorStartFrameCount,localFrameCount);
+            Debug.Log($"[LocalClientDriver] Rollback from frame {errorStartFrameCount} to frame {localFrameCount}");
             //����ģ��
             for(int i = 0; i < localFrameCount - errorStartFrameCount + 1; i++) {
                 world.OnRollingBack(errorStartFrameCount,errorStartFrameCount + i,deltaTime);

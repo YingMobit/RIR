@@ -5,15 +5,25 @@ namespace GAS {
     /// Ability Component依赖的运行时上下文。保存着技能系统配置，执行器，全局黑板等组件引用
     /// </summary>
     public class AbilityComponentContext : IReference<AbilityComponentContext> {
-        public Dictionary<ControllerTypeEnum,IController> Controllers { get; private set; }
         public IReadOnlyDictionary<int,Ability> Abilities { get; private set; }
+        public Dictionary<ControllerTypeEnum,IController> Controllers { get; private set; }
         public BlackBoard GlobalBlacboard { get; private set; }
         public AttributeSet AttributeSet { get; private set; }
-        public void BindContext(Dictionary<int,Ability> abilities,BlackBoard blackBoard,Dictionary<ControllerTypeEnum,IController> controllers,AttributeSet attributeSet) { 
+        
+        public void LoadAbilityConfig(Dictionary<int,Ability> abilities) { 
             Abilities = abilities;
-            GlobalBlacboard = blackBoard;
-            Controllers = controllers;
+            GlobalBlacboard = ReferencePoolingCenter.Instance.GetReference<BlackBoard>();
+        }
+
+        public void Bind(AttributeSet attributeSet) { 
             AttributeSet = attributeSet;
+        }
+
+        public void RegisterController(ControllerTypeEnum controllerType,IController controller) { 
+            if(Controllers == null) { 
+                Controllers = new Dictionary<ControllerTypeEnum,IController>();
+            }
+            Controllers[controllerType] = controller;
         }
 
         #region IReference
@@ -32,7 +42,6 @@ namespace GAS {
         public void OnRecycle() {
             ReferencePoolingCenter.Instance.ReleaseReference(GlobalBlacboard);
             GlobalBlacboard = null;
-            ReferencePoolingCenter.Instance.ReleaseReference(AttributeSet); 
             AttributeSet = null;
             Controllers.Clear();
             Controllers = null;

@@ -46,7 +46,7 @@ namespace PoolingSystem.ReferencePool {
                 freeReferenceIndexs.Push(index);
                 reference.OnRecycle();
             } else {
-                Debug.LogError($"Type dismatch,expected type:{referenceType},current instance:{reference},type: {tempType}");
+                Debug.LogError($"Type dismatch,expected type:{referenceType.Name},current instance:{reference},type: {tempType}");
                 return;
             }
         }

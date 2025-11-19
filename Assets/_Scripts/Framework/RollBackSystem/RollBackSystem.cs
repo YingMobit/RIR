@@ -1,6 +1,7 @@
 using ECS;
-using PoolingSystem.ReferencePool;
+using UnityEngine;
 using UnityEngine.Pool;
+using Component = ECS.Component;
 
 namespace RollBackSystem {
     public class RollBackSystem : ISystem {
@@ -12,6 +13,7 @@ namespace RollBackSystem {
 
         public void OnFrameUpdate(World world,int localFrameCount,float deltaTime) {
             // 每帧更新
+            // Debug.Log("RollBackSystem Update");
             var list = ListPool<Component>.Get();
             world.GetComponents(ComponentTypeEnum.RollBackComponent,list);
             foreach(var comp in list) {
@@ -19,6 +21,7 @@ namespace RollBackSystem {
                     rollback.SnapShot(world,localFrameCount);
                 }
             }
+            list.Clear();
             ListPool<Component>.Release(list);
         }
 

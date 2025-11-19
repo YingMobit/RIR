@@ -1,6 +1,7 @@
 using ECS;
 using PoolingSystem.ReferencePool;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Pool;
 using Utility;
 using Component = ECS.Component;
@@ -16,7 +17,7 @@ namespace RollBackSystem {
 
         public override void OnAttach(World world,Entity entity) {
             currentEntity = entity;
-            // SnapShot(0);
+            SnapShot(world,0);
         }
 
         public override void Reset(World world,Entity entity) {
@@ -33,15 +34,20 @@ namespace RollBackSystem {
 
         #region API
         public void SnapShot(World world,int logicFrameCount) {
+            // Debug.Log($"[RollBackComponent] SnapShot at frame {logicFrameCount} for Entity {currentEntity.EntityID}");
             var compList = ListPool<Component>.Get();
             world.GetAllComponentsOnEntity(currentEntity,compList);
+            // Debug.Log($"[RollBackComponent] Entity {currentEntity.EntityID} has {compList.Count} components to SnapShot");
             var handlers = ListPool<SnapShotHandler>.Get();
             if(handlers.Capacity < compList.Capacity) handlers.Capacity = compList.Capacity;
-            foreach(var comp in compList) { 
+            foreach(var comp in compList) {
                 if(comp is IRollBackable rollback) {
+                    // Debug.Log($"[RollBackComponent] SnapShot {rollback.GetType().Name} at frame {logicFrameCount}");
                     var handler = ReferencePoolingCenter.Instance.GetReference<SnapShotHandler>();
                     handler.Bind(rollback,rollback.SnapShot(logicFrameCount));
                     handlers.Add(handler);
+                } else { 
+                    // Debug.LogWarning($"[RollBackComponent] Component {comp.GetType().Name} does not implement IRollBackable, skipped SnapShot");
                 }
             }
 
@@ -62,12 +68,14 @@ namespace RollBackSystem {
             }
             var lastCorrectSnapData = cachedSnapShots.PeekBack();
             foreach(var handler in lastCorrectSnapData) {
-                handler.RollBack();
+                // Debug.Log($"[RollBackComponent] RollBack {handler.rollBackable.GetType().Name} from frame {currentLocalizedLogicFrameCount} to frame {errorStartLocalizedLogicFrameCount}");
+                handler.RollBack(errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
             }
         }
 
         private void FreeSnapShotHandler(List<SnapShotHandler> outTime) {
             foreach(var handler in outTime) {
+                handler.snapShot.Release();
                 ReferencePoolingCenter.Instance.ReleaseReference(handler);
             }
             outTime.Clear();

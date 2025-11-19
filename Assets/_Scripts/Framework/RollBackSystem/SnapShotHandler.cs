@@ -2,8 +2,8 @@ using PoolingSystem.ReferencePool;
 
 namespace RollBackSystem{
     internal class SnapShotHandler : IReference<SnapShotHandler> {
-        private IRollBackable rollBackable;
-        private ISnapShot snapShot;
+        public IRollBackable rollBackable { get; private set; }
+        public ISnapShot snapShot { get; private set; }
 
         public SnapShotHandler() { }
 
@@ -12,8 +12,8 @@ namespace RollBackSystem{
             this.snapShot = snapShot;
         }
 
-        public void RollBack() {
-            rollBackable.Rollback(snapShot);
+        public void RollBack(int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            rollBackable.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
         }
 
         #region IReference

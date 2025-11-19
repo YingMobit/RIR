@@ -1,11 +1,13 @@
+using Drive;
 using ECS;
 using GAS;
 using PoolingSystem.ReferencePool;
+using RollBackSystem;
 using UnityEngine;
 using Utility;
 using Component = ECS.Component;
 
-public class CharactorTransformController : Component, ITransformController {
+public class CharactorTransformController : Component, ITransformController , IRollBackable {
     #region ITransformController 
     private GameObject gameObject;
     private Transform transform;
@@ -250,6 +252,55 @@ public class CharactorTransformController : Component, ITransformController {
         Gizmos.color = Color.blue;
         Vector3 forward = _logicRotation * Vector3.forward;
         Gizmos.DrawRay(_logicPosition,forward * 1.0f);
+    }
+    #endregion
+
+    #region IRollBackable
+    internal class CharactorTransformControllerSnapShot : ISnapShot, IReference<CharactorTransformControllerSnapShot> {
+        public Vector3 LogicPosition;
+        public Quaternion LogicRotation;
+        public Vector3 LogicScale;
+        public int LocalizedLogicFrameCount { get; set; }
+
+        uint IReference.ReferenceType => ReferenceTypes.CHARACTORTRANSFORMCONTROLLERSHAPSHOT;
+
+        int IReference.IndexInRefrencePool { get; set; }
+
+        public void Dispose() {
+            
+        }
+
+        public IReference GetNewInstance() {
+            return new CharactorTransformControllerSnapShot();
+        }
+
+        public void OnRecycle() {
+            
+        }
+
+        public void Release() {
+            ReferencePoolingCenter.Instance.ReleaseReference(this);
+        }
+    }
+
+    public ISnapShot SnapShot(int localizedLogicFrameCount) {
+        var snapShot = ReferencePoolingCenter.Instance.GetReference<CharactorTransformControllerSnapShot>();
+        snapShot.LogicPosition = LogicPosition;
+        snapShot.LogicRotation = LogicRotation;
+        snapShot.LogicScale = LogicScale;
+        snapShot.LocalizedLogicFrameCount = localizedLogicFrameCount;
+        return snapShot;
+    }
+
+    public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+        var transformSnapShot = snapShot as CharactorTransformControllerSnapShot;
+        if(transformSnapShot == null)
+            return;
+        var count = currentLocalizedLogicFrameCount - transformSnapShot.LocalizedLogicFrameCount;
+        int trackBackFrameCount = (int)(count * (1f / Time.deltaTime) / (float)FixedRateScheduler._cfg.RateHz) / 2;
+        MoveToSmoothly(transformSnapShot.LogicPosition,trackBackFrameCount);
+        RotateToSmoothly(transformSnapShot.LogicRotation,trackBackFrameCount);
+        ScaleToSmoothly(transformSnapShot.LogicScale,trackBackFrameCount);
     }
     #endregion
 }

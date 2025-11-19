@@ -1,18 +1,21 @@
 ﻿using Drive;
 using ECS;
 using Lockstep.Math;
+using PoolingSystem.ReferencePool;
+using RollBackSystem;
 using System.Collections.Generic;
 using UnityEngine;
 using Utility;
 using Component = ECS.Component;
 
 namespace InputSystemNameSpace {
-    public class InputComponent : Component {
+    public class InputComponent : Component , IRollBackable {
         public int PlayerID { get; private set; }
         public DeQueue<FrameInputData> CachedInputData = new(60);
         private DeQueue<FrameInputData> UnconfirmedInputDataBuffer = new();
         private DeQueue<FrameInputData> InferredInputCache = new();//回滚时使用的根据最新权威输入数据得到的最可能正确的输入缓存
-        
+        private static InputComponentSnapShot inputComponentSnapShot = new();//没有数据，只为了节省内存开销
+
         bool attachUnPredictedInputNeeded = false;
         int unPredictedInput = 0;
 
@@ -137,14 +140,50 @@ namespace InputSystemNameSpace {
         }
 
 
-        public void SimulateInputWhenRollingBackState() { 
-            CachedInputData.PushBack(InferredInputCache.PopFront());
+        public void SimulateInputWhenRollingBackState() {
+            var data = InferredInputCache.PopFront();
+            // Debug.Log($"[RollingBack,InputSytem]: Use {data} to Rollback");
+            CachedInputData.PushBack(data);
+        }
+        #endregion
+
+        #region IRollBackable
+        internal class InputComponentSnapShot : ISnapShot, IReference<InputComponentSnapShot> {
+            public int LocalizedLogicFrameCount { get; set; }
+
+            public uint ReferenceType =>ReferenceTypes.INPUTCOMPONENTSNAPSHOT;
+
+            int IReference.IndexInRefrencePool { get ; set ; }
+
+            public void Dispose() {
+                
+            }
+
+            public IReference GetNewInstance() {
+                return new InputComponentSnapShot();
+            }
+
+            public void OnRecycle() {
+                
+            }
+
+            public void Release() {
+                
+            }
         }
 
-        public void RollBack(int errorStartFrameCount,int currentFrameCount) { 
-            int errorFrameCount = currentFrameCount - errorStartFrameCount + 1;
-            InferredInputCache.PopFrontN(InferredInputCache.Count - errorFrameCount);
-            CachedInputData.PopBackN(InferredInputCache.Count);
+        public ISnapShot SnapShot(int localizedLogicFrameCount) {
+            return inputComponentSnapShot;
+        }
+
+        public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            // Debug.Log($"Player: {PlayerID} inputComponent Rollback,from: {errorStartLocalizedLogicFrameCount} to: {currentLocalizedLogicFrameCount}");
+            int errorFrameCount = currentLocalizedLogicFrameCount - errorStartLocalizedLogicFrameCount + 1;
+            while(InferredInputCache.TryPeekFront(out var frameInputData) && frameInputData.LocalizedLocalLogicFrameCount < errorStartLocalizedLogicFrameCount) {
+                // Debug.Log($"FrameInputData: {frameInputData} not in error predictRange,Pop");
+                InferredInputCache.PopFront();
+            }
+            CachedInputData.PopBackN(errorFrameCount);
         }
         #endregion
     }

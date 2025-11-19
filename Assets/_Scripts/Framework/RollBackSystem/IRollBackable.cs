@@ -6,6 +6,6 @@ namespace RollBackSystem {
     public interface IRollBackable {
         public ISnapShot SnapShot(int localizedLogicFrameCount);
 
-        public void Rollback(ISnapShot snapShot);
+        public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount);
     }
 }

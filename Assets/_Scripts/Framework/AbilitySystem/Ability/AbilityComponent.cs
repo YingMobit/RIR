@@ -1,19 +1,18 @@
-using System.Collections.Generic;
 using ECS;
-using PoolingSystem.ReferencePool;
-using RollBackSystem;
-using TagSystem;
 using UnityEngine;
-using static RollBackSystem.RollBackComponent;
+using RollBackSystem;
+using UnityEngine.Pool;
 using Component = ECS.Component;
+using System.Collections.Generic;
+using PoolingSystem.ReferencePool;
 
 namespace GAS {
     /// <summary>
     /// 用于管理配置好的Ability的运行时状态
     /// </summary>
-    public class AbilityComponent : Component {
+    public class AbilityComponent : Component , IRollBackable {
         Dictionary<int,Ability> legalAbilities = new();//所有当前已经注册的Ability
-        Dictionary<int,HashSet<AbilityExcutionTask>> runningTasks = new();//所有当前正在运行的Ability对应的Task
+        Dictionary<int,AbilityExcutionTask> runningTasks = new();//所有当前正在运行的Ability对应的Task
         HashSet<int> runningAbilities = new();//所有当前正在运行的Ability
 
         List<Ability> abilitiesToRegist = new();//等待注册的Ability
@@ -22,7 +21,7 @@ namespace GAS {
         List<AbilityExcutionTask> tasksToRemove = new();//等待移除的Task
         HashSet<AbilityExcutionTask> tasksExiting = new();//正在执行清理工作的Task
         List<AbilityExcutionTask> tasksToRelease = new();//清理工作完成可回收的Task
-        List<AbilityRuntimeContext> tasksToRercover = new();//等待帧末恢复的task
+        List<AbilityRuntimeContext> tasksToRecover = new();//等待帧末恢复的task
 
         public bool Inited { get; private set; } = false;
 
@@ -64,16 +63,14 @@ namespace GAS {
 
         public InteruptionHandler InterruptAbility(InteruptionContext interuptionContext) {
             List<AbilityExcutionTask> interuptedTasks = new();
-            foreach(var tasks in runningTasks.Values) {
-                foreach(var task in tasks) {
-                    if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) {
-                        interuptedTasks.Add(task);
-                    }
+            foreach(var task in runningTasks.Values) {
+                if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) {
+                    interuptedTasks.Add(task);
                 }
             }
 
             foreach(var task in interuptedTasks) {
-                runningTasks[task.Ability.AbilityHeadInfo.ID].Remove(task);
+                runningTasks.Remove(task.Ability.AbilityHeadInfo.ID);
                 task.OnInterrupted(interuptionContext);
                 runningAbilities.Remove(task.Ability.AbilityHeadInfo.ID);
             }
@@ -91,19 +88,13 @@ namespace GAS {
             if(!AbilityLegal(abilitID) || !runningAbilities.Contains(abilitID))
                 return new(new());
             List<AbilityExcutionTask> interruptionTasks = new();
-            foreach(var task in runningTasks[abilitID]) {
-                if(task.runtimeContext.Interuptable) {
-                    interruptionTasks.Add(task);
-                }
-            }
+            var task = runningTasks[abilitID];
 
             List<AbilityRuntimeContext> pictures = new();
-            foreach(var task in interruptionTasks) {
-                runningTasks[abilitID].Remove(task);
-                task.OnInterrupted(interuptionContext);
-                pictures.Add(task.runtimeContext);
-                ReferencePoolingCenter.Instance.ReleaseReference(task);
-            }
+            runningTasks.Remove(abilitID);
+            task.OnInterrupted(interuptionContext);
+            pictures.Add(task.runtimeContext);
+            ReferencePoolingCenter.Instance.ReleaseReference(task);
 
             runningAbilities.Remove(abilitID);
 
@@ -117,7 +108,7 @@ namespace GAS {
         }
 
         public void RecoverTask(AbilityRuntimeContext abilityRuntimeContext) {
-            tasksToRercover.Add(abilityRuntimeContext);
+            tasksToRecover.Add(abilityRuntimeContext);
         }
         #endregion
 
@@ -135,7 +126,7 @@ namespace GAS {
             //尝试触发所有legalAbilities中的Ability
             foreach(var legalAbility in legalAbilities.Values) {
                 if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded &&
-                    (!runningAbilities.Contains(legalAbility.AbilityHeadInfo.ID) || legalAbility.Stackable)
+                    (!runningAbilities.Contains(legalAbility.AbilityHeadInfo.ID))
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
                     ) {
                     runningAbilities.Add(legalAbility.AbilityHeadInfo.ID);
@@ -151,24 +142,19 @@ namespace GAS {
 
             //更新所有正在运行的AbilityExcutionTask
             TaskStatus taskStatus;
-            foreach(var tasks in runningTasks.Values) {
-                foreach(var task in tasks) {
-                    taskStatus = task.OnUpdate(abilityComponentContext);
-                    if(taskStatus.IsFinished()) {
-                        tasksToRemove.Add(task);
-                    }
+            foreach(var task in runningTasks.Values) {
+                taskStatus = task.OnUpdate(abilityComponentContext);
+                if(taskStatus.IsFinished()) {
+                    tasksToRemove.Add(task);
                 }
             }
 
             //移除所有已经完成的AbilityExcutionTask
             foreach(var task in tasksToRemove) {
                 tasksExiting.Add(task);
-                HashSet<AbilityExcutionTask> taskSet = runningTasks[task.Ability.AbilityHeadInfo.ID];
-                taskSet.Remove(task);
-                if(taskSet.Count == 0) {
-                    //只移除runningAbilities中的技能ID，不移除runningTasks中的pair,避免重新分配对象
-                    runningAbilities.Remove(task.Ability.AbilityHeadInfo.ID);
-                }
+                //只移除runningAbilities中的技能ID，不移除runningTasks中的pair,避免重新分配对象
+                runningAbilities.Remove(task.Ability.AbilityHeadInfo.ID);
+                runningTasks.Remove(task.Ability.AbilityHeadInfo.ID);
             }
             tasksToRemove.Clear();
         }
@@ -181,18 +167,17 @@ namespace GAS {
             abilitiesToRegist.Clear();
 
             //完成本帧技能恢复
-            foreach(var task in tasksToRercover) {
+            foreach(var task in tasksToRecover) {
                 RegistTask(task,abilityComponentContext);
             }
-            tasksToRercover.Clear();
+            tasksToRecover.Clear();
 
             //完成本帧的技能移除
             foreach(var abilityID in abilitiesToRemove) {
                 legalAbilities.Remove(abilityID);
                 if(runningAbilities.Contains(abilityID)) {
-                    foreach(var task in runningTasks[abilityID]) {
-                        tasksExiting.Add(task);
-                    }
+                    var task = runningTasks[abilityID];
+                    tasksExiting.Add(task);
                     runningTasks.Remove(abilityID);
                     runningAbilities.Remove(abilityID);
                 }
@@ -216,6 +201,7 @@ namespace GAS {
             //完成本帧的Task回收
             foreach(var deadTask in tasksToRelease) {
                 tasksExiting.Remove(deadTask);
+                ReferencePoolingCenter.Instance.ReleaseReference(deadTask.runtimeContext);
                 ReferencePoolingCenter.Instance.ReleaseReference(deadTask);
             }
             tasksToRelease.Clear();
@@ -231,14 +217,7 @@ namespace GAS {
             runtimeContext.BindAbilityComponent(this);
             runtimeContext.Init();
             newTask.BindRuntimeContext(runtimeContext);
-            HashSet<AbilityExcutionTask> taskSet;
-            if(runningTasks.ContainsKey(abilityID)) {
-                taskSet = runningTasks[abilityID];
-            } else {
-                taskSet = new();
-                runningTasks.Add(abilityID,taskSet);
-            }
-            taskSet.Add(newTask);
+            runningTasks[abilityID] = newTask;
             newTask.OnTriggered(abilityComponentContext);
         }
 
@@ -246,14 +225,7 @@ namespace GAS {
             var newTask = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
             runtimeContext.BindComponentContext(componentContext);
             newTask.BindRuntimeContext(runtimeContext);
-            HashSet<AbilityExcutionTask> taskSet;
-            if(runningTasks.ContainsKey(runtimeContext.AbilityID)) {
-                taskSet = runningTasks[runtimeContext.AbilityID];
-            } else {
-                taskSet = new();
-                runningTasks.Add(runtimeContext.AbilityID,taskSet);
-            }
-            taskSet.Add(newTask);
+            runningTasks[runtimeContext.AbilityID] = newTask;
         }
         #endregion
 
@@ -282,7 +254,7 @@ namespace GAS {
             tasksToRemove.Clear();
             tasksExiting.Clear();
             tasksToRelease.Clear();
-            tasksToRercover.Clear();
+            tasksToRecover.Clear();
 
             legalAbilities = null;
             runningTasks = null;
@@ -293,8 +265,414 @@ namespace GAS {
             tasksToRemove = null;
             tasksExiting = null;
             tasksToRelease = null;
-            tasksToRercover = null;
+            tasksToRecover = null;
             legalAbilities = null;
+        }
+        #endregion
+
+        #region Rollback
+        internal class AbilityComponentSnapShot : ISnapShot, IReference<AbilityComponentSnapShot> {
+            public int LocalizedLogicFrameCount { get; set; }
+            public bool InitedCopy;
+            
+            internal List<int> legalAbilitiesKeysCopy;
+            internal List<Ability> legalAbilitiesValuesCopy;
+            
+            internal List<int> runningTasksKeysCopy;
+            internal List<ISnapShot> runningTasksSnapShotsCopy;
+            
+            internal List<int> runningAbilitiesCopy;
+            
+            internal List<Ability> abilitiesToRegistCopy;
+            internal List<int> abilitiesToRemoveCopy;
+            internal List<int> abilitiesToCreateTaskCopy;
+            internal List<ISnapShot> tasksToRemoveSnapShotsCopy;
+            internal List<ISnapShot> tasksExitingSnapShotsCopy;
+            internal List<ISnapShot> tasksToReleaseSnapShotsCopy;
+            internal List<ISnapShot> tasksToRecoverSnapShotsCopy;
+            
+            #region IReference
+            public uint ReferenceType => ReferenceTypes.ABILITYCOMPONENTSNAPSHOT;
+            int IReference.IndexInRefrencePool { get; set; }
+            
+            public void Dispose() {
+                OnRecycle();
+
+                // 2. 将列表本身归还到对象池并置空
+                if(legalAbilitiesKeysCopy != null) {
+                    ListPool<int>.Release(legalAbilitiesKeysCopy);
+                    legalAbilitiesKeysCopy = null;
+                }
+                if(legalAbilitiesValuesCopy != null) {
+                    ListPool<Ability>.Release(legalAbilitiesValuesCopy);
+                    legalAbilitiesValuesCopy = null;
+                }
+                if(runningTasksKeysCopy != null) {
+                    ListPool<int>.Release(runningTasksKeysCopy);
+                    runningTasksKeysCopy = null;
+                }
+                if(runningTasksSnapShotsCopy != null) {
+                    ListPool<ISnapShot>.Release(runningTasksSnapShotsCopy);
+                    runningTasksSnapShotsCopy = null;
+                }
+                if(runningAbilitiesCopy != null) {
+                    ListPool<int>.Release(runningAbilitiesCopy);
+                    runningAbilitiesCopy = null;
+                }
+                if(abilitiesToRegistCopy != null) {
+                    ListPool<Ability>.Release(abilitiesToRegistCopy);
+                    abilitiesToRegistCopy = null;
+                }
+                if(abilitiesToRemoveCopy != null) {
+                    ListPool<int>.Release(abilitiesToRemoveCopy);
+                    abilitiesToRemoveCopy = null;
+                }
+                if(abilitiesToCreateTaskCopy != null) {
+                    ListPool<int>.Release(abilitiesToCreateTaskCopy);
+                    abilitiesToCreateTaskCopy = null;
+                }
+                if(tasksToRemoveSnapShotsCopy != null) {
+                    ListPool<ISnapShot>.Release(tasksToRemoveSnapShotsCopy);
+                    tasksToRemoveSnapShotsCopy = null;
+                }
+                if(tasksExitingSnapShotsCopy != null) {
+                    ListPool<ISnapShot>.Release(tasksExitingSnapShotsCopy);
+                    tasksExitingSnapShotsCopy = null;
+                }
+                if(tasksToReleaseSnapShotsCopy != null) {
+                    ListPool<ISnapShot>.Release(tasksToReleaseSnapShotsCopy);
+                    tasksToReleaseSnapShotsCopy = null;
+                }
+                if(tasksToRecoverSnapShotsCopy != null) {
+                    ListPool<ISnapShot>.Release(tasksToRecoverSnapShotsCopy);
+                    tasksToRecoverSnapShotsCopy = null;
+                }
+            }
+            
+            public IReference GetNewInstance() {
+                var res = new AbilityComponentSnapShot();
+                res.legalAbilitiesKeysCopy = ListPool<int>.Get();
+                res.legalAbilitiesValuesCopy = ListPool<Ability>.Get();
+                res.runningTasksKeysCopy = ListPool<int>.Get();
+                res.runningTasksSnapShotsCopy = ListPool<ISnapShot>.Get();
+                res.runningAbilitiesCopy = ListPool<int>.Get();
+                res.abilitiesToRegistCopy = ListPool<Ability>.Get();
+                res.abilitiesToRemoveCopy = ListPool<int>.Get();
+                res.abilitiesToCreateTaskCopy = ListPool<int>.Get();
+                res.tasksToRemoveSnapShotsCopy = ListPool<ISnapShot>.Get();
+                res.tasksExitingSnapShotsCopy = ListPool<ISnapShot>.Get();
+                res.tasksToReleaseSnapShotsCopy = ListPool<ISnapShot>.Get();
+                res.tasksToRecoverSnapShotsCopy = ListPool<ISnapShot>.Get();
+                return res;
+            }
+            
+            public void OnRecycle() {
+                legalAbilitiesKeysCopy.Clear();
+                legalAbilitiesValuesCopy.Clear();
+                runningTasksKeysCopy.Clear();
+                
+                // 释放列表中的快照元素
+                foreach(var snapShot in runningTasksSnapShotsCopy) {
+                    snapShot?.Release();
+                }
+                runningTasksSnapShotsCopy.Clear();
+
+                runningAbilitiesCopy.Clear();
+                abilitiesToRegistCopy.Clear();
+                abilitiesToRemoveCopy.Clear();
+                abilitiesToCreateTaskCopy.Clear();
+
+                foreach(var snapShot in tasksToRemoveSnapShotsCopy) {
+                    snapShot?.Release();
+                }
+                tasksToRemoveSnapShotsCopy.Clear();
+
+                foreach(var snapShot in tasksExitingSnapShotsCopy) {
+                    snapShot?.Release();
+                }
+                tasksExitingSnapShotsCopy.Clear();
+
+                foreach(var snapShot in tasksToReleaseSnapShotsCopy) {
+                    snapShot?.Release();
+                }
+                tasksToReleaseSnapShotsCopy.Clear();
+
+                foreach(var snapShot in tasksToRecoverSnapShotsCopy) {
+                    snapShot?.Release();
+                }
+                tasksToRecoverSnapShotsCopy.Clear();
+
+                InitedCopy = false;
+            }
+            
+            public void Release() {
+                ReferencePoolingCenter.Instance.ReleaseReference(this);
+            }
+            #endregion
+        }
+
+        public ISnapShot SnapShot(int localizedLogicFrameCount) {
+            var snapShot = ReferencePoolingCenter.Instance.GetReference<AbilityComponentSnapShot>();
+            snapShot.LocalizedLogicFrameCount = localizedLogicFrameCount;
+            snapShot.InitedCopy = Inited;
+            
+            // 快照 legalAbilities
+            if(snapShot.legalAbilitiesKeysCopy.Capacity < legalAbilities.Count) {
+                snapShot.legalAbilitiesKeysCopy.Capacity = legalAbilities.Count;
+                snapShot.legalAbilitiesValuesCopy.Capacity = legalAbilities.Count;
+            }
+            snapShot.legalAbilitiesKeysCopy.Clear();
+            snapShot.legalAbilitiesValuesCopy.Clear();
+            foreach(var pair in legalAbilities) {
+                snapShot.legalAbilitiesKeysCopy.Add(pair.Key);
+                snapShot.legalAbilitiesValuesCopy.Add(pair.Value);
+            }
+            
+            if(snapShot.runningTasksKeysCopy.Capacity < runningTasks.Count) {
+                snapShot.runningTasksKeysCopy.Capacity = runningTasks.Count;
+                snapShot.runningTasksSnapShotsCopy.Capacity = runningTasks.Count;
+            }
+
+            snapShot.runningTasksKeysCopy.Clear();
+            snapShot.runningTasksSnapShotsCopy.Clear();
+            foreach(var pair in runningTasks) {
+                if(pair.Value != null) {
+                    snapShot.runningTasksKeysCopy.Add(pair.Key);
+                    var taskSnapShot = pair.Value.SnapShot(localizedLogicFrameCount);
+                    snapShot.runningTasksSnapShotsCopy.Add(taskSnapShot);
+                }
+            }
+            
+            // 快照 runningAbilities
+            if(snapShot.runningAbilitiesCopy.Capacity < runningAbilities.Count) {
+                snapShot.runningAbilitiesCopy.Capacity = runningAbilities.Count;
+            }
+            snapShot.runningAbilitiesCopy.Clear();
+            snapShot.runningAbilitiesCopy.AddRange(runningAbilities);
+
+            // 快照待处理列表
+            if(snapShot.abilitiesToRegistCopy.Capacity < abilitiesToRegist.Count) {
+                snapShot.abilitiesToRegistCopy.Capacity = abilitiesToRegist.Count;
+            }
+            snapShot.abilitiesToRegistCopy.Clear();
+            snapShot.abilitiesToRegistCopy.AddRange(abilitiesToRegist);
+            
+            if(snapShot.abilitiesToRemoveCopy.Capacity < abilitiesToRemove.Count) {
+                snapShot.abilitiesToRemoveCopy.Capacity = abilitiesToRemove.Count;
+            }
+            snapShot.abilitiesToRemoveCopy.Clear();
+            snapShot.abilitiesToRemoveCopy.AddRange(abilitiesToRemove);
+            
+            if(snapShot.abilitiesToCreateTaskCopy.Capacity < abilitiesToCreateTask.Count) {
+                snapShot.abilitiesToCreateTaskCopy.Capacity = abilitiesToCreateTask.Count;
+            }
+            snapShot.abilitiesToCreateTaskCopy.Clear();
+            snapShot.abilitiesToCreateTaskCopy.AddRange(abilitiesToCreateTask);
+            
+            // 快照 tasksToRemove
+            if(snapShot.tasksToRemoveSnapShotsCopy.Capacity < tasksToRemove.Count) {
+                snapShot.tasksToRemoveSnapShotsCopy.Capacity = tasksToRemove.Count;
+            }
+            snapShot.tasksToRemoveSnapShotsCopy.Clear();
+            foreach(var task in tasksToRemove) {
+                if(task != null) {
+                    snapShot.tasksToRemoveSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
+                }
+            }
+            
+            // 快照 tasksExiting
+            if(snapShot.tasksExitingSnapShotsCopy.Capacity < tasksExiting.Count) {
+                snapShot.tasksExitingSnapShotsCopy.Capacity = tasksExiting.Count;
+            }
+            snapShot.tasksExitingSnapShotsCopy.Clear();
+            foreach(var task in tasksExiting) {
+                if(task != null) {
+                    snapShot.tasksExitingSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
+                }
+            }
+            
+            // 快照 tasksToRelease
+            if(snapShot.tasksToReleaseSnapShotsCopy.Capacity < tasksToRelease.Count) {
+                snapShot.tasksToReleaseSnapShotsCopy.Capacity = tasksToRelease.Count;
+            }
+            snapShot.tasksToReleaseSnapShotsCopy.Clear();
+            foreach(var task in tasksToRelease) {
+                if(task != null) {
+                    snapShot.tasksToReleaseSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
+                }
+            }
+            
+            // 快照 tasksToRecover - RuntimeContext列表
+            if(snapShot.tasksToRecoverSnapShotsCopy.Capacity < tasksToRecover.Count) {
+                snapShot.tasksToRecoverSnapShotsCopy.Capacity = tasksToRecover.Count;
+            }
+            snapShot.tasksToRecoverSnapShotsCopy.Clear();
+            foreach(var context in tasksToRecover) {
+                if(context != null) {
+                    snapShot.tasksToRecoverSnapShotsCopy.Add(context.SnapShot(localizedLogicFrameCount));
+                }
+            }
+            
+            return snapShot;
+        }
+
+        public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            var componentSnapShot = snapShot as AbilityComponentSnapShot;
+            if(componentSnapShot == null) {
+                Debug.LogError("AbilityComponent RollBack Error: Invalid SnapShot Type");
+                return;
+            }
+
+            Inited = componentSnapShot.InitedCopy;
+
+            // 回滚 legalAbilities
+            legalAbilities.Clear();
+            for(int i = 0; i < componentSnapShot.legalAbilitiesKeysCopy.Count; i++) {
+                legalAbilities.Add(componentSnapShot.legalAbilitiesKeysCopy[i],componentSnapShot.legalAbilitiesValuesCopy[i]);
+            }
+
+            // 回滚 runningTasks（单实例架构简化版）
+            // 收集当前所有Task用于复用
+            var currentTasksByAbilityID = new Dictionary<int,AbilityExcutionTask>();
+            foreach(var pair in runningTasks) {
+                if(pair.Value != null) {
+                    currentTasksByAbilityID[pair.Key] = pair.Value;
+                }
+            }
+
+            // 清空并重建 runningTasks
+            runningTasks.Clear();
+            for(int i = 0; i < componentSnapShot.runningTasksKeysCopy.Count; i++) {
+                int abilityID = componentSnapShot.runningTasksKeysCopy[i];
+                ISnapShot taskSnapShot = componentSnapShot.runningTasksSnapShotsCopy[i];
+
+                // 尝试复用已有Task
+                if(currentTasksByAbilityID.TryGetValue(abilityID,out var existingTask)) {
+                    existingTask.RollBack(taskSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                    runningTasks[abilityID] = existingTask;
+                    currentTasksByAbilityID.Remove(abilityID); // 标记为已使用
+                } else {
+                    // 创建新Task
+                    var newTask = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
+                    newTask.RollBack(taskSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                    runningTasks[abilityID] = newTask;
+                }
+            }
+
+            // 释放未使用的Task
+            foreach(var unusedTask in currentTasksByAbilityID.Values) {
+                if(unusedTask.runtimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                }
+                ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
+            }
+
+            // 回滚 runningAbilities
+            runningAbilities.Clear();
+            foreach(var abilityID in componentSnapShot.runningAbilitiesCopy) {
+                runningAbilities.Add(abilityID);
+            }
+
+            // 回滚待处理列表
+            abilitiesToRegist.Clear();
+            abilitiesToRegist.AddRange(componentSnapShot.abilitiesToRegistCopy);
+
+            abilitiesToRemove.Clear();
+            abilitiesToRemove.AddRange(componentSnapShot.abilitiesToRemoveCopy);
+
+            abilitiesToCreateTask.Clear();
+            abilitiesToCreateTask.AddRange(componentSnapShot.abilitiesToCreateTaskCopy);
+
+            // 回滚 tasksToRemove
+            RollBackTaskList(ref tasksToRemove,componentSnapShot.tasksToRemoveSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+
+            // 回滚 tasksExiting
+            RollBackTaskSet(ref tasksExiting,componentSnapShot.tasksExitingSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+
+            // 回滚 tasksToRelease
+            RollBackTaskList(ref tasksToRelease,componentSnapShot.tasksToReleaseSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+
+            // 回滚 tasksToRecover
+            RollBackRuntimeContextList(ref tasksToRecover,componentSnapShot.tasksToRecoverSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+        }
+        
+        // 辅助方法：回滚Task列表
+        private void RollBackTaskList(ref List<AbilityExcutionTask> taskList, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            // 收集现有Task用于复用
+            var availableTasks = new Queue<AbilityExcutionTask>(taskList);
+            
+            taskList.Clear();
+            foreach(var snapShot in snapShots) {
+                AbilityExcutionTask task;
+                if(availableTasks.Count > 0) {
+                    // 复用现有Task
+                    task = availableTasks.Dequeue();
+                    task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                } else {
+                    // 创建新Task
+                    task = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
+                    task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                }
+                taskList.Add(task);
+            }
+            
+            // 释放多余的Task
+            while(availableTasks.Count > 0) {
+                var unusedTask = availableTasks.Dequeue();
+                if(unusedTask.runtimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                }
+                ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
+            }
+        }
+        
+        // 辅助方法：回滚Task集合
+        private void RollBackTaskSet(ref HashSet<AbilityExcutionTask> taskSet, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            var availableTasks = new Queue<AbilityExcutionTask>(taskSet);
+            
+            taskSet.Clear();
+            foreach(var snapShot in snapShots) {
+                AbilityExcutionTask task;
+                if(availableTasks.Count > 0) {
+                    task = availableTasks.Dequeue();
+                    task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                } else {
+                    task = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
+                    task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                }
+                taskSet.Add(task);
+            }
+            
+            while(availableTasks.Count > 0) {
+                var unusedTask = availableTasks.Dequeue();
+                if(unusedTask.runtimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                }
+                ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
+            }
+        }
+        
+        // 辅助方法：回滚RuntimeContext列表
+        private void RollBackRuntimeContextList(ref List<AbilityRuntimeContext> contextList, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            var availableContexts = new Queue<AbilityRuntimeContext>(contextList);
+            
+            contextList.Clear();
+            foreach(var snapShot in snapShots) {
+                AbilityRuntimeContext context;
+                if(availableContexts.Count > 0) {
+                    context = availableContexts.Dequeue();
+                    context.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                } else {
+                    context = ReferencePoolingCenter.Instance.GetReference<AbilityRuntimeContext>();
+                    context.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                }
+                contextList.Add(context);
+            }
+            
+            while(availableContexts.Count > 0) {
+                var unusedContext = availableContexts.Dequeue();
+                ReferencePoolingCenter.Instance.ReleaseReference(unusedContext);
+            }
         }
         #endregion
     }

@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using PoolingSystem.ReferencePool;
+using RollBackSystem;
 
 namespace GAS {
-    public class AbilityExcutionTask : IReference<AbilityExcutionTask> {
+    public class AbilityExcutionTask : IReference<AbilityExcutionTask> , IRollBackable {
         public AbilityRuntimeContext runtimeContext { get; private set; }
         public Ability Ability => runtimeContext.Ability;
         private AbilityEffect currentEffect => Ability.Effects[runtimeContext.currentEffectIndex];
@@ -82,7 +83,6 @@ namespace GAS {
             runtimeContext = abilityRuntimeContext;
         }
 
-
         #region IRefrence
         public uint ReferenceType => ReferenceTypes.ABILITYEXCUTIONTASK;
 
@@ -99,7 +99,66 @@ namespace GAS {
         public void Dispose() {
             OnRecycle();
         }
+        #endregion
 
+        #region IRollbackable
+        internal class AbilityExcutionTaskSnapShot : ISnapShot, IReference<AbilityExcutionTaskSnapShot> {
+            internal ISnapShot runtimeContextSnapShot;
+            #region Interfaces
+            public int LocalizedLogicFrameCount { get; set; }
+
+            public uint ReferenceType => ReferenceTypes.ABILITYEXCUTIONSNAPSHOT;
+
+            int IReference.IndexInRefrencePool { get; set; }
+
+            public void Dispose() {
+                OnRecycle();
+            }
+
+            public IReference GetNewInstance() {
+                return new AbilityExcutionTaskSnapShot();
+            }
+
+            public void OnRecycle() {
+                if(runtimeContextSnapShot != null) {
+                    runtimeContextSnapShot.Release();
+                    runtimeContextSnapShot = null;
+                }
+            }
+
+            public void Release() {
+                ReferencePoolingCenter.Instance.ReleaseReference(this);
+            }
+            #endregion
+        }
+
+        public ISnapShot SnapShot(int localizedLogicFrameCount) {
+            var snapshot = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTaskSnapShot>();
+            snapshot.LocalizedLogicFrameCount = localizedLogicFrameCount;
+            
+            // 快照runtimeContext
+            if(runtimeContext != null) {
+                snapshot.runtimeContextSnapShot = runtimeContext.SnapShot(localizedLogicFrameCount);
+            }
+            
+            return snapshot;
+        }
+
+        public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            var taskSnapShot = snapShot as AbilityExcutionTaskSnapShot;
+            if(taskSnapShot == null) {
+                Debug.LogError("AbilityExcutionTask RollBack Error: Invalid SnapShot Type");
+                return;
+            }
+            
+            // 回滚runtimeContext
+            if(taskSnapShot.runtimeContextSnapShot != null) {
+                if(runtimeContext == null) {
+                    runtimeContext = ReferencePoolingCenter.Instance.GetReference<AbilityRuntimeContext>();
+                }
+                runtimeContext.RollBack(taskSnapShot.runtimeContextSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+            }
+        }
         #endregion
     }
 }

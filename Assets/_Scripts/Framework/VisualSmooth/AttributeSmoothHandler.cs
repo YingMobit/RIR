@@ -63,5 +63,4 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
         _pendingRemoveList.Clear();
     }
     #endregion
-
 }

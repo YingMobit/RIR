@@ -1,11 +1,12 @@
 using PoolingSystem.ReferencePool;
+using RollBackSystem;
 using Sirenix.OdinInspector;
 using System;
 using UnityEngine;
 
 namespace GAS {
     [Serializable]
-    public class Attribute : IReference<Attribute> {
+    public class Attribute : IReference<Attribute>, IRollBackable {
         AttributeData attributeData;
         public float BaseValue => attributeData.BaseValue;
         public float MaxValue => attributeData.MaxValue;
@@ -14,12 +15,16 @@ namespace GAS {
         public event Action<float,float> OnValueChanged;
         public event Action<float,float> OnMaxValueChanged;
         public event Action<float,float> OnMinValueChanged;
+        public Attribute() { }
+        public Attribute(AttributeData data) {
+            attributeData = data;
+        }
 
-        public int Int() { 
+        public int Int() {
             return (int)BaseValue;
         }
 
-        public float Float() { 
+        public float Float() {
             return (float)BaseValue;
         }
 
@@ -27,12 +32,12 @@ namespace GAS {
             return BaseValue != 0;
         }
 
-        public void SetBaseValue(float newValue,bool invokeEvent = true) { 
+        public void SetBaseValue(float newValue,bool invokeEvent = true) {
             newValue = Math.Clamp(newValue,MinValue,MaxValue);
-            if(newValue != BaseValue) { 
+            if(newValue != BaseValue) {
                 float oldValue = BaseValue;
                 attributeData.BaseValue = newValue;
-                if(invokeEvent) { 
+                if(invokeEvent) {
                     OnValueChanged?.Invoke(oldValue,BaseValue);
                 }
             }
@@ -43,7 +48,7 @@ namespace GAS {
                 Debug.LogError("MaxValue must bigger than MinValue");
                 return;
             }
-            
+
             if(newValue != MaxValue) {
                 float oldvalue = MaxValue;
                 attributeData.MaxValue = newValue;
@@ -53,7 +58,7 @@ namespace GAS {
                         OnValueChanged?.Invoke(oldvalue,MaxValue);
                     }
                 }
-            
+
                 if(invokeEvent) {
                     OnMaxValueChanged?.Invoke(MaxValue,newValue);
                 }
@@ -65,17 +70,17 @@ namespace GAS {
                 Debug.LogError("MinValue must smaller than MaxValue");
             }
 
-            if(newValue != MinValue) { 
+            if(newValue != MinValue) {
                 float oldValue = MinValue;
                 attributeData.MinValue = newValue;
-                if(BaseValue < MinValue) { 
+                if(BaseValue < MinValue) {
                     attributeData.BaseValue = MinValue;
-                    if(invokeEvent) { 
+                    if(invokeEvent) {
                         OnValueChanged?.Invoke(BaseValue,MinValue);
                     }
                 }
 
-                if(invokeEvent) { 
+                if(invokeEvent) {
                     OnMinValueChanged?.Invoke(MinValue,newValue);
                 }
             }
@@ -84,7 +89,7 @@ namespace GAS {
 
         #region IReference
         public uint ReferenceType => ReferenceTypes.ATTRIBUTE;
-        int IReference.IndexInRefrencePool { get ; set ; }
+        int IReference.IndexInRefrencePool { get; set; }
 
         public void OnRecycle() {
             attributeData.BaseValue = 0;
@@ -103,11 +108,46 @@ namespace GAS {
             OnRecycle();
         }
         #endregion
-        public Attribute() { }
-        public Attribute(AttributeData data) { 
-            attributeData = data;
+
+        #region IRollBackable
+        internal class AttributeSnapShot : ISnapShot, IReference<AttributeSnapShot> {
+            public int LocalizedLogicFrameCount { get; set; }
+
+            public uint ReferenceType => ReferenceTypes.ATTRIBUTESNAPSHOT;
+
+            int IReference.IndexInRefrencePool { get ; set ; }
+
+            public AttributeData attributeData;
+            public void OnRecycle() {
+                
+            }
+
+            public IReference GetNewInstance() {
+                return new AttributeSnapShot();
+            }
+
+            public void Dispose() {
+                OnRecycle();
+            }
+
+            public void Release() {
+                ReferencePoolingCenter.Instance.ReleaseReference(this);
+            }
         }
+
+        public void RollBack(ISnapShot snapShot,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            attributeData = (snapShot as AttributeSnapShot).attributeData;
+        }
+
+        public ISnapShot SnapShot(int localizedLogicFrameCount) {
+            AttributeSnapShot attributeSnapShot = ReferencePoolingCenter.Instance.GetReference<AttributeSnapShot>();
+            attributeSnapShot.attributeData = attributeData;
+            return attributeSnapShot;
+        }
+        #endregion
+
     }
+
 
     [Serializable]
     public struct AttributeData { 

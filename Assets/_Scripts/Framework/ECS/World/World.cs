@@ -71,10 +71,12 @@ namespace ECS {
             }
         }
         public void GetComponentOnEntity(Entity entity,ComponentTypeEnum componentType,out Component component) {
+            entity = GetLatestEntity(entity);
             component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(componentSearchSparseArrays[componentType.GetIndex()].GetIndex(entity.EntityID));
         }
 
-        public void GetAllComponentsOnEntity(Entity entity,List<Component> components) {
+        public void GetAllComponentsOnEntity(Entity entity,in List<Component> components) {
+            entity = GetLatestEntity(entity);
             components.Clear();
             var componentTypes = entity.Archetype.MaskToEnums();
             if(components.Capacity < componentTypes.Length) {
@@ -98,6 +100,7 @@ namespace ECS {
 
         #region AddComponent (ֵ����ʵ�֣�ͨ�� EntityManager ����޸���ʵʵ��)
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType,out Component component) {
+            entity = GetLatestEntity(entity);
             if(entity.HasComponent(componentType)) {
                 GetComponentOnEntity(entity,componentType,out component);
                 return true;
@@ -111,6 +114,7 @@ namespace ECS {
         }
 
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType) {
+            entity = GetLatestEntity(entity);
             if(entity.HasComponent(componentType))
                 return true;
             var component = componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
@@ -122,6 +126,7 @@ namespace ECS {
         }
 
         public bool AddComponents(Entity entity,uint componentTypeMask) {
+            entity = GetLatestEntity(entity);
             componentTypeMask &= ~entity.Archetype;
             if(componentTypeMask == 0)
                 return true;
@@ -138,6 +143,7 @@ namespace ECS {
 
         #region RemoveComponent (ֵ����ʵ��)
         public bool RemoveComponent(Entity entity,ComponentTypeEnum componentType) {
+            entity = GetLatestEntity(entity);
             if(!entity.HasComponent(componentType)) {
                 Debug.LogError($"Entity:{entity.EntityID} doesn't has this type of Component:{componentType}");
                 return false;
@@ -168,6 +174,7 @@ namespace ECS {
         }
 
         public bool RemoveComponents(Entity entity,uint componentTypeMask) {
+            entity = GetLatestEntity(entity);
             if(!entity.HasAllComponents(componentTypeMask)) {
                 Debug.LogError($"Entity doesn't has all of these type of Components:{componentTypeMask}");
                 return false;
@@ -182,6 +189,7 @@ namespace ECS {
         }
 
         public bool RemoveAllComponents(Entity entity) {
+            entity = GetLatestEntity(entity);
             uint componentMask = entity.Archetype;
             if(componentMask == 0)
                 return false;

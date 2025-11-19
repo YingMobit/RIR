@@ -5,6 +5,7 @@ using InputSystemNameSpace;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Video;
 using Utility;
 using Component = ECS.Component;
 
@@ -15,53 +16,47 @@ public class AbilitySystem : ISystem {
 
 
     public int Order => 1;
-    AbilityComponentContextBuilder abilityComponentContextHandler;
-    List<Entity> entities;
-    List<Component> abilityComponentWithoutInput;
-    InputComponent inputComponent;
-    AbilityComponentContext componentContext;
-    AbilityComponent abilityComponent;
     public void OnInit(World world) {
         // 初始化
-        abilityComponentWithoutInput = ListPool<Component>.Get();
-        entities = ListPool<Entity>.Get();
     }
 
     public void OnFrameUpdate(World world,int localFrameCount,float deltaTime) {
         // 每帧更新
-        var query = world.Query().With(ComponentTypeEnum.AbilityComponent).With(ComponentTypeEnum.InputComponent).Execute();
+        var query = world.Query().With(ComponentTypeEnum.AbilityComponent).With(ComponentTypeEnum.InputComponent).With(ComponentTypeEnum.AttributeComponent).Execute();
         for(int i=0;i < query.Entities.Count; i++) {
-            inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
-            abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
+            var inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
+            var abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
             abilityComponentContextHandler.Context.GlobalBlacboard.Set(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.CachedInputData);
-            abilityComponent = query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
-            if(!abilityComponent.Inited)
-                abilityComponent.Init(abilityComponentContextHandler.Context);
             abilityComponentContextHandler.Context.GlobalBlacboard.Set(DELTATIMEID_IN_GLOBALBLACKBORAD,deltaTime);
-            abilityComponent.Update(abilityComponentContextHandler.Context);
-        }
-
-        world.GetComponents(ComponentTypeEnum.AbilityComponent,abilityComponentWithoutInput,entities);
-        for(int i=0 ;i < abilityComponentWithoutInput.Count; i++) {
-            if(entities[i].HasComponent(ComponentTypeEnum.InputComponent)) {
-                continue; 
+            var abilityComponent = query.ComponentSets[i].GetComponent<AbilityComponent>(ComponentTypeEnum.AbilityComponent);
+            if(!abilityComponent.Inited) {
+                abilityComponentContextHandler.Context.Bind(query.ComponentSets[i].GetComponent<AttributeComponent>(ComponentTypeEnum.AttributeComponent).AttributeSet);
+                var allComponents = ListPool<Component>.Get();
+                world.GetAllComponentsOnEntity(query.Entities[i],allComponents);
+                foreach(var comp in allComponents) {
+                    if(comp is IController) { 
+                        abilityComponentContextHandler.Context.RegisterController((comp as IController).Type,comp as IController);
+                    }
+                }
+                ListPool<Component>.Release(allComponents);
+                abilityComponent.Init(abilityComponentContextHandler.Context);
             }
-            componentContext = world.GetGameObject(entities[i]).GetComponent<AbilityComponentContextBuilder>().Context;
-            abilityComponent = abilityComponentWithoutInput[i] as AbilityComponent;
-            if(!abilityComponent.Inited)
-                abilityComponent.Init(componentContext);
-            abilityComponent.Update(componentContext);
+            abilityComponent.Update(abilityComponentContextHandler.Context);
         }
     }
 
     public void OnFrameLateUpdate(World world, int localFrameCount) {
         // 帧末更新
-        world.GetComponents(ComponentTypeEnum.AbilityComponent,abilityComponentWithoutInput,entities);
-        for(int i = 0; i < abilityComponentWithoutInput.Count; i++) {
-            componentContext = world.GetGameObject(entities[i]).GetComponent<AbilityComponentContextBuilder>().Context;
-            abilityComponent = abilityComponentWithoutInput[i] as AbilityComponent;
+        var entities = ListPool<Entity>.Get();
+        var abilityComponents = ListPool<Component>.Get();
+        world.GetComponents(ComponentTypeEnum.AbilityComponent,abilityComponents,entities);
+        for(int i = 0; i < abilityComponents.Count; i++) {
+            var componentContext = world.GetGameObject(entities[i]).GetComponent<AbilityComponentContextBuilder>().Context;
+            var abilityComponent = abilityComponents[i] as AbilityComponent;
             abilityComponent.LateUpdate(componentContext);
         }
+        ListPool<Entity>.Release(entities);
+        ListPool<Component>.Release(abilityComponents);
     }
     
     public void OnNetworkUpdate(World world, int networkFrameCount) {
@@ -69,9 +64,6 @@ public class AbilitySystem : ISystem {
     }
 
     public void OnDestroy(World world) {
-        abilityComponentWithoutInput.Clear();
-        ListPool<Component>.Release(abilityComponentWithoutInput);
-        entities.Clear();
-        ListPool<Entity>.Release(entities);
+
     }
 }

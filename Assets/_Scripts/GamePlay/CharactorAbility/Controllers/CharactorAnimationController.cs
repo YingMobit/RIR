@@ -1,9 +1,10 @@
 using GAS;
 using PoolingSystem.ReferencePool;
+using RollBackSystem;
 using UnityEngine;
 using Component = ECS.Component;
 
-public class CharactorAnimationController : Component, IAnimationController{
+public class CharactorAnimationController : Component, IAnimationController {
     public ControllerTypeEnum Type => ControllerTypeEnum.Animation;
 
     #region IAnimationController
@@ -27,10 +28,9 @@ public class CharactorAnimationController : Component, IAnimationController{
             value,
             smoothFrames,
             (v) => {
-                Debug.Log($"[CharactorAnimationController]:Set AnimationParame:{name},value:{v}");
                 animator.SetFloat(name,v);
             },
-            (init,target,t) => { Debug.Log($"[CharactorAnimationController]:Lerp AnimationParame:{name},t: {t},init: {init},taget: {target},value: {Mathf.Lerp(init,target,t)}"); return Mathf.Lerp(init,target,t); },
+            (init,target,t) => { return Mathf.Lerp(init,target,t); },
             (a,b) => Mathf.Approximately(a,b)
         );
     }
