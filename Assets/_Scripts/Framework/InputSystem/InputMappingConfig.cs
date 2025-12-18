@@ -28,6 +28,7 @@ namespace InputSystemNameSpace{
             new(InputTypeEnum.UltimateAbility ,KeyCode.E),
             new(InputTypeEnum.UseProp         ,KeyCode.R),
             new(InputTypeEnum.Interact        ,KeyCode.F),
+            new(InputTypeEnum.Shift           ,KeyCode.LeftShift),
         };
 
         public const string AssetPath = "ScriptableObject/InputConfig/InputMappingConfig";

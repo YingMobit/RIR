@@ -1,12 +1,7 @@
-using Drive;
 using ECS;
 using GAS;
 using InputSystemNameSpace;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.Video;
-using Utility;
 using Component = ECS.Component;
 
 public class AbilitySystem : ISystem {
@@ -23,7 +18,7 @@ public class AbilitySystem : ISystem {
     public void OnFrameUpdate(World world,int localFrameCount,float deltaTime) {
         // 每帧更新
         var query = world.Query().With(ComponentTypeEnum.AbilityComponent).With(ComponentTypeEnum.InputComponent).With(ComponentTypeEnum.AttributeComponent).Execute();
-        for(int i=0;i < query.Entities.Count; i++) {
+        for(int i = 0; i < query.Entities.Count; i++) {
             var inputComponent = query.ComponentSets[i].GetComponent<InputComponent>(ComponentTypeEnum.InputComponent);
             var abilityComponentContextHandler = world.GetGameObject(query.Entities[i]).GetComponent<AbilityComponentContextBuilder>();
             abilityComponentContextHandler.Context.GlobalBlacboard.Set(INPUTID_IN_GLOBALBLACKBORAD,inputComponent.CachedInputData);
@@ -34,7 +29,7 @@ public class AbilitySystem : ISystem {
                 var allComponents = ListPool<Component>.Get();
                 world.GetAllComponentsOnEntity(query.Entities[i],allComponents);
                 foreach(var comp in allComponents) {
-                    if(comp is IController) { 
+                    if(comp is IController) {
                         abilityComponentContextHandler.Context.RegisterController((comp as IController).Type,comp as IController);
                     }
                 }
@@ -45,7 +40,7 @@ public class AbilitySystem : ISystem {
         }
     }
 
-    public void OnFrameLateUpdate(World world, int localFrameCount) {
+    public void OnFrameLateUpdate(World world,int localFrameCount) {
         // 帧末更新
         var entities = ListPool<Entity>.Get();
         var abilityComponents = ListPool<Component>.Get();
@@ -58,9 +53,9 @@ public class AbilitySystem : ISystem {
         ListPool<Entity>.Release(entities);
         ListPool<Component>.Release(abilityComponents);
     }
-    
-    public void OnNetworkUpdate(World world, int networkFrameCount) {
-    
+
+    public void OnNetworkUpdate(World world,int networkFrameCount) {
+
     }
 
     public void OnDestroy(World world) {

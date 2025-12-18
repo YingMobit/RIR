@@ -1,32 +1,29 @@
+using System.Collections.Generic;
 using ECS;
-using UnityEngine;
+using PoolingSystem.ReferencePool;
 using RollBackSystem;
+using UnityEngine;
 using UnityEngine.Pool;
 using Component = ECS.Component;
-using System.Collections.Generic;
-using PoolingSystem.ReferencePool;
 
 namespace GAS {
-    /// <summary>
-    /// ÓÃÓÚ¹ÜÀíÅäÖÃºÃµÄAbilityµÄÔËÐÐÊ±×´Ì¬
-    /// </summary>
-    public class AbilityComponent : Component , IRollBackable {
-        Dictionary<int,Ability> legalAbilities = new();//ËùÓÐµ±Ç°ÒÑ¾­×¢²áµÄAbility
-        Dictionary<int,AbilityExcutionTask> runningTasks = new();//ËùÓÐµ±Ç°ÕýÔÚÔËÐÐµÄAbility¶ÔÓ¦µÄTask
-        HashSet<int> runningAbilities = new();//ËùÓÐµ±Ç°ÕýÔÚÔËÐÐµÄAbility
+    public class AbilityComponent : Component, IRollBackable {
+        Dictionary<int,Ability> legalAbilities = new();
+        Dictionary<int,AbilityExcutionTask> runningTasks = new();
+        HashSet<int> runningAbilities = new();
 
-        List<Ability> abilitiesToRegist = new();//µÈ´ý×¢²áµÄAbility
-        List<int> abilitiesToRemove = new();//µÈ´ýÒÆ³ýµÄAbilityID
-        List<int> abilitiesToCreateTask = new();//µÈ´ý´´½¨TaskµÄAbilityID
-        List<AbilityExcutionTask> tasksToRemove = new();//µÈ´ýÒÆ³ýµÄTask
-        HashSet<AbilityExcutionTask> tasksExiting = new();//ÕýÔÚÖ´ÐÐÇåÀí¹¤×÷µÄTask
-        List<AbilityExcutionTask> tasksToRelease = new();//ÇåÀí¹¤×÷Íê³É¿É»ØÊÕµÄTask
-        List<AbilityRuntimeContext> tasksToRecover = new();//µÈ´ýÖ¡Ä©»Ö¸´µÄtask
+        List<Ability> abilitiesToRegist = new();
+        List<int> abilitiesToRemove = new();
+        List<int> abilitiesToCreateTask = new();
+        List<AbilityExcutionTask> tasksToRemove = new();
+        HashSet<AbilityExcutionTask> tasksExiting = new();
+        List<AbilityExcutionTask> tasksToRelease = new();
+        List<AbilityRuntimeContext> tasksToRecover = new();
 
         public bool Inited { get; private set; } = false;
 
         #region API
-        public void RegistAbility(Ability ability) {
+        public void RegisterAbility(Ability ability) {
             if(legalAbilities.ContainsKey(ability.AbilityHeadInfo.ID)) {
                 Debug.Log($"Ability: {ability.AbilityHeadInfo.Name} has already been registered!");
                 return;
@@ -64,7 +61,7 @@ namespace GAS {
         public InteruptionHandler InterruptAbility(InteruptionContext interuptionContext) {
             List<AbilityExcutionTask> interuptedTasks = new();
             foreach(var task in runningTasks.Values) {
-                if(task.runtimeContext.Interuptable && task.CurrentInteruptionPriority < interuptionContext.InteruptionPriority) {
+                if(task.RuntimeContext.Interuptable && task.CurrentInterruptionPriority < interuptionContext.InteruptionPriority) {
                     interuptedTasks.Add(task);
                 }
             }
@@ -77,7 +74,7 @@ namespace GAS {
 
             List<AbilityRuntimeContext> pictures = new();
             foreach(var task in interuptedTasks) {
-                pictures.Add(task.runtimeContext);
+                pictures.Add(task.RuntimeContext);
                 ReferencePoolingCenter.Instance.ReleaseReference(task);
             }
 
@@ -93,7 +90,7 @@ namespace GAS {
             List<AbilityRuntimeContext> pictures = new();
             runningTasks.Remove(abilitID);
             task.OnInterrupted(interuptionContext);
-            pictures.Add(task.runtimeContext);
+            pictures.Add(task.RuntimeContext);
             ReferencePoolingCenter.Instance.ReleaseReference(task);
 
             runningAbilities.Remove(abilitID);
@@ -117,42 +114,39 @@ namespace GAS {
             if(Inited)
                 return;
             foreach(var ability in abilityComponentContext.Abilities) {
-                RegistAbility(ability.Value);
+                RegisterAbility(ability.Value);
             }
             Inited = true;
         }
 
         public void Update(AbilityComponentContext abilityComponentContext) {
-            //³¢ÊÔ´¥·¢ËùÓÐlegalAbilitiesÖÐµÄAbility
             foreach(var legalAbility in legalAbilities.Values) {
                 if(legalAbility.TriggerUnit.TryTrigger(abilityComponentContext) == TaskStatus.Suceeded &&
                     (!runningAbilities.Contains(legalAbility.AbilityHeadInfo.ID))
                     // TODO: && CoolDownSystem.CanUse(legalAbility)
                     ) {
+                    Debug.Log($"Ability:{legalAbility.AbilityHeadInfo.Name} Triggered");
                     runningAbilities.Add(legalAbility.AbilityHeadInfo.ID);
                     abilitiesToCreateTask.Add(legalAbility.AbilityHeadInfo.ID);
                 }
             }
-
-            //´´½¨Trigger³É¹¦µÄAbilityExcutionTask
+            
             foreach(var toCreateAbility in abilitiesToCreateTask) {
                 RegistTask(toCreateAbility,abilityComponentContext);
             }
             abilitiesToCreateTask.Clear();
-
-            //¸üÐÂËùÓÐÕýÔÚÔËÐÐµÄAbilityExcutionTask
+            
             TaskStatus taskStatus;
             foreach(var task in runningTasks.Values) {
                 taskStatus = task.OnUpdate(abilityComponentContext);
                 if(taskStatus.IsFinished()) {
+                    Debug.Log($"task:{task.Ability.AbilityHeadInfo.Name} finished with status:{taskStatus}");
                     tasksToRemove.Add(task);
                 }
             }
-
-            //ÒÆ³ýËùÓÐÒÑ¾­Íê³ÉµÄAbilityExcutionTask
+            
             foreach(var task in tasksToRemove) {
                 tasksExiting.Add(task);
-                //Ö»ÒÆ³ýrunningAbilitiesÖÐµÄ¼¼ÄÜID£¬²»ÒÆ³ýrunningTasksÖÐµÄpair,±ÜÃâÖØÐÂ·ÖÅä¶ÔÏó
                 runningAbilities.Remove(task.Ability.AbilityHeadInfo.ID);
                 runningTasks.Remove(task.Ability.AbilityHeadInfo.ID);
             }
@@ -160,19 +154,16 @@ namespace GAS {
         }
 
         public void LateUpdate(AbilityComponentContext abilityComponentContext) {
-            //Íê³É±¾Ö¡µÄ¼¼ÄÜ×¢²á
             foreach(var ability in abilitiesToRegist) {
                 legalAbilities.Add(ability.AbilityHeadInfo.ID,ability);
             }
             abilitiesToRegist.Clear();
-
-            //Íê³É±¾Ö¡¼¼ÄÜ»Ö¸´
+            
             foreach(var task in tasksToRecover) {
                 RegistTask(task,abilityComponentContext);
             }
             tasksToRecover.Clear();
-
-            //Íê³É±¾Ö¡µÄ¼¼ÄÜÒÆ³ý
+            
             foreach(var abilityID in abilitiesToRemove) {
                 legalAbilities.Remove(abilityID);
                 if(runningAbilities.Contains(abilityID)) {
@@ -183,25 +174,21 @@ namespace GAS {
                 }
             }
             abilitiesToRemove.Clear();
-
-            //Ö´ÐÐ±¾Ö¡µÄTaskÇåÀí
+            
             TaskStatus exitStatus;
             foreach(var task in tasksExiting) {
                 exitStatus = task.OnExit(abilityComponentContext);
-                if(exitStatus == TaskStatus.Suceeded) {
+                if(exitStatus.IsFinished()) {
                     tasksToRelease.Add(task);
-                } else if(exitStatus == TaskStatus.Failed) {
-                    Debug.LogError($"Exit newTask of Ability: {task.Ability.AbilityHeadInfo.Name} failed!");
-                    tasksToRelease.Add(task);
-                } else {
-                    Debug.LogAssertion($"Unexpected exitStatus: {exitStatus} from newTask of Ablity: {task.Ability.AbilityHeadInfo.Name}");
+                    if(exitStatus == TaskStatus.Failed)
+                        Debug.LogError($"Exit newTask of Ability: {task.Ability.AbilityHeadInfo.Name} failed!");
                 }
             }
 
-            //Íê³É±¾Ö¡µÄTask»ØÊÕ
             foreach(var deadTask in tasksToRelease) {
+                Debug.Log($"task:{deadTask.Ability.AbilityHeadInfo.Name} dead!");
                 tasksExiting.Remove(deadTask);
-                ReferencePoolingCenter.Instance.ReleaseReference(deadTask.runtimeContext);
+                ReferencePoolingCenter.Instance.ReleaseReference(deadTask.RuntimeContext);
                 ReferencePoolingCenter.Instance.ReleaseReference(deadTask);
             }
             tasksToRelease.Clear();
@@ -236,7 +223,7 @@ namespace GAS {
         }
 
         public override void Reset(World world,Entity entity) {
-            //Õâ¸ö×é¼þ²»Ó¦¸Ã±»»ØÊÕ
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½
             throw new System.NotImplementedException();
         }
 
@@ -274,15 +261,15 @@ namespace GAS {
         internal class AbilityComponentSnapShot : ISnapShot, IReference<AbilityComponentSnapShot> {
             public int LocalizedLogicFrameCount { get; set; }
             public bool InitedCopy;
-            
+
             internal List<int> legalAbilitiesKeysCopy;
             internal List<Ability> legalAbilitiesValuesCopy;
-            
+
             internal List<int> runningTasksKeysCopy;
             internal List<ISnapShot> runningTasksSnapShotsCopy;
-            
+
             internal List<int> runningAbilitiesCopy;
-            
+
             internal List<Ability> abilitiesToRegistCopy;
             internal List<int> abilitiesToRemoveCopy;
             internal List<int> abilitiesToCreateTaskCopy;
@@ -290,15 +277,15 @@ namespace GAS {
             internal List<ISnapShot> tasksExitingSnapShotsCopy;
             internal List<ISnapShot> tasksToReleaseSnapShotsCopy;
             internal List<ISnapShot> tasksToRecoverSnapShotsCopy;
-            
+
             #region IReference
             public uint ReferenceType => ReferenceTypes.ABILITYCOMPONENTSNAPSHOT;
-            int IReference.IndexInRefrencePool { get; set; }
-            
+            int IReference.IndexInReferencePool { get; set; }
+
             public void Dispose() {
                 OnRecycle();
 
-                // 2. ½«ÁÐ±í±¾Éí¹é»¹µ½¶ÔÏó³Ø²¢ÖÃ¿Õ
+                // 2. ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é»¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø²ï¿½ï¿½Ã¿ï¿½
                 if(legalAbilitiesKeysCopy != null) {
                     ListPool<int>.Release(legalAbilitiesKeysCopy);
                     legalAbilitiesKeysCopy = null;
@@ -348,7 +335,7 @@ namespace GAS {
                     tasksToRecoverSnapShotsCopy = null;
                 }
             }
-            
+
             public IReference GetNewInstance() {
                 var res = new AbilityComponentSnapShot();
                 res.legalAbilitiesKeysCopy = ListPool<int>.Get();
@@ -365,13 +352,13 @@ namespace GAS {
                 res.tasksToRecoverSnapShotsCopy = ListPool<ISnapShot>.Get();
                 return res;
             }
-            
+
             public void OnRecycle() {
                 legalAbilitiesKeysCopy.Clear();
                 legalAbilitiesValuesCopy.Clear();
                 runningTasksKeysCopy.Clear();
-                
-                // ÊÍ·ÅÁÐ±íÖÐµÄ¿ìÕÕÔªËØ
+
+                // ï¿½Í·ï¿½ï¿½Ð±ï¿½ï¿½ÐµÄ¿ï¿½ï¿½ï¿½Ôªï¿½ï¿½
                 foreach(var snapShot in runningTasksSnapShotsCopy) {
                     snapShot?.Release();
                 }
@@ -404,7 +391,7 @@ namespace GAS {
 
                 InitedCopy = false;
             }
-            
+
             public void Release() {
                 ReferencePoolingCenter.Instance.ReleaseReference(this);
             }
@@ -415,8 +402,8 @@ namespace GAS {
             var snapShot = ReferencePoolingCenter.Instance.GetReference<AbilityComponentSnapShot>();
             snapShot.LocalizedLogicFrameCount = localizedLogicFrameCount;
             snapShot.InitedCopy = Inited;
-            
-            // ¿ìÕÕ legalAbilities
+
+            // ï¿½ï¿½ï¿½ï¿½ legalAbilities
             if(snapShot.legalAbilitiesKeysCopy.Capacity < legalAbilities.Count) {
                 snapShot.legalAbilitiesKeysCopy.Capacity = legalAbilities.Count;
                 snapShot.legalAbilitiesValuesCopy.Capacity = legalAbilities.Count;
@@ -427,7 +414,7 @@ namespace GAS {
                 snapShot.legalAbilitiesKeysCopy.Add(pair.Key);
                 snapShot.legalAbilitiesValuesCopy.Add(pair.Value);
             }
-            
+
             if(snapShot.runningTasksKeysCopy.Capacity < runningTasks.Count) {
                 snapShot.runningTasksKeysCopy.Capacity = runningTasks.Count;
                 snapShot.runningTasksSnapShotsCopy.Capacity = runningTasks.Count;
@@ -442,34 +429,34 @@ namespace GAS {
                     snapShot.runningTasksSnapShotsCopy.Add(taskSnapShot);
                 }
             }
-            
-            // ¿ìÕÕ runningAbilities
+
+            // ï¿½ï¿½ï¿½ï¿½ runningAbilities
             if(snapShot.runningAbilitiesCopy.Capacity < runningAbilities.Count) {
                 snapShot.runningAbilitiesCopy.Capacity = runningAbilities.Count;
             }
             snapShot.runningAbilitiesCopy.Clear();
             snapShot.runningAbilitiesCopy.AddRange(runningAbilities);
 
-            // ¿ìÕÕ´ý´¦ÀíÁÐ±í
+            // ï¿½ï¿½ï¿½Õ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
             if(snapShot.abilitiesToRegistCopy.Capacity < abilitiesToRegist.Count) {
                 snapShot.abilitiesToRegistCopy.Capacity = abilitiesToRegist.Count;
             }
             snapShot.abilitiesToRegistCopy.Clear();
             snapShot.abilitiesToRegistCopy.AddRange(abilitiesToRegist);
-            
+
             if(snapShot.abilitiesToRemoveCopy.Capacity < abilitiesToRemove.Count) {
                 snapShot.abilitiesToRemoveCopy.Capacity = abilitiesToRemove.Count;
             }
             snapShot.abilitiesToRemoveCopy.Clear();
             snapShot.abilitiesToRemoveCopy.AddRange(abilitiesToRemove);
-            
+
             if(snapShot.abilitiesToCreateTaskCopy.Capacity < abilitiesToCreateTask.Count) {
                 snapShot.abilitiesToCreateTaskCopy.Capacity = abilitiesToCreateTask.Count;
             }
             snapShot.abilitiesToCreateTaskCopy.Clear();
             snapShot.abilitiesToCreateTaskCopy.AddRange(abilitiesToCreateTask);
-            
-            // ¿ìÕÕ tasksToRemove
+
+            // ï¿½ï¿½ï¿½ï¿½ tasksToRemove
             if(snapShot.tasksToRemoveSnapShotsCopy.Capacity < tasksToRemove.Count) {
                 snapShot.tasksToRemoveSnapShotsCopy.Capacity = tasksToRemove.Count;
             }
@@ -479,8 +466,8 @@ namespace GAS {
                     snapShot.tasksToRemoveSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
                 }
             }
-            
-            // ¿ìÕÕ tasksExiting
+
+            // ï¿½ï¿½ï¿½ï¿½ tasksExiting
             if(snapShot.tasksExitingSnapShotsCopy.Capacity < tasksExiting.Count) {
                 snapShot.tasksExitingSnapShotsCopy.Capacity = tasksExiting.Count;
             }
@@ -490,8 +477,8 @@ namespace GAS {
                     snapShot.tasksExitingSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
                 }
             }
-            
-            // ¿ìÕÕ tasksToRelease
+
+            // ï¿½ï¿½ï¿½ï¿½ tasksToRelease
             if(snapShot.tasksToReleaseSnapShotsCopy.Capacity < tasksToRelease.Count) {
                 snapShot.tasksToReleaseSnapShotsCopy.Capacity = tasksToRelease.Count;
             }
@@ -501,8 +488,8 @@ namespace GAS {
                     snapShot.tasksToReleaseSnapShotsCopy.Add(task.SnapShot(localizedLogicFrameCount));
                 }
             }
-            
-            // ¿ìÕÕ tasksToRecover - RuntimeContextÁÐ±í
+
+            // ï¿½ï¿½ï¿½ï¿½ tasksToRecover - RuntimeContextï¿½Ð±ï¿½
             if(snapShot.tasksToRecoverSnapShotsCopy.Capacity < tasksToRecover.Count) {
                 snapShot.tasksToRecoverSnapShotsCopy.Capacity = tasksToRecover.Count;
             }
@@ -512,7 +499,7 @@ namespace GAS {
                     snapShot.tasksToRecoverSnapShotsCopy.Add(context.SnapShot(localizedLogicFrameCount));
                 }
             }
-            
+
             return snapShot;
         }
 
@@ -525,14 +512,14 @@ namespace GAS {
 
             Inited = componentSnapShot.InitedCopy;
 
-            // »Ø¹ö legalAbilities
+            // ï¿½Ø¹ï¿½ legalAbilities
             legalAbilities.Clear();
             for(int i = 0; i < componentSnapShot.legalAbilitiesKeysCopy.Count; i++) {
                 legalAbilities.Add(componentSnapShot.legalAbilitiesKeysCopy[i],componentSnapShot.legalAbilitiesValuesCopy[i]);
             }
 
-            // »Ø¹ö runningTasks£¨µ¥ÊµÀý¼Ü¹¹¼ò»¯°æ£©
-            // ÊÕ¼¯µ±Ç°ËùÓÐTaskÓÃÓÚ¸´ÓÃ
+            // ï¿½Ø¹ï¿½ runningTasksï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ü¹ï¿½ï¿½ò»¯°æ£©
+            // ï¿½Õ¼ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Taskï¿½ï¿½ï¿½Ú¸ï¿½ï¿½ï¿½
             var currentTasksByAbilityID = new Dictionary<int,AbilityExcutionTask>();
             foreach(var pair in runningTasks) {
                 if(pair.Value != null) {
@@ -540,40 +527,40 @@ namespace GAS {
                 }
             }
 
-            // Çå¿Õ²¢ÖØ½¨ runningTasks
+            // ï¿½ï¿½Õ²ï¿½ï¿½Ø½ï¿½ runningTasks
             runningTasks.Clear();
             for(int i = 0; i < componentSnapShot.runningTasksKeysCopy.Count; i++) {
                 int abilityID = componentSnapShot.runningTasksKeysCopy[i];
                 ISnapShot taskSnapShot = componentSnapShot.runningTasksSnapShotsCopy[i];
 
-                // ³¢ÊÔ¸´ÓÃÒÑÓÐTask
+                // ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Task
                 if(currentTasksByAbilityID.TryGetValue(abilityID,out var existingTask)) {
                     existingTask.RollBack(taskSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
                     runningTasks[abilityID] = existingTask;
-                    currentTasksByAbilityID.Remove(abilityID); // ±ê¼ÇÎªÒÑÊ¹ÓÃ
+                    currentTasksByAbilityID.Remove(abilityID); // ï¿½ï¿½ï¿½Îªï¿½ï¿½Ê¹ï¿½ï¿½
                 } else {
-                    // ´´½¨ÐÂTask
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Task
                     var newTask = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
                     newTask.RollBack(taskSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
                     runningTasks[abilityID] = newTask;
                 }
             }
 
-            // ÊÍ·ÅÎ´Ê¹ÓÃµÄTask
+            // ï¿½Í·ï¿½Î´Ê¹ï¿½Ãµï¿½Task
             foreach(var unusedTask in currentTasksByAbilityID.Values) {
-                if(unusedTask.runtimeContext != null) {
-                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                if(unusedTask.RuntimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.RuntimeContext);
                 }
                 ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
             }
 
-            // »Ø¹ö runningAbilities
+            // ï¿½Ø¹ï¿½ runningAbilities
             runningAbilities.Clear();
             foreach(var abilityID in componentSnapShot.runningAbilitiesCopy) {
                 runningAbilities.Add(abilityID);
             }
 
-            // »Ø¹ö´ý´¦ÀíÁÐ±í
+            // ï¿½Ø¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
             abilitiesToRegist.Clear();
             abilitiesToRegist.AddRange(componentSnapShot.abilitiesToRegistCopy);
 
@@ -583,53 +570,53 @@ namespace GAS {
             abilitiesToCreateTask.Clear();
             abilitiesToCreateTask.AddRange(componentSnapShot.abilitiesToCreateTaskCopy);
 
-            // »Ø¹ö tasksToRemove
+            // ï¿½Ø¹ï¿½ tasksToRemove
             RollBackTaskList(ref tasksToRemove,componentSnapShot.tasksToRemoveSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
 
-            // »Ø¹ö tasksExiting
+            // ï¿½Ø¹ï¿½ tasksExiting
             RollBackTaskSet(ref tasksExiting,componentSnapShot.tasksExitingSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
 
-            // »Ø¹ö tasksToRelease
+            // ï¿½Ø¹ï¿½ tasksToRelease
             RollBackTaskList(ref tasksToRelease,componentSnapShot.tasksToReleaseSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
 
-            // »Ø¹ö tasksToRecover
+            // ï¿½Ø¹ï¿½ tasksToRecover
             RollBackRuntimeContextList(ref tasksToRecover,componentSnapShot.tasksToRecoverSnapShotsCopy,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
         }
-        
-        // ¸¨Öú·½·¨£º»Ø¹öTaskÁÐ±í
-        private void RollBackTaskList(ref List<AbilityExcutionTask> taskList, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
-            // ÊÕ¼¯ÏÖÓÐTaskÓÃÓÚ¸´ÓÃ
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½Taskï¿½Ð±ï¿½
+        private void RollBackTaskList(ref List<AbilityExcutionTask> taskList,List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+            // ï¿½Õ¼ï¿½ï¿½ï¿½ï¿½ï¿½Taskï¿½ï¿½ï¿½Ú¸ï¿½ï¿½ï¿½
             var availableTasks = new Queue<AbilityExcutionTask>(taskList);
-            
+
             taskList.Clear();
             foreach(var snapShot in snapShots) {
                 AbilityExcutionTask task;
                 if(availableTasks.Count > 0) {
-                    // ¸´ÓÃÏÖÓÐTask
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Task
                     task = availableTasks.Dequeue();
                     task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
                 } else {
-                    // ´´½¨ÐÂTask
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Task
                     task = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTask>();
                     task.RollBack(snapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
                 }
                 taskList.Add(task);
             }
-            
-            // ÊÍ·Å¶àÓàµÄTask
+
+            // ï¿½Í·Å¶ï¿½ï¿½ï¿½ï¿½Task
             while(availableTasks.Count > 0) {
                 var unusedTask = availableTasks.Dequeue();
-                if(unusedTask.runtimeContext != null) {
-                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                if(unusedTask.RuntimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.RuntimeContext);
                 }
                 ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
             }
         }
-        
-        // ¸¨Öú·½·¨£º»Ø¹öTask¼¯ºÏ
-        private void RollBackTaskSet(ref HashSet<AbilityExcutionTask> taskSet, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½Taskï¿½ï¿½ï¿½ï¿½
+        private void RollBackTaskSet(ref HashSet<AbilityExcutionTask> taskSet,List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
             var availableTasks = new Queue<AbilityExcutionTask>(taskSet);
-            
+
             taskSet.Clear();
             foreach(var snapShot in snapShots) {
                 AbilityExcutionTask task;
@@ -642,20 +629,20 @@ namespace GAS {
                 }
                 taskSet.Add(task);
             }
-            
+
             while(availableTasks.Count > 0) {
                 var unusedTask = availableTasks.Dequeue();
-                if(unusedTask.runtimeContext != null) {
-                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.runtimeContext);
+                if(unusedTask.RuntimeContext != null) {
+                    ReferencePoolingCenter.Instance.ReleaseReference(unusedTask.RuntimeContext);
                 }
                 ReferencePoolingCenter.Instance.ReleaseReference(unusedTask);
             }
         }
-        
-        // ¸¨Öú·½·¨£º»Ø¹öRuntimeContextÁÐ±í
-        private void RollBackRuntimeContextList(ref List<AbilityRuntimeContext> contextList, List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½RuntimeContextï¿½Ð±ï¿½
+        private void RollBackRuntimeContextList(ref List<AbilityRuntimeContext> contextList,List<ISnapShot> snapShots,int errorStartLocalizedLogicFrameCount,int currentLocalizedLogicFrameCount) {
             var availableContexts = new Queue<AbilityRuntimeContext>(contextList);
-            
+
             contextList.Clear();
             foreach(var snapShot in snapShots) {
                 AbilityRuntimeContext context;
@@ -668,7 +655,7 @@ namespace GAS {
                 }
                 contextList.Add(context);
             }
-            
+
             while(availableContexts.Count > 0) {
                 var unusedContext = availableContexts.Dequeue();
                 ReferencePoolingCenter.Instance.ReleaseReference(unusedContext);

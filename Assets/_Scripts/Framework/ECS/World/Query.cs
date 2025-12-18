@@ -91,7 +91,7 @@ namespace ECS {
         }
 
         public uint ReferenceType => ReferenceTypes.QUERY;
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
         public void OnRecycle() {
             foreach(var set in componentSets) {
                 ReferencePoolingCenter.Instance.ReleaseReference(set);

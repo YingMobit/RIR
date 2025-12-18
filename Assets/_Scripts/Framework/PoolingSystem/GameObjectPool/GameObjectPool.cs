@@ -22,7 +22,7 @@ namespace PoolingSystem.GameObjectPool {
             }
         }
 
-        public GameObject GetInstance(Vector3 worldPosition,Quaternion quaternion,Transform transform = null,Action<GameObject> beforSetActive = null) {
+        public GameObject GetInstance(Vector3 worldPosition,Quaternion quaternion,Transform transform = null,Action<GameObject> beforeSetActive = null) {
             GameObject instance;
             if (availableInstances.Count == 0) {
                 instance = GameObject.Instantiate(prefab,root.transform);
@@ -38,7 +38,7 @@ namespace PoolingSystem.GameObjectPool {
             }
             instance.transform.position = worldPosition;
             instance.transform.rotation = quaternion;
-            beforSetActive?.Invoke(instance);
+            beforeSetActive?.Invoke(instance);
             instance.SetActive(true);
             return instance;
         }
@@ -53,7 +53,7 @@ namespace PoolingSystem.GameObjectPool {
         #region IReference
         public uint ReferenceType => ReferenceTypes.GAMEOBJECTPOOL;
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void Dispose() {
             availableInstances.Clear();

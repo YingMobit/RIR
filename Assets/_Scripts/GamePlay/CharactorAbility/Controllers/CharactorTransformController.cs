@@ -13,23 +13,19 @@ public class CharactorTransformController : Component, ITransformController , IR
     private Transform transform;
     private Rigidbody rigidbody;
     public GameObject GameObject => gameObject;
-
-    // Æ½»¬¹ÜÀíÆ÷
+    
     private AttributeSmoothHandler<Vector3> _vector3SmoothHandler;
     private AttributeSmoothHandler<Quaternion> _quaternionSmoothHandler;
     private AttributeSmoothHandler<float> _floatSmoothHandler;
-
-    // ÈÎÎñID³£Á¿
+    
     private const int POSITION_TASK_ID = 1;
     private const int ROTATION_TASK_ID = 2;
     private const int SCALE_TASK_ID = 3;
-
-    // Âß¼­×´Ì¬(ÓÃÓÚ»Ø¹öºÍÎïÀí)
+    
     private Vector3 _logicPosition;
     private Quaternion _logicRotation = Quaternion.identity;
     private Vector3 _logicScale = Vector3.one;
-
-    // ¹«¿ªÊôÐÔ
+    
     public Vector3 CurrentPosition => transform.position;
     public Vector3 LogicPosition => _logicPosition;
     public Quaternion CurrentRotation => transform.rotation;
@@ -39,10 +35,10 @@ public class CharactorTransformController : Component, ITransformController , IR
     public Vector3 Velocity => rigidbody != null ? rigidbody.linearVelocity : Vector3.zero;
     public ControllerTypeEnum Type => ControllerTypeEnum.Transform;
 
-    #region Æ½»¬·½·¨
+    #region å¹³æ»‘æ–¹æ³•
     public void MoveToSmoothly(Vector3 newPos,int smoothFrameCount) {
         _logicPosition = newPos;
-        _vector3SmoothHandler.RegistTask(
+        _vector3SmoothHandler.RegisterTask(
                         POSITION_TASK_ID,
                         CurrentPosition,
                         _logicPosition,
@@ -59,7 +55,7 @@ public class CharactorTransformController : Component, ITransformController , IR
 
         _logicRotation = Quaternion.LookRotation(newDir);
 
-        _quaternionSmoothHandler.RegistTask(
+        _quaternionSmoothHandler.RegisterTask(
             ROTATION_TASK_ID,
             CurrentRotation,
             _logicRotation,
@@ -72,7 +68,7 @@ public class CharactorTransformController : Component, ITransformController , IR
 
     public void RotateToSmoothly(Quaternion newRot,int smoothFrameCount) {
         _logicRotation = newRot;
-        _quaternionSmoothHandler.RegistTask(
+        _quaternionSmoothHandler.RegisterTask(
             ROTATION_TASK_ID,
             CurrentRotation,
             _logicRotation,
@@ -93,7 +89,7 @@ public class CharactorTransformController : Component, ITransformController , IR
     public void ScaleToSmoothly(Vector3 newScale,int smoothFrameCount) {
         _logicScale = newScale;
 
-        _vector3SmoothHandler.RegistTask(
+        _vector3SmoothHandler.RegisterTask(
             SCALE_TASK_ID,
             CurrentScale,
             _logicScale,
@@ -106,7 +102,7 @@ public class CharactorTransformController : Component, ITransformController , IR
 
     #endregion
 
-    #region Ö±½ÓÉèÖÃ·½·¨
+    #region ç›´æŽ¥è®¾ç½®æ–¹æ³•
     public void SetPosition(Vector3 newPos) {
         _logicPosition = newPos;
         transform.position = newPos;
@@ -184,7 +180,7 @@ public class CharactorTransformController : Component, ITransformController , IR
         transform = gameObject.transform;
         rigidbody = gameObject.GetComponent<Rigidbody>();
 
-        // ³õÊ¼»¯Âß¼­×´Ì¬
+        // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ß¼ï¿½×´Ì¬
         _logicPosition = transform.position;
         _logicRotation = transform.rotation;
         _logicScale = transform.localScale;
@@ -233,22 +229,22 @@ public class CharactorTransformController : Component, ITransformController , IR
         if(!_showGizmos || transform == null)
             return;
 
-        // »æÖÆÂß¼­Î»ÖÃ (ÂÌÉ«ÇòÌå)
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½Î»ï¿½ï¿½ (ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½)
         Gizmos.color = _logicPositionColor;
         Gizmos.DrawWireSphere(_logicPosition,_gizmosSphereRadius);
         Gizmos.DrawLine(_logicPosition,_logicPosition + Vector3.up * 0.5f);
 
-        // »æÖÆÊÓ¾õÎ»ÖÃ (»ÆÉ«ÇòÌå)
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½Î»ï¿½ï¿½ (ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½)
         Gizmos.color = _visualPositionColor;
         Gizmos.DrawWireSphere(transform.position,_gizmosSphereRadius * 0.8f);
 
-        // »æÖÆÂß¼­Î»ÖÃµ½ÊÓ¾õÎ»ÖÃµÄÁ¬Ïß
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½Î»ï¿½Ãµï¿½ï¿½Ó¾ï¿½Î»ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½
         if(Vector3.Distance(_logicPosition,transform.position) > 0.01f) {
             Gizmos.color = Color.red;
             Gizmos.DrawLine(_logicPosition,transform.position);
         }
 
-        // »æÖÆÂß¼­³¯Ïò
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½
         Gizmos.color = Color.blue;
         Vector3 forward = _logicRotation * Vector3.forward;
         Gizmos.DrawRay(_logicPosition,forward * 1.0f);
@@ -264,7 +260,7 @@ public class CharactorTransformController : Component, ITransformController , IR
 
         uint IReference.ReferenceType => ReferenceTypes.CHARACTORTRANSFORMCONTROLLERSHAPSHOT;
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void Dispose() {
             

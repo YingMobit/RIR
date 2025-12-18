@@ -153,7 +153,7 @@ namespace InputSystemNameSpace {
 
             public uint ReferenceType =>ReferenceTypes.INPUTCOMPONENTSNAPSHOT;
 
-            int IReference.IndexInRefrencePool { get ; set ; }
+            int IReference.IndexInReferencePool { get ; set ; }
 
             public void Dispose() {
                 

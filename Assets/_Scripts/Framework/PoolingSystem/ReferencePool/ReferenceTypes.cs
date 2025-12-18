@@ -1,4 +1,5 @@
 using System;
+using _Scripts.Framework.BulletSystem;
 using GAS;
 using RollBackSystem;
 
@@ -23,8 +24,9 @@ namespace PoolingSystem.ReferencePool {
         public const uint ABILITYRUNTIMECONTEXTSNAPSHOT = 16;
         public const uint CHARACTORTRANSFORMCONTROLLERSHAPSHOT = 17;
         public const uint INPUTCOMPONENTSNAPSHOT = 18;
+        public const uint BULLETMODEL = 19;
 
-        public const int TYPE_COUNT = 19;
+        public const int TYPE_COUNT = 20;
 
         private static Type[] types = new Type[TYPE_COUNT] {
             typeof(ECS.ComponentSet), // index 0
@@ -46,6 +48,7 @@ namespace PoolingSystem.ReferencePool {
             typeof(AbilityRuntimeContext.AbilityRuntimeContextSnapShot),
             typeof(CharactorTransformController.CharactorTransformControllerSnapShot),
             typeof(InputSystemNameSpace.InputComponent.InputComponentSnapShot),
+            typeof(BulletModel),
         };
         private static Type tempType;
 

@@ -10,69 +10,66 @@ using UnityEngine;
 using UnityEngine.Pool;
 
 namespace ECS {
-    //��ϡ������Ľṹ��Ϊ�洢EntityID
     public class World {
-        private GameObjectRegistration registration;
-        private ComponentPoolManager componentPoolManager;
-        private EntityManager entityManager;
-        private SparseArray[] entitySearchSparseArrays;
-        private SparseArray[] componentSearchSparseArrays;
-        private List<Query> activeQuriesCurrentFrame;
+        private GameObjectRegistration _registration;
+        private ComponentPoolManager _componentPoolManager;
+        private EntityManager _entityManager;
+        private SparseArray[] _entitySearchSparseArrays;
+        private SparseArray[] _componentSearchSparseArrays;
+        private List<Query> _activeQuriesCurrentFrame;
 
-        private List<ISystem> systems;
-        private InputSystem inputSystem;
+        private List<ISystem> _systems;
+        private InputSystem _inputSystem;
 
         #region API
-        public int GetEntityCount() => (int)entityManager.TotalEntityCount;
-        public int GetActiveEntityCount() => (int)entityManager.ActiveEntityCount;
-        public int GetComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).TotalComponentCount;
-        public int GetActiveComponentCount(ComponentTypeEnum componentType) => componentPoolManager.GetComponentPool(componentType).ActiveComponentCount;
+        public int GetEntityCount() => (int)_entityManager.TotalEntityCount;
+        public int GetActiveEntityCount() => (int)_entityManager.ActiveEntityCount;
+        public int GetComponentCount(ComponentTypeEnum componentType) => _componentPoolManager.GetComponentPool(componentType).TotalComponentCount;
+        public int GetActiveComponentCount(ComponentTypeEnum componentType) => _componentPoolManager.GetComponentPool(componentType).ActiveComponentCount;
 
         public Entity GetEntity(GameObject gameObject,uint componentTypeMask) {
-            Entity newEntity = entityManager.GetEntity(registration.GetID(gameObject));
+            Entity newEntity = _entityManager.GetEntity(_registration.GetID(gameObject));
             if(componentTypeMask != 0)
                 AddComponents(newEntity,componentTypeMask);
-            return entityManager.GetEntityCopy(newEntity.EntityID);
+            return _entityManager.GetEntityCopy(newEntity.EntityID);
         }
-
-        /// <summary>
-        /// ���ص�ǰ���µ�ʵ�帱���������ڲ��洢���������ⲿ�ڵ��� Add/Remove ��ˢ�±��ػ���� Entity �ṹ�塣
-        /// </summary>
-        public Entity GetLatestEntity(uint entityID) => entityManager.GetEntityCopy(entityID);
+        
+        public Entity GetLatestEntity(uint entityID) => _entityManager.GetEntityCopy(entityID);
 
         public Entity GetLatestEntity(Entity entity) {
-            return entityManager.GetEntityCopy(entity.EntityID);
+            return _entityManager.GetEntityCopy(entity.EntityID);
         }
 
         public GameObject GetGameObject(Entity entity) {
-            return registration.GetGameObject(entity.GameObjectID);
+            return _registration.GetGameObject(entity.GameObjectID);
         }
 
         public void ReleaseEntity(Entity entity) {
+            entity = GetLatestEntity(entity);
             RemoveAllComponents(entity);
-            registration.OnReleaseEntity(entity);
-            entityManager.ReleaseEntity(entity);
+            _registration.OnReleaseEntity(entity);
+            _entityManager.ReleaseEntity(entity);
         }
 
 
         #region GetComponents
         public void GetComponents(ComponentTypeEnum componentType,in List<Component> components) {
-            componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
+            _componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
         }
 
         public void GetComponents(ComponentTypeEnum componentType,in List<Component> components,in List<Entity> entityCopies) {
-            componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
+            _componentPoolManager.GetComponentPool(componentType).GetAllActiveComponents(components);
             int count = components.Count;
             if(entityCopies.Capacity < count)
                 entityCopies.Capacity = count;
             entityCopies.Clear();
             for(int i = 0; i < count; i++) {
-                entityCopies.Add(entityManager.GetEntityCopy(entitySearchSparseArrays[componentType.GetIndex()].GetIndex(components[i].ComponentID)));
+                entityCopies.Add(_entityManager.GetEntityCopy(_entitySearchSparseArrays[componentType.GetIndex()].GetIndex(components[i].ComponentID)));
             }
         }
         public void GetComponentOnEntity(Entity entity,ComponentTypeEnum componentType,out Component component) {
             entity = GetLatestEntity(entity);
-            component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(componentSearchSparseArrays[componentType.GetIndex()].GetIndex(entity.EntityID));
+            component = _componentPoolManager.GetComponentPool(componentType).GetActiveInstance(_componentSearchSparseArrays[componentType.GetIndex()].GetIndex(entity.EntityID));
         }
 
         public void GetAllComponentsOnEntity(Entity entity,in List<Component> components) {
@@ -93,23 +90,23 @@ namespace ECS {
         public Query Query() {
             var query = ReferencePoolingCenter.Instance.GetReference<Query>();
             query.BindWorld(this);
-            activeQuriesCurrentFrame.Add(query);
+            _activeQuriesCurrentFrame.Add(query);
             return query;
         }
         #endregion
 
-        #region AddComponent (ֵ����ʵ�֣�ͨ�� EntityManager ����޸���ʵʵ��)
+        #region AddComponent
         public bool AddComponent(Entity entity,ComponentTypeEnum componentType,out Component component) {
             entity = GetLatestEntity(entity);
             if(entity.HasComponent(componentType)) {
                 GetComponentOnEntity(entity,componentType,out component);
                 return true;
             }
-            component = componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
+            component = _componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
             uint componentTypeIndex = componentType.GetIndex();
-            entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
-            componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
-            entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
+            _entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
+            _componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
+            _entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
 
@@ -117,11 +114,11 @@ namespace ECS {
             entity = GetLatestEntity(entity);
             if(entity.HasComponent(componentType))
                 return true;
-            var component = componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
+            var component = _componentPoolManager.GetComponentPool(componentType).GetInstance(this,entity,out uint index);
             uint componentTypeIndex = componentType.GetIndex();
-            entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
-            componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
-            entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
+            _entitySearchSparseArrays[componentTypeIndex].SetIndex(component.ComponentID,entity.EntityID);
+            _componentSearchSparseArrays[componentTypeIndex].SetIndex(entity.EntityID,component.ComponentID);
+            _entityManager.AddComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
 
@@ -141,7 +138,7 @@ namespace ECS {
         }
         #endregion
 
-        #region RemoveComponent (ֵ����ʵ��)
+        #region RemoveComponent
         public bool RemoveComponent(Entity entity,ComponentTypeEnum componentType) {
             entity = GetLatestEntity(entity);
             if(!entity.HasComponent(componentType)) {
@@ -149,8 +146,8 @@ namespace ECS {
                 return false;
             }
             uint componentTypeIndex = componentType.GetIndex();
-            uint supposeComponentID = componentSearchSparseArrays[componentTypeIndex].GetIndex(entity.EntityID);
-            var component = componentPoolManager.GetComponentPool(componentType).GetActiveInstance(supposeComponentID);
+            uint supposeComponentID = _componentSearchSparseArrays[componentTypeIndex].GetIndex(entity.EntityID);
+            var component = _componentPoolManager.GetComponentPool(componentType).GetActiveInstance(supposeComponentID);
             if(component == null) {
                 Debug.LogError($"Didn't get active instance of:{componentType} on the entity:{entity}");
                 return false;
@@ -160,16 +157,16 @@ namespace ECS {
                 return false;
             }
 
-            var supposeEntity = entityManager.GetEntityCopy(entitySearchSparseArrays[componentTypeIndex].GetIndex(component.ComponentID));
+            var supposeEntity = _entityManager.GetEntityCopy(_entitySearchSparseArrays[componentTypeIndex].GetIndex(component.ComponentID));
             if(supposeEntity != entity) {
                 Debug.LogError($"Entity dismatch,wo found:{supposeEntity},actually:{entity}");
                 return false;
             }
 
-            componentPoolManager.GetComponentPool(componentType).ReleaseInstance(this,component,entity);
-            componentSearchSparseArrays[componentTypeIndex].RemoveIndex(entity.EntityID);
-            entitySearchSparseArrays[componentTypeIndex].RemoveIndex(component.ComponentID);
-            entityManager.RemoveComponentMask(entity.EntityID,componentType.ToMask());
+            _componentPoolManager.GetComponentPool(componentType).ReleaseInstance(this,component,entity);
+            _componentSearchSparseArrays[componentTypeIndex].RemoveIndex(entity.EntityID);
+            _entitySearchSparseArrays[componentTypeIndex].RemoveIndex(component.ComponentID);
+            _entityManager.RemoveComponentMask(entity.EntityID,componentType.ToMask());
             return true;
         }
 
@@ -199,7 +196,7 @@ namespace ECS {
 
         public TSystem GetSystemByType<TSystem>() where TSystem : ISystem {
             Type type = typeof(TSystem);
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 if(sys.GetType() == type) {
                     return (TSystem)sys;
                 }
@@ -210,30 +207,30 @@ namespace ECS {
 
         #region Life Time
         public void OnUpdate(int localFrameCount,float deltaTime) {
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 sys.OnFrameUpdate(this,localFrameCount,deltaTime);
             }
         }
 
         public void OnLateUpdate(int localFrameCount,float deltaTime) {
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 sys.OnFrameLateUpdate(this,localFrameCount);
             }
 
-            foreach(var query in activeQuriesCurrentFrame) {
+            foreach(var query in _activeQuriesCurrentFrame) {
                 ReferencePoolingCenter.Instance.ReleaseReference(query);
             }
-            activeQuriesCurrentFrame.Clear();
+            _activeQuriesCurrentFrame.Clear();
         }
 
         public void OnNetworkUpdate(int networkFrameCount) {
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 sys.OnNetworkUpdate(this,networkFrameCount);
             }
         }
 
         public void OnRollingBack(int errorStartFrameCount,int currentSimulateFrameCount,float deltaTime) {
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 if(sys.GetType() == typeof(InputSystem)) {
                     (sys as InputSystem).OnRollingBackState(this);
                 } else {
@@ -241,7 +238,7 @@ namespace ECS {
                 }
             }
 
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 if(sys.GetType() != typeof(InputSystem)) {
                     sys.OnFrameLateUpdate(this,currentSimulateFrameCount);
                 }
@@ -249,60 +246,60 @@ namespace ECS {
         }
 
         public void OnDestroy() {
-            foreach(var sys in systems) {
+            foreach(var sys in _systems) {
                 sys.OnDestroy(this);
             }
-            systems.Clear();
-            systems = null;
+            _systems.Clear();
+            _systems = null;
 
-            entityManager.OnDestroy();
-            componentPoolManager.OnDestroy();
-            registration.OnDestroy();
-            foreach(var sparseArray in entitySearchSparseArrays) {
+            _entityManager.OnDestroy();
+            _componentPoolManager.OnDestroy();
+            _registration.OnDestroy();
+            foreach(var sparseArray in _entitySearchSparseArrays) {
                 sparseArray.OnDestroy();
             }
-            foreach(var sparseArray in componentSearchSparseArrays) {
+            foreach(var sparseArray in _componentSearchSparseArrays) {
                 sparseArray.OnDestroy();
             }
-            entitySearchSparseArrays = null;
-            componentSearchSparseArrays = null;
-            foreach(var query in activeQuriesCurrentFrame) {
+            _entitySearchSparseArrays = null;
+            _componentSearchSparseArrays = null;
+            foreach(var query in _activeQuriesCurrentFrame) {
                 ReferencePoolingCenter.Instance.ReleaseReference(query);
             }
-            activeQuriesCurrentFrame.Clear();
-            activeQuriesCurrentFrame = null;
+            _activeQuriesCurrentFrame.Clear();
+            _activeQuriesCurrentFrame = null;
         }
         #endregion
 
         public World() {
-            registration = new GameObjectRegistration();
-            componentPoolManager = new ComponentPoolManager();
-            entityManager = new EntityManager();
-            entitySearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
-            componentSearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
-            activeQuriesCurrentFrame = new List<Query>();
+            _registration = new GameObjectRegistration();
+            _componentPoolManager = new ComponentPoolManager();
+            _entityManager = new EntityManager();
+            _entitySearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
+            _componentSearchSparseArrays = new SparseArray[ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT];
+            _activeQuriesCurrentFrame = new List<Query>();
 
             for(int i = 0; i < ComponentTypeEnumExtension.COMPONENT_TYPE_COUNT; i++) {
-                entitySearchSparseArrays[i] = new SparseArray();
-                componentSearchSparseArrays[i] = new SparseArray();
+                _entitySearchSparseArrays[i] = new SparseArray();
+                _componentSearchSparseArrays[i] = new SparseArray();
             }
 
             LoadAllSystems();
         }
 
         void LoadAllSystems() {
-            systems = new List<ISystem>();
+            _systems = new List<ISystem>();
             ISystem system;
             foreach(var type in SystemTypeCollection.SystemTypes) {
                 system = (ISystem)System.Activator.CreateInstance(type);
-                systems.Add(system);
+                _systems.Add(system);
                 if(system.GetType() == typeof(InputSystem)) {
-                    inputSystem = system as InputSystem;
+                    _inputSystem = system as InputSystem;
                 }
             }
 
-            systems.Sort((a,b) => a.Order < b.Order ? -1 : 1);
-            foreach(var _system in systems) {
+            _systems.Sort((a,b) => a.Order < b.Order ? -1 : 1);
+            foreach(var _system in _systems) {
                 _system.OnInit(this);
             }
         }

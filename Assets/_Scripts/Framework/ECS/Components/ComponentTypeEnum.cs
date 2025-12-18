@@ -14,19 +14,21 @@ namespace ECS {
         CharactorTransformControllerComponent = 1 << 4,
         CharactorAnimationControllerComponent = 1 << 5,
         AttributeComponent = 1 << 6,
-    }
+        BulletComponent = 1 << 7,
+}
 
 
     public static class ComponentTypeEnumExtension {
-        public const int COMPONENT_TYPE_COUNT = 7;
+        public const int COMPONENT_TYPE_COUNT = 8;
         public static readonly Type[] COMPONENT_TYPE_MAPPING = new Type[COMPONENT_TYPE_COUNT]{
             typeof(AbilityComponent), // index 0
             typeof(InputComponent), // index 1
             typeof(RollBackComponent), // index 2
             typeof(TagComponent), // index 3
-            typeof(CharactorTransformController),
-            typeof(CharactorAnimationController),
-            typeof(AttributeComponent),
+            typeof(CharactorTransformController), // index 4
+            typeof(CharactorAnimationController), // index 5
+            typeof(AttributeComponent), // index 6
+            typeof(BulletComponent), // index 7
         };
 
         public static uint GetIndex(this ComponentTypeEnum componentType) {

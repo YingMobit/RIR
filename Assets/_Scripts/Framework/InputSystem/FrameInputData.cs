@@ -1,6 +1,6 @@
-﻿using Lockstep.Math;
+﻿using System;
+using Lockstep.Math;
 using ProtoBuf;
-using System;
 using UnityEngine;
 
 namespace InputSystemNameSpace {
@@ -16,17 +16,17 @@ namespace InputSystemNameSpace {
         [ProtoMember(7)] public bool ServerReceived; //服务器是否收到该输入数据,如果为false则表示这一阵服务端并没有收到数据,需要客户端模拟
 
         public static FrameInputData Null;
-        public bool IsRightPredict(FrameInputData authoritiveData) { 
+        public bool IsRightPredict(FrameInputData authoritiveData) {
             return this.KeyCodeinputs == authoritiveData.KeyCodeinputs &&
                    this.AimDirection == authoritiveData.AimDirection;
         }
 
-        public readonly FrameInputData MakePredict(int localizedLocalLogicFrameCount) { 
+        public readonly FrameInputData MakePredict(int localizedLocalLogicFrameCount) {
             var predict = this;
             predict.KeyCodeinputs = KeyCodeinputs.MakePredict();
             predict.AuthorityNetworkFrameCount = -1;
             predict.LocalizedLocalLogicFrameCount = localizedLocalLogicFrameCount;
-            return predict; 
+            return predict;
         }
 
         static FrameInputData() {
@@ -49,18 +49,19 @@ namespace InputSystemNameSpace {
         }
 
         #region Utility
-        public LVector2 MoveInput { get {
+        public LVector2 MoveInput {
+            get {
                 LVector2 res = LVector2.zero;
-                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveForward)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveForward)) {
                     res += LVector2.up;
                 }
-                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveBackward)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveBackward)) {
                     res += LVector2.down;
                 }
-                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveLeft)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveLeft)) {
                     res += LVector2.left;
                 }
-                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveRight)) { 
+                if(KeyCodeinputs.HasAllInputType(InputTypeEnum.MoveRight)) {
                     res += LVector2.right;
                 }
                 return res;

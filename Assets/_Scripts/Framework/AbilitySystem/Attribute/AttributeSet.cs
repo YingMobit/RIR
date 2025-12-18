@@ -37,7 +37,7 @@ namespace GAS {
         #region IReference
         public uint ReferenceType => ReferenceTypes.ATTRIBUTESET;
 
-        int IReference.IndexInRefrencePool { get ; set ; }
+        int IReference.IndexInReferencePool { get ; set ; }
 
         public void OnRecycle() {
             map.Clear();
@@ -60,7 +60,7 @@ namespace GAS {
             public List<ISnapShot> attributeSnapShots;
             #region IReference
             public uint ReferenceType => ReferenceTypes.ATTRIBUTESETSNAPSHOT;
-            int IReference.IndexInRefrencePool { get; set; }
+            int IReference.IndexInReferencePool { get; set; }
 
             public void OnRecycle() {
                 foreach(var snapshot in attributeSnapShots) {

@@ -23,8 +23,6 @@ public class CharactorRunAction : AbilityActionUnit {
         var inputQueue = abilityRuntimeContext.AbilityComponentContext.GlobalBlacboard.Get<DeQueue<FrameInputData>>(AbilitySystem.INPUTID_IN_GLOBALBLACKBORAD);
         inputQueue.TryPeekBack(out var frameInputData);
         var inputDir = frameInputData.MoveInput;
-        if(inputDir == LVector2.zero)
-            return TaskStatus.Suceeded;
         var aimDir = frameInputData.AimDirection;
         var moveDir = new LVector2();
         LQuaternion rotation = LQuaternion.FromToRotation(LVector2.up,new LVector2(aimDir.x,aimDir.z));

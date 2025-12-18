@@ -74,12 +74,9 @@ public class LocalClientDriver : Singleton<LocalClientDriver> {
     void OnLateLogicUpdate(int localFrameCount,float deltaTime) {
         world.OnLateUpdate(localFrameCount,deltaTime);
 
-        //���Ԥ��??
         if(!world.GetSystemByType<InputSystem>().IsPredictCorrect(world,out var errorStartFrameCount)) {
-            //�ع�
             world.GetSystemByType<RollBackSystem.RollBackSystem>().RollBack(world,errorStartFrameCount,localFrameCount);
-            Debug.Log($"[LocalClientDriver] Rollback from frame {errorStartFrameCount} to frame {localFrameCount}");
-            //����ģ��
+            //Debug.Log($"[LocalClientDriver] Rollback from frame {errorStartFrameCount} to frame {localFrameCount}");
             for(int i = 0; i < localFrameCount - errorStartFrameCount + 1; i++) {
                 world.OnRollingBack(errorStartFrameCount,errorStartFrameCount + i,deltaTime);
             }

@@ -38,7 +38,7 @@ namespace PoolingSystem.ReferencePool {
         public void Recycle(IReference reference) {
             tempType = reference.GetType();
             if(tempType == referenceType) {
-                int index = reference.IndexInRefrencePool;
+                int index = reference.IndexInReferencePool;
                 if(index < 0 || index >= totalReferenceCount) {
                     Debug.LogError($"Recycle index out of range: {index}");
                     return;
@@ -55,7 +55,7 @@ namespace PoolingSystem.ReferencePool {
             references.Capacity += DEFAULT_REFERENCE_COUNT;
             for(int i = 0; i < DEFAULT_REFERENCE_COUNT; i++) {
                 var reference = ReferenceTemplate.GetNewInstance();
-                reference.IndexInRefrencePool = totalReferenceCount;
+                reference.IndexInReferencePool = totalReferenceCount;
                 references.Add(reference);
                 freeReferenceIndexs.Push(totalReferenceCount);
                 totalReferenceCount++;

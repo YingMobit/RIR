@@ -9,14 +9,14 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
     private List<int> _pendingRemoveList = new List<int>();
 
     /// <summary>
-    /// ×¢²á»ò¸üĞÂÆ½»¬ÈÎÎñ
+    /// æ³¨å†Œå¹³æ»‘ä»»åŠ¡
     /// </summary>
-    /// <param name="taskID">ÈÎÎñID</param>
-    /// <param name="logicValue">Ä¿±êÂß¼­Öµ</param>
-    /// <param name="smoothFrames">ÆÚÍû¶àÉÙÖ¡Íê³ÉÆ½»¬</param>
-    /// <param name="applyVisualValue">Ó¦ÓÃÊÓ¾õÖµµÄ»Øµ÷</param>
-    /// <param name="lerpMethod">²åÖµ·½·¨</param>
-    public void RegistTask(
+    /// <param name="taskID">ä»»åŠ¡ID</param>
+    /// <param name="logicValue">Öµé€»è¾‘å€¼</param>
+    /// <param name="smoothFrames">ç›®æ ‡å¹³æ»‘å¸§æ•°</param>
+    /// <param name="applyVisualValue">åº”ç”¨å¹³æ»‘æ’å€¼çš„å›è°ƒ</param>
+    /// <param name="lerpMethod">å¹³æ»‘æ–¹æ³•</param>
+    public void RegisterTask(
         int taskID,
         TValue visualValue,
         TValue logicValue,
@@ -27,7 +27,6 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
         if(_taskMap.TryGetValue(taskID,out var existingTask)) {
             existingTask.UpdateLogicValue(logicValue,smoothFrames);
         } else {
-            // ´´½¨ĞÂÈÎÎñ
             var newTask = new AttributeSmoothTask<TValue>();
             newTask.RegistTask(taskID,visualValue,logicValue,smoothFrames,applyVisualValue,lerpMethod,equal);
             _taskMap[taskID] = newTask;
@@ -45,7 +44,6 @@ public class AttributeSmoothHandler<TValue> where TValue : struct, IEquatable<TV
 
         foreach(var kvp in _taskMap) {
             if(kvp.Value.Update(deltaTime)) {
-                // ÈÎÎñÍê³É,±ê¼ÇÎª´ıÒÆ³ı
                 _pendingRemoveList.Add(kvp.Key);
             }
         }

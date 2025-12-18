@@ -89,7 +89,7 @@ namespace GAS {
 
         #region IReference
         public uint ReferenceType => ReferenceTypes.ATTRIBUTE;
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void OnRecycle() {
             attributeData.BaseValue = 0;
@@ -115,7 +115,7 @@ namespace GAS {
 
             public uint ReferenceType => ReferenceTypes.ATTRIBUTESNAPSHOT;
 
-            int IReference.IndexInRefrencePool { get ; set ; }
+            int IReference.IndexInReferencePool { get ; set ; }
 
             public AttributeData attributeData;
             public void OnRecycle() {

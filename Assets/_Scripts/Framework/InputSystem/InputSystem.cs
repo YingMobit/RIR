@@ -81,13 +81,6 @@ namespace InputSystemNameSpace {
 
         public bool IsPredictCorrect(World world,out int errorStartFrameCount) {
             lock(recivedNetworkPlayerInputsEventDatas) {
-                //Debug.Log($"[InputSystem]Check Predict State with {recivedNetworkPlayerInputsEventDatas.Count} NetworkPlayerInputsEventDatas");
-                //foreach(var message in recivedNetworkPlayerInputsEventDatas) {
-                //    foreach(var input in message.NetworkPlayerInputsDownLinkMessage.Inputs) {
-                //        Debug.Log($"Received NetworkPlayerInputData From PlayerID: {input.PlayerID},InputData: {input}");
-                //    }
-                //}
-
                 if(recivedNetworkPlayerInputsEventDatas.Count == 0) {
                     errorStartFrameCount = -1;
                     return true;

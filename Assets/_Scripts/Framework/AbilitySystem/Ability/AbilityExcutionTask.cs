@@ -1,32 +1,33 @@
-﻿using UnityEngine;
 using PoolingSystem.ReferencePool;
 using RollBackSystem;
+using UnityEngine;
 
 namespace GAS {
-    public class AbilityExcutionTask : IReference<AbilityExcutionTask> , IRollBackable {
-        public AbilityRuntimeContext runtimeContext { get; private set; }
-        public Ability Ability => runtimeContext.Ability;
-        private AbilityEffect currentEffect => Ability.Effects[runtimeContext.currentEffectIndex];
-        public int CurrentInteruptionPriority => currentEffect.InteruptionPriority;
+    public class AbilityExcutionTask : IReference<AbilityExcutionTask>, IRollBackable {
+        public AbilityRuntimeContext RuntimeContext { get; private set; }
+        public Ability Ability => RuntimeContext.Ability;
+        private AbilityEffect CurrentEffect => Ability.Effects[RuntimeContext.currentEffectIndex];
+        public int CurrentInterruptionPriority => CurrentEffect.InteruptionPriority;
 
-        //驱动事件使用函数传参而不是设置AbilityRuntimeContext是为了避免上下文过期
+        private int _lastExitEffectIndex = 0;
+        
         public void OnTriggered(AbilityComponentContext abilityComponentContext) {
-            runtimeContext.BindComponentContext(abilityComponentContext);
-            foreach(var effect in Ability.Effects) { 
-                effect.RootBehaviorUnit.OnTriggered(runtimeContext);
+            RuntimeContext.BindComponentContext(abilityComponentContext);
+            foreach(var effect in Ability.Effects) {
+                effect.RootBehaviorUnit.OnTriggered(RuntimeContext);
             }
         }
 
         public TaskStatus OnUpdate(AbilityComponentContext abilityComponentContext) {
-            runtimeContext.BindComponentContext(abilityComponentContext);
+            RuntimeContext.BindComponentContext(abilityComponentContext);
             TaskStatus updateExcutionRes;
 
-            TaskStatus taskStatus = currentEffect.RootBehaviorUnit.OnExcute(runtimeContext);
+            TaskStatus taskStatus = CurrentEffect.RootBehaviorUnit.OnExcute(RuntimeContext);
             if(taskStatus.IsFinished()) {
                 if(taskStatus == TaskStatus.Suceeded) {
-                    if(runtimeContext.MoveNext()) {
+                    if(RuntimeContext.MoveNext()) {
                         return TaskStatus.Running;
-                    } else { 
+                    } else {
                         return TaskStatus.Suceeded;
                     }
                 } else {
@@ -39,57 +40,44 @@ namespace GAS {
                 updateExcutionRes = TaskStatus.Failed;
             }
 
-            TaskStatus exitRes;
-            for(int i=0;i < runtimeContext.currentEffectIndex;i++) { 
-                exitRes = Ability.Effects[i].RootBehaviorUnit.OnExit(runtimeContext,false);
-                if(exitRes == TaskStatus.Failed)
-                    Debug.LogError($"Effect: {Ability.Effects[i].EffectHeadInfo} exit failed");
-            }
-
             return updateExcutionRes;
         }
 
         public TaskStatus OnExit(AbilityComponentContext abilityComponentContext) {
-            runtimeContext.BindComponentContext(abilityComponentContext);
-
-            if(runtimeContext.currentEffectIndex < Ability.Effects.Count) {
-                Debug.LogError("Some effect hasn't finished");
-                return TaskStatus.Failed;
-            }
-
-            bool allEffectExited = true;
-            TaskStatus taskStatus;
-            foreach(var effect in Ability.Effects) {
-                taskStatus = effect.RootBehaviorUnit.OnExit(runtimeContext,true);
-                if(taskStatus.IsFinished()) {
-                    if(taskStatus == TaskStatus.Failed) {
-                        Debug.LogError($"Effect: {effect.EffectHeadInfo} exit failed");
-                        allEffectExited = false;
-                    }
-                } else { 
-                    allEffectExited = false;
+            RuntimeContext.BindComponentContext(abilityComponentContext);
+            bool allEffectFinished = RuntimeContext.currentEffectIndex == Ability.Effects.Count;
+            Debug.Log($"AbilityExitTask:{Ability.AbilityHeadInfo.Name},index:{_lastExitEffectIndex}");
+            var exitRes = Ability.Effects[_lastExitEffectIndex].RootBehaviorUnit.OnExit(RuntimeContext,allEffectFinished);
+            if(exitRes.IsFinished()) {
+                if(exitRes == TaskStatus.Failed) {
+                    Debug.LogError($"AbilityExcutionTask OnExcute Failed," +
+                                   $"Ability:{Ability.AbilityHeadInfo.Name}," +
+                                   $"Effect:{Ability.Effects[_lastExitEffectIndex]}");
+                }
+                _lastExitEffectIndex++;
+                if(_lastExitEffectIndex > RuntimeContext.currentEffectIndex) {
+                    _lastExitEffectIndex = 0;
+                    return TaskStatus.Suceeded;
                 }
             }
-
-            return allEffectExited ? TaskStatus.Suceeded : TaskStatus.Running;
+            return TaskStatus.Running;
         }
-
-        //暂时不做打断
+        
         public void OnInterrupted(InteruptionContext interuptionContext) {
-                
+
         }
 
         public void BindRuntimeContext(AbilityRuntimeContext abilityRuntimeContext) {
-            runtimeContext = abilityRuntimeContext;
+            RuntimeContext = abilityRuntimeContext;
         }
 
         #region IRefrence
         public uint ReferenceType => ReferenceTypes.ABILITYEXCUTIONTASK;
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void OnRecycle() {
-            runtimeContext = null;
+            RuntimeContext = null;
         }
 
         public IReference GetNewInstance() {
@@ -104,12 +92,13 @@ namespace GAS {
         #region IRollbackable
         internal class AbilityExcutionTaskSnapShot : ISnapShot, IReference<AbilityExcutionTaskSnapShot> {
             internal ISnapShot runtimeContextSnapShot;
+            internal int lastExitEffectIndex;
             #region Interfaces
             public int LocalizedLogicFrameCount { get; set; }
 
             public uint ReferenceType => ReferenceTypes.ABILITYEXCUTIONSNAPSHOT;
 
-            int IReference.IndexInRefrencePool { get; set; }
+            int IReference.IndexInReferencePool { get; set; }
 
             public void Dispose() {
                 OnRecycle();
@@ -135,12 +124,12 @@ namespace GAS {
         public ISnapShot SnapShot(int localizedLogicFrameCount) {
             var snapshot = ReferencePoolingCenter.Instance.GetReference<AbilityExcutionTaskSnapShot>();
             snapshot.LocalizedLogicFrameCount = localizedLogicFrameCount;
+            snapshot.lastExitEffectIndex = _lastExitEffectIndex;
             
-            // 快照runtimeContext
-            if(runtimeContext != null) {
-                snapshot.runtimeContextSnapShot = runtimeContext.SnapShot(localizedLogicFrameCount);
+            if(RuntimeContext != null) {
+                snapshot.runtimeContextSnapShot = RuntimeContext.SnapShot(localizedLogicFrameCount);
             }
-            
+
             return snapshot;
         }
 
@@ -151,12 +140,12 @@ namespace GAS {
                 return;
             }
             
-            // 回滚runtimeContext
             if(taskSnapShot.runtimeContextSnapShot != null) {
-                if(runtimeContext == null) {
-                    runtimeContext = ReferencePoolingCenter.Instance.GetReference<AbilityRuntimeContext>();
+                if(RuntimeContext == null) {
+                    RuntimeContext = ReferencePoolingCenter.Instance.GetReference<AbilityRuntimeContext>();
                 }
-                runtimeContext.RollBack(taskSnapShot.runtimeContextSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                RuntimeContext.RollBack(taskSnapShot.runtimeContextSnapShot,errorStartLocalizedLogicFrameCount,currentLocalizedLogicFrameCount);
+                _lastExitEffectIndex = taskSnapShot.lastExitEffectIndex;
             }
         }
         #endregion

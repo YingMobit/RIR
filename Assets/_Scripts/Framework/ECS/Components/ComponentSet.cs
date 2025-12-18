@@ -46,6 +46,6 @@ namespace ECS {
             return new ComponentSet();
         }
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
     }
 }

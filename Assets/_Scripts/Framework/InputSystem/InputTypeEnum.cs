@@ -17,7 +17,8 @@ namespace InputSystemNameSpace {
         MovementAbility = 1 << 7,
         UltimateAbility = 1 << 8,
         UseProp         = 1 << 9,
-        Interact        = 1 << 10
+        Interact        = 1 << 10,
+        Shift           =  1 << 11,
     }
 
     public static class InputTypeEnumExtension { 

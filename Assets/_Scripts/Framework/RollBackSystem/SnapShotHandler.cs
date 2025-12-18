@@ -19,7 +19,7 @@ namespace RollBackSystem{
         #region IReference
         public uint ReferenceType => ReferenceTypes.SNAPSHOTHANDLER;
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void Dispose() {
             rollBackable = null;

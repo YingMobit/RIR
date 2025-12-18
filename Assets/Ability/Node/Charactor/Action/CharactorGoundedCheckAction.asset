@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <HeadInfo>k__BackingField:
     ID: 0
-    Name: 
+    Name: GroundedCheckAction
     Description: 
     Icon: {fileID: 0}
   Childs: []

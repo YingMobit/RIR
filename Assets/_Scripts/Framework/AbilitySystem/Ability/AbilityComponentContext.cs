@@ -1,26 +1,26 @@
-using PoolingSystem.ReferencePool;
 using System.Collections.Generic;
+using PoolingSystem.ReferencePool;
 namespace GAS {
     /// <summary>
-    /// Ability ComponentÒÀÀµµÄÔËÐÐÊ±ÉÏÏÂÎÄ¡£±£´æ×Å¼¼ÄÜÏµÍ³ÅäÖÃ£¬Ö´ÐÐÆ÷£¬È«¾ÖºÚ°åµÈ×é¼þÒýÓÃ
+    /// Ability Componentï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¼ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½Ã£ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ÖºÚ°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class AbilityComponentContext : IReference<AbilityComponentContext> {
         public IReadOnlyDictionary<int,Ability> Abilities { get; private set; }
         public Dictionary<ControllerTypeEnum,IController> Controllers { get; private set; }
         public BlackBoard GlobalBlacboard { get; private set; }
         public AttributeSet AttributeSet { get; private set; }
-        
-        public void LoadAbilityConfig(Dictionary<int,Ability> abilities) { 
+
+        public void LoadAbilityConfig(Dictionary<int,Ability> abilities) {
             Abilities = abilities;
             GlobalBlacboard = ReferencePoolingCenter.Instance.GetReference<BlackBoard>();
         }
 
-        public void Bind(AttributeSet attributeSet) { 
+        public void Bind(AttributeSet attributeSet) {
             AttributeSet = attributeSet;
         }
 
-        public void RegisterController(ControllerTypeEnum controllerType,IController controller) { 
-            if(Controllers == null) { 
+        public void RegisterController(ControllerTypeEnum controllerType,IController controller) {
+            if(Controllers == null) {
                 Controllers = new Dictionary<ControllerTypeEnum,IController>();
             }
             Controllers[controllerType] = controller;
@@ -29,7 +29,7 @@ namespace GAS {
         #region IReference
         public uint ReferenceType => ReferenceTypes.ABILITYCOMPONENTCONTEXT;
 
-        int IReference.IndexInRefrencePool { get ; set ; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void Dispose() {
             OnRecycle();

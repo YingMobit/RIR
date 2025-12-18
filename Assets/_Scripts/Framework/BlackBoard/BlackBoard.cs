@@ -25,7 +25,7 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
 
     public uint ReferenceType => ReferenceTypes.BLACKBOARD;
 
-    int IReference.IndexInRefrencePool { get; set; }
+    int IReference.IndexInReferencePool { get; set; }
     public void OnRecycle() {
         ManagedFields.Clear();
         UnmanagedFields.Clear();
@@ -152,7 +152,6 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
 
     #region IRollBackable
     internal class BlackBoardSnapShot : ISnapShot, IReference<BlackBoardSnapShot> {
-        // 拆分为键值对列表
         internal List<int> ManagedFieldKeysCopy;
         internal List<object> ManagedFieldValuesCopy;
         internal List<int> UnmanagedFieldKeysCopy;
@@ -163,7 +162,7 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
 
         public uint ReferenceType => ReferenceTypes.BLACKBOARDSNAPSHOT;
 
-        int IReference.IndexInRefrencePool { get; set; }
+        int IReference.IndexInReferencePool { get; set; }
 
         public void Release() {
             ReferencePoolingCenter.Instance.ReleaseReference(this);
@@ -171,19 +170,6 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
 
         public void Dispose() {
             OnRecycle();
-        }
-
-        public IReference GetNewInstance() {
-            var res = new BlackBoardSnapShot();
-            res.ManagedFieldKeysCopy = ListPool<int>.Get();
-            res.ManagedFieldValuesCopy = ListPool<object>.Get();
-            res.UnmanagedFieldKeysCopy = ListPool<int>.Get();
-            res.UnmanagedFieldValuesCopy = ListPool<UnmanagedValueHead>.Get();
-            res.repositoryCopy = ListPool<byte>.Get();
-            return res;
-        }
-
-        public void OnRecycle() {
             if(ManagedFieldKeysCopy != null) {
                 ListPool<int>.Release(ManagedFieldKeysCopy);
                 ManagedFieldKeysCopy = null;
@@ -205,20 +191,46 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
                 repositoryCopy = null;
             }
         }
+
+        public IReference GetNewInstance() {
+            var res = new BlackBoardSnapShot();
+            res.ManagedFieldKeysCopy = ListPool<int>.Get();
+            res.ManagedFieldValuesCopy = ListPool<object>.Get();
+            res.UnmanagedFieldKeysCopy = ListPool<int>.Get();
+            res.UnmanagedFieldValuesCopy = ListPool<UnmanagedValueHead>.Get();
+            res.repositoryCopy = ListPool<byte>.Get();
+            return res;
+        }
+
+        public void OnRecycle() {
+            if(ManagedFieldKeysCopy != null) {
+                ManagedFieldKeysCopy.Clear();
+            }
+            if(ManagedFieldValuesCopy != null) {
+                ManagedFieldValuesCopy.Clear();
+            }
+            if(UnmanagedFieldKeysCopy != null) {
+                UnmanagedFieldKeysCopy.Clear();
+            }
+            if(UnmanagedFieldValuesCopy != null) {
+                UnmanagedFieldValuesCopy.Clear();
+            }
+            if(repositoryCopy != null) {
+                repositoryCopy.Clear();
+            }
+        }
     }
 
     public ISnapShot SnapShot(int localizedLogicFrameCount) {
         var blackboardSnapShot = ReferencePoolingCenter.Instance.GetReference<BlackBoardSnapShot>();
         blackboardSnapShot.LocalizedLogicFrameCount = localizedLogicFrameCount;
-
-        // 快照非托管字段的数据仓库
+        
         if(blackboardSnapShot.repositoryCopy.Capacity < repository.Capacity)
             blackboardSnapShot.repositoryCopy.Capacity = repository.Capacity;
         blackboardSnapShot.repositoryCopy.Clear();
         blackboardSnapShot.repositoryCopy.AddRange(repository);
         blackboardSnapShot.currentRepositoryCopy = currentRepositorySize;
-
-        // 预扩容并保存托管字段的引用关系
+        
         if(blackboardSnapShot.ManagedFieldKeysCopy.Capacity < ManagedFields.Count) {
             blackboardSnapShot.ManagedFieldKeysCopy.Capacity = ManagedFields.Count;
             blackboardSnapShot.ManagedFieldValuesCopy.Capacity = ManagedFields.Count;
@@ -228,9 +240,8 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
         foreach(var pair in ManagedFields) {
             blackboardSnapShot.ManagedFieldKeysCopy.Add(pair.Key);
             blackboardSnapShot.ManagedFieldValuesCopy.Add(pair.Value);
-        }
-
-        // 预扩容并快照非托管字段的头信息
+        } 
+        
         if(blackboardSnapShot.UnmanagedFieldKeysCopy.Capacity < UnmanagedFields.Count) {
             blackboardSnapShot.UnmanagedFieldKeysCopy.Capacity = UnmanagedFields.Count;
             blackboardSnapShot.UnmanagedFieldValuesCopy.Capacity = UnmanagedFields.Count;
@@ -251,19 +262,16 @@ public class BlackBoard : IReference<BlackBoard> , IRollBackable {
             Debug.LogError("BlackBoard RollBack Error: Invalid SnapShot Type");
             return;
         }
-
-        // 回滚非托管字段的数据仓库
+        
         repository.Clear();
         repository.AddRange(blackboardSnapShot.repositoryCopy);
         currentRepositorySize = blackboardSnapShot.currentRepositoryCopy;
-
-        // 回滚托管字段的引用关系（不回滚对象内部状态）
+        
         ManagedFields.Clear();
         for(int i = 0; i < blackboardSnapShot.ManagedFieldKeysCopy.Count; i++) {
             ManagedFields.Add(blackboardSnapShot.ManagedFieldKeysCopy[i], blackboardSnapShot.ManagedFieldValuesCopy[i]);
         }
-
-        // 回滚非托管字段
+        
         UnmanagedFields.Clear();
         for(int i = 0; i < blackboardSnapShot.UnmanagedFieldKeysCopy.Count; i++) {
             UnmanagedFields.Add(blackboardSnapShot.UnmanagedFieldKeysCopy[i], blackboardSnapShot.UnmanagedFieldValuesCopy[i]);

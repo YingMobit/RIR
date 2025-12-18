@@ -3,7 +3,7 @@ using System;
 namespace PoolingSystem.ReferencePool {
     public interface IReference : IDisposable {
         public uint ReferenceType { get; }
-        internal int IndexInRefrencePool { get; set; }
+        internal int IndexInReferencePool { get; set; }
         public void OnRecycle();
         public IReference GetNewInstance();
     }

@@ -22,7 +22,7 @@ public class CharactorAnimationController : Component, IAnimationController {
     public void SetFloatSmooth(string name,float value,int smoothFrames) {
         int taskID = name.GetHashCode();
 
-        floatAnimationParamSmoothHandler.RegistTask(
+        floatAnimationParamSmoothHandler.RegisterTask(
             taskID,
             animator.GetFloat(name),
             value,
